@@ -1,5 +1,4 @@
 import Trigger from "./Trigger"
-import PolymorphicId from "./PolymorphicId"
 
 // Symbols
 import { Old, New } from "./Symbols"
@@ -20,7 +19,6 @@ import type {
 
 export {
     Trigger,
-    PolymorphicId,
 
     Old,
     New,

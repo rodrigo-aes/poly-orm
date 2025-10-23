@@ -652,7 +652,7 @@ export default abstract class BaseEntity {
         M extends ResultMapOption = 'entity'
     >(
         this: T,
-        options: FindQueryOptions<InstanceType<T>>,
+        options?: FindQueryOptions<InstanceType<T>>,
         mapTo?: M
     ): Promise<FindResult<T, M>> {
         return (this as T & typeof BaseEntity)
@@ -674,7 +674,7 @@ export default abstract class BaseEntity {
         M extends ResultMapOption = 'entity'
     >(
         this: T,
-        options: FindOneQueryOptions<InstanceType<T>>,
+        options?: FindOneQueryOptions<InstanceType<T>>,
         mapTo?: M
     ): Promise<FindOneResult<T, M>> {
         return (this as T & typeof BaseEntity)

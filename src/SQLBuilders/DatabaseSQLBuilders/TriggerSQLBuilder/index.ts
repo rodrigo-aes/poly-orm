@@ -83,9 +83,7 @@ export default abstract class TriggerSQLBuilder<
 
     /** @internal */
     public actionSQL(): string {
-        return SQLStringHelper.normalizeSQL(
-            `BEGIN ${this.actionBodySQL()} END`
-        )
+        return `BEGIN ${this.actionBodySQL()} END`
     }
 
     // ------------------------------------------------------------------------

@@ -169,11 +169,6 @@ import type { EntityMetadataJSON } from './types'
 import { type MetadataErrorCode } from '../../Errors'
 
 export default class EntityMetadata extends Metadata {
-    protected static override readonly KEY: string = 'entity-metadata'
-    protected static override readonly UNKNOWN_ERROR_CODE: MetadataErrorCode = (
-        'UNKNOWN_ENTITY'
-    )
-
     constructor(
         public target: EntityTarget,
         public tableName: string = target.name.toLowerCase()
@@ -220,38 +215,38 @@ export default class EntityMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public get hooks(): HooksMetadata | undefined {
-        return HooksMetadata.find(this.target)
+    public get hooks(): HooksMetadata {
+        return HooksMetadata.findOrBuild(this.target)
     }
 
     // ------------------------------------------------------------------------
 
-    public get scopes(): ScopesMetadata | undefined {
-        return ScopesMetadata.find(this.target)
+    public get scopes(): ScopesMetadata {
+        return ScopesMetadata.findOrBuild(this.target)
     }
 
     // ------------------------------------------------------------------------
 
-    public get computedProperties(): ComputedPropertiesMetadata | undefined {
-        return ComputedPropertiesMetadata.find(this.target)
+    public get computedProperties(): ComputedPropertiesMetadata {
+        return ComputedPropertiesMetadata.findOrBuild(this.target)
     }
 
     // ------------------------------------------------------------------------
 
-    public get triggers(): TriggersMetadata | undefined {
-        return TriggersMetadata.find(this.target)
+    public get triggers(): TriggersMetadata {
+        return TriggersMetadata.findOrBuild(this.target)
     }
 
     // ------------------------------------------------------------------------
 
-    public get collections(): CollectionsMetadata | undefined {
-        return CollectionsMetadata.find(this.target)
+    public get collections(): CollectionsMetadata {
+        return CollectionsMetadata.findOrBuild(this.target)
     }
 
     // ------------------------------------------------------------------------
 
-    public get paginations(): PaginationsMetadata | undefined {
-        return PaginationsMetadata.find(this.target)
+    public get paginations(): PaginationsMetadata {
+        return PaginationsMetadata.findOrBuild(this.target)
     }
 
     // ------------------------------------------------------------------------
@@ -272,6 +267,17 @@ export default class EntityMetadata extends Metadata {
         return this.constrainedForeignKeys.flatMap(({ references }) =>
             references!.referenced()
         )
+    }
+
+    // Static Getters =========================================================
+    // Publics ----------------------------------------------------------------
+    public static override get KEY(): string {
+        return 'entity-metadata'
+    }
+
+    // Protecteds -------------------------------------------------------------
+    protected static override get UNKNOWN_ERROR_CODE(): MetadataErrorCode {
+        return 'UNKNOWN_ENTITY'
     }
 
     // Instance Methods =======================================================

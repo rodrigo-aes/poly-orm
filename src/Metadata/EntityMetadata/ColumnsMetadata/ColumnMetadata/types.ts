@@ -52,14 +52,15 @@ export type SQLColumnType = (
 )
 
 export type ColumnConfig = {
+    primary?: boolean
+    unique?: boolean
     length?: number
     nullable?: boolean
     defaultValue?: any
-    unique?: boolean
-    primary?: boolean
     autoIncrement?: boolean
     unsigned?: boolean
     isForeignKey?: boolean
+    pattern?: ColumnPattern
 }
 
 export type ColumnBeforeUpdateListener = (metadata: ColumnMetadata) => any

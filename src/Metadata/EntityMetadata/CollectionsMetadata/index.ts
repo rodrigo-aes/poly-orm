@@ -14,19 +14,6 @@ export default class CollectionsMetadata<
     T extends Target = Target,
     C extends typeof Collection<InstanceType<T>> = any
 > extends MetadataArray<C> {
-    protected static override readonly KEY: string = 'collections-metadata'
-
-    protected readonly KEY: string = CollectionsMetadata.KEY
-    protected readonly SEARCH_KEYS: (keyof C | 'name')[] = [
-        'name', 'alias'
-    ]
-    protected readonly UNIQUE_MERGE_KEYS: (keyof C | 'name')[] = (
-        this.SEARCH_KEYS
-    )
-    protected readonly UNKNOWN_ERROR_CODE?: MetadataErrorCode = (
-        'UNKNOWN_COLLECTION'
-    )
-
     public default: typeof Collection = Collection
 
     constructor(public target: Target, ...collections: C[]) {
@@ -34,10 +21,28 @@ export default class CollectionsMetadata<
         this.init()
     }
 
+    // Getters ================================================================
+    // Protecteds -------------------------------------------------------------
+    protected override get SEARCH_KEYS(): (keyof C | 'name')[] {
+        return ['name', 'alias']
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected override get UNIQUE_MERGE_KEYS(): (keyof C | 'name')[] {
+        return this.SEARCH_KEYS
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected override get UNKNOWN_ERROR_CODE(): MetadataErrorCode {
+        return 'UNKNOWN_COLLECTION'
+    }
+
     // Static Getters =========================================================
-    // Publics ----------------------------------------------------------------
-    public get [Symbol.species](): typeof Array {
-        return Array
+    // Protecteds -------------------------------------------------------------
+    protected static override get KEY(): string {
+        return 'collections-metadata'
     }
 
     // Instance Methods =======================================================

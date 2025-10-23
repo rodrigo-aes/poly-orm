@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import { createPool, type Pool } from 'mysql2/promise'
+import { createPool, type Pool, type PoolOptions } from 'mysql2/promise'
 
 // Config
 import Config from '../Config'
@@ -35,6 +35,13 @@ export default class MySQLConnection implements MySQLConnectionInstance {
         logging: true,
         sync: false
     }
+
+    /** @internal */
+    private static readonly LOCAL_KEYS: (keyof MySQLConnectionConfig)[] = [
+        'entities',
+        'sync',
+        'logging'
+    ]
 
     /** @internal */
     private pool!: Pool
@@ -112,7 +119,7 @@ export default class MySQLConnection implements MySQLConnectionInstance {
 
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    private async init(): Promise<this> {
+    protected async init(): Promise<this> {
         await Config.load()
         this.instantiatePool()
         await this.afterConnect()
@@ -120,16 +127,26 @@ export default class MySQLConnection implements MySQLConnectionInstance {
         return this
     }
 
-    // ------------------------------------------------------------------------
-
+    // Privates ---------------------------------------------------------------
     /** @internal */
     private instantiatePool() {
         this.pool = createPool({
-            ...this.config,
+            ...this.filterConfig(),
             waitForConnections: true,
             multipleStatements: true,
             queueLimit: 0,
         })
+    }
+
+    // ------------------------------------------------------------------------
+
+    /** @internal */
+    private filterConfig(): PoolOptions {
+        return Object.fromEntries(Object.entries(this.config).filter(
+            ([key]) => !MySQLConnection.LOCAL_KEYS.includes(
+                key as keyof MySQLConnectionConfig
+            )
+        ))
     }
 
     // ------------------------------------------------------------------------
@@ -151,9 +168,7 @@ export default class MySQLConnection implements MySQLConnectionInstance {
 
     // Privates ---------------------------------------------------------------
     /** @internal */
-    private sqlLogging(
-        sql: string,
-    ) {
+    private sqlLogging(sql: string) {
         if (!this.config.logging) return
 
         switch (typeof this.config.logging) {

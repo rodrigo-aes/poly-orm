@@ -19,9 +19,9 @@ export default class FindSQLBuilder<
 
     constructor(
         public target: T,
-        public options: FindQueryOptions<InstanceType<T>>,
+        public options: FindQueryOptions<InstanceType<T>> = {},
         alias?: string,
-        isMain?: boolean
+        isMain: boolean = true
     ) {
         super(target, options, alias, isMain, 'find')
 

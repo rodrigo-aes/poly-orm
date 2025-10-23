@@ -2,9 +2,7 @@ import DatabaseSchema, { type TableSchema } from "../../DatabaseSchema"
 import TableSyncronizer from "./TableSyncronizer"
 import TriggersSyncronizer from "./TriggersSyncronizer";
 
-import { EntityMetadata } from "../../Metadata";
-
-import PolyORMException from "../../Errors";
+import { EntityMetadata } from "../../Metadata"
 
 export default class DatabaseSyncronizer extends DatabaseSchema<
     TableSyncronizer
@@ -22,7 +20,6 @@ export default class DatabaseSyncronizer extends DatabaseSchema<
     // Publics ----------------------------------------------------------------
     public async reset(): Promise<void> {
         await this.dropAll()
-        PolyORMException
         await this.crateAll()
     }
 
@@ -62,14 +59,16 @@ export default class DatabaseSyncronizer extends DatabaseSchema<
         if (this.previous) return this.previous
 
         this.previous = new DatabaseSyncronizer(this.connection)
-        this.previous.push(
-            ...(await this.connection.query(
-                DatabaseSyncronizer.databaseSchemaQuery()
-            ))
+        this.previous.push(...(
+            (
+                await this.connection.query(
+                    DatabaseSyncronizer.databaseSchemaQuery()
+                )
+            )
                 .map(({ tableName, columns }) => new TableSyncronizer(
                     this.previous, tableName, ...columns
                 ))
-        )
+        ))
 
         return this.previous
     }
@@ -83,7 +82,7 @@ export default class DatabaseSyncronizer extends DatabaseSchema<
             this.connection,
             ...this.connection.entities.flatMap(
                 target => {
-                    const meta = EntityMetadata.findOrBuild(target)
+                    const meta = EntityMetadata.findOrThrow(target)
                     return meta.triggers ? [meta.triggers] : []
                 }
             )
@@ -91,7 +90,6 @@ export default class DatabaseSyncronizer extends DatabaseSchema<
 
         return this.triggers
     }
-
 
     // ------------------------------------------------------------------------
 

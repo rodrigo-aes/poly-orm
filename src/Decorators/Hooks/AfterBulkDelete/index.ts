@@ -3,7 +3,7 @@ import { HooksMetadata } from "../../../Metadata"
 // Types
 import type { EntityTarget } from "../../../types"
 import type { ConditionalQueryOptions } from "../../../SQLBuilders"
-import type { DeleteResult } from "mongodb"
+import type { DeleteResult } from '../../../Handlers'
 
 export default function AfterBulkDelete<Entity extends object>(
     target: Entity,

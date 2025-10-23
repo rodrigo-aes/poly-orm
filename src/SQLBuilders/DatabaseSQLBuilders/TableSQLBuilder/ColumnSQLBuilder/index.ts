@@ -7,7 +7,7 @@ import { DataType } from "../../../../Metadata"
 import ForeignKeyConstraintSQLBuilder from "./ForeignKeyConstraintSQLBuilder"
 
 // Symbols
-import { CurrentTimestamp } from "./Symbols"
+import { PolymorphicId, CurrentTimestamp } from "./Symbols"
 
 // Helpers
 import { SQLStringHelper, PropertySQLHelper } from "../../../../Helpers"
@@ -39,7 +39,7 @@ export default class ColumnSQLBuilder extends ColumnSchema {
     // Publics ----------------------------------------------------------------
     public createSQL() {
         return SQLStringHelper.normalizeSQL(`
-            ${this.columnSQL()}${this.createForeignKeySQL()}
+            ${this.columnSQL('CREATE')}${this.createForeignKeySQL()}
         `)
     }
 
@@ -54,9 +54,9 @@ export default class ColumnSQLBuilder extends ColumnSchema {
     // ------------------------------------------------------------------------
 
     public addSQL() {
-        return SQLStringHelper.normalizeSQL(`
-            ADD COLUMN ${this.columnSQL()}${this.addForeignKeySQL()}
-        `)
+        return SQLStringHelper.normalizeSQL(
+            `ADD COLUMN ${this.columnSQL('CREATE')}${this.addForeignKeySQL()}`
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -71,7 +71,7 @@ export default class ColumnSQLBuilder extends ColumnSchema {
 
     public alterSQL() {
         return SQLStringHelper.normalizeSQL(`
-            MODIFY COLUMN ${this.columnSQL()}
+            MODIFY COLUMN ${this.columnSQL('ALTER')}
         `)
     }
 
@@ -207,14 +207,18 @@ export default class ColumnSQLBuilder extends ColumnSchema {
 
     // ------------------------------------------------------------------------
 
-    private columnSQL() {
+    private columnSQL(action: 'CREATE' | 'ALTER') {
+        const create: boolean = action === 'CREATE'
+
         return [
             this.nameSQL(),
             this.typeSQL(),
             this.unsignedSQL(),
+            create ? this.primarySQL() : '',
             this.nullSQL(),
             this.autoIncrementSQL(),
             this.defaultSQL(),
+            create ? this.uniqueSQL() : '',
         ].join(' ')
     }
 
@@ -277,6 +281,9 @@ export default class ColumnSQLBuilder extends ColumnSchema {
 
             case "symbol": switch (this.map.defaultValue) {
                 case CurrentTimestamp: return 'DEFAULT CURRENT_TIMESTAMP'
+                case PolymorphicId: return `DEFAULT (CONCAT('${(
+                    this.polymorphicPrefix
+                )}_', UUID()))`
             }
 
             default: return ''
@@ -286,6 +293,7 @@ export default class ColumnSQLBuilder extends ColumnSchema {
 
 export {
     ForeignKeyConstraintSQLBuilder,
+    PolymorphicId,
     CurrentTimestamp,
 
     type ColumnSQLBuilderMap

@@ -69,7 +69,6 @@ class Config extends Map<string, any> {
                 .default
 
         } catch (_) {
-            console.log(_)
             return undefined
         }
     }

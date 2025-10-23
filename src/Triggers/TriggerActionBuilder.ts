@@ -18,9 +18,7 @@ import type {
     ConditionalQueryOptions
 } from "../SQLBuilders"
 
-export default abstract class TriggerActionBuilder<
-    T extends EntityTarget
-> {
+export default abstract class TriggerActionBuilder<T extends EntityTarget> {
     // Instance Methods =======================================================
     // Protecteds -------------------------------------------------------------
     /**

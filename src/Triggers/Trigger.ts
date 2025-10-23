@@ -1,19 +1,31 @@
-import TriggerSQLBuilder from "../SQLBuilders/DatabaseSQLBuilders/TriggerSQLBuilder"
+import TriggerActionBuilder from "./TriggerActionBuilder"
 
+// Metadata
 import { MetadataHandler, type EntityMetadata } from "../Metadata"
 
 // Types
 import type { Constructor } from "../types"
 import type BaseEntity from "../BaseEntity"
+import type {
+    TriggerEvent,
+    TriggerTiming,
+    TriggerOrientation,
+    TriggerAction
+} from "./types"
 
 export default abstract class Trigger<
-    T extends BaseEntity = any
-> extends TriggerSQLBuilder<T> {
+    T extends BaseEntity = BaseEntity
+> extends TriggerActionBuilder<Constructor<T>> {
     /** @internal */
     protected metadata: EntityMetadata
 
+    public abstract get event(): TriggerEvent
+    public abstract get timing(): TriggerTiming
+    public abstract get orientation(): TriggerOrientation
+
     constructor(public target: Constructor<T>) {
         super()
+
         this.metadata = MetadataHandler.targetMetadata(this.target) as (
             EntityMetadata
         )
@@ -21,6 +33,7 @@ export default abstract class Trigger<
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
+    /** @internal */
     public get tableName(): string {
         return this.metadata.tableName
     }
@@ -33,24 +46,5 @@ export default abstract class Trigger<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    /** @internal */
-    public async register(): Promise<void> {
-        await this.metadata.connection.query(this.dropSQL())
-        await this.metadata.connection.query(this.createSQL())
-    }
-
-    // ------------------------------------------------------------------------
-
-    /** @internal */
-    public async drop(): Promise<void> {
-        await this.metadata.connection.query(this.dropSQL())
-    }
-
-    // ------------------------------------------------------------------------
-
-    /** @internal */
-    public async alter(): Promise<void> {
-        await this.drop()
-        await this.register()
-    }
+    public abstract action(): string | TriggerAction<T>[]
 }

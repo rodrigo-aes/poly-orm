@@ -9,17 +9,44 @@ import PolyORMException, { type MetadataErrorCode } from "../Errors"
 export default abstract class MetadataArray<
     T extends any = any
 > extends Array<T> {
-    protected abstract readonly KEY: string
-
-    protected readonly SHOULD_REGISTER: boolean = true
-    protected readonly SHOULD_MERGE: boolean = true
-    protected readonly SEARCH_KEYS: (keyof T | string)[] = []
-    protected readonly UNIQUE_MERGE_KEYS: (keyof T | string)[] = []
-    protected readonly UNKNOWN_ERROR_CODE?: MetadataErrorCode
-
-
     constructor(public target?: Target, ...childs: T[]) {
         super(...childs)
+    }
+
+    // Getters ================================================================
+    // Protecteds -------------------------------------------------------------
+    protected get KEY(): string {
+        return (this.constructor as typeof MetadataArray).KEY
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected get SHOULD_REGISTER(): boolean {
+        return true
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected get SHOULD_MERGE(): boolean {
+        return true
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected get SEARCH_KEYS(): (keyof T | string)[] {
+        return []
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected get UNIQUE_MERGE_KEYS(): (keyof T | string)[] {
+        return []
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected get UNKNOWN_ERROR_CODE(): MetadataErrorCode | undefined {
+        return undefined
     }
 
     // Static Getters =========================================================

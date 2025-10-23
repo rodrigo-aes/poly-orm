@@ -16,10 +16,10 @@ import PolyORMException, { type MetadataErrorCode } from "../../../Errors"
 export default class PolymorphicRelationsMetadata extends MetadataArray<
     RelationMetadata
 > {
-    protected static override readonly KEY: string = 'relations-metadata'
     protected static readonly UNCLUDED_POLYMORPHIC_KEY: string = (
         'included-polymorphic-relations'
     )
+
     protected static readonly UNCLUDED_COMMON_KEY: string = (
         'included-common-relations'
     )
@@ -27,14 +27,6 @@ export default class PolymorphicRelationsMetadata extends MetadataArray<
     private static readonly POLYMORPHIC_RELATIONS_TYPES = [
         'PolyrmorphicHasOne', 'PolymorphicHasMany', 'PolymorphicBelongsTo'
     ]
-
-    protected readonly KEY: string = PolymorphicRelationsMetadata.KEY
-    protected readonly SEARCH_KEYS: (keyof RelationMetadata)[] = [
-        'name', 'relatedTarget'
-    ]
-    protected readonly UNKNOWN_ERROR_CODE?: MetadataErrorCode = (
-        'UNKNOWN_RELATION'
-    )
 
     constructor(
         public target: PolymorphicEntityTarget,
@@ -45,6 +37,15 @@ export default class PolymorphicRelationsMetadata extends MetadataArray<
     }
 
     // Getters ================================================================
+    // Protecteds -------------------------------------------------------------
+    protected override get SEARCH_KEYS(): (keyof RelationMetadata)[] {
+        return ['name', 'relatedTarget']
+    }
+    // ------------------------------------------------------------------------
+
+    protected override get UNKNOWN_ERROR_CODE(): MetadataErrorCode {
+        return 'UNKNOWN_RELATION'
+    }
     // Privates ---------------------------------------------------------------
     private get includedCommons(): IncludedCommonRelations {
         return PolymorphicRelationsMetadata.includedCommons(
@@ -58,6 +59,12 @@ export default class PolymorphicRelationsMetadata extends MetadataArray<
         return PolymorphicRelationsMetadata.includedPolymorphics(
             this.target
         )
+    }
+
+    // Static Getters =========================================================
+    // Protecteds -------------------------------------------------------------
+    protected static get KEY(): string {
+        return 'polymorphic-relations-metadata'
     }
 
     // Instance Methods =======================================================

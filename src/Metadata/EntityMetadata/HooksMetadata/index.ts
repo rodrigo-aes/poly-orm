@@ -52,8 +52,6 @@ import type { HooksMetadataJSON } from "./types"
 import type { MetadataErrorCode } from "../../../Errors"
 
 export default class HooksMetadata extends Metadata {
-    protected static override readonly KEY: string = 'entity-metadata'
-
     private toCall: Set<HookType> = new Set
 
     public beforeSync: BeforeSyncMetadata[] = []
@@ -85,6 +83,11 @@ export default class HooksMetadata extends Metadata {
     }
 
     // Static Getters =========================================================
+    // Publics ----------------------------------------------------------------
+    public static override get KEY(): string {
+        return 'hooks-metadata'
+    }
+
     // Protecteds -------------------------------------------------------------
     protected static override get UNKNOWN_ERROR_CODE(): MetadataErrorCode {
         throw new Error('HooksMetadata should be optional')

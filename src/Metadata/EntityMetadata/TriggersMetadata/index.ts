@@ -10,18 +10,29 @@ import { type MetadataErrorCode } from "../../../Errors"
 export default class TriggersMetadata extends MetadataArray<
     Constructor<Trigger>
 > {
-    protected static readonly KEY: string = 'triggers-metadata'
-    protected readonly KEY: string = TriggersMetadata.KEY
-
-    protected readonly SEARCH_KEYS: never[] = []
-    protected readonly UNIQUE_MERGE_KEYS: ('name')[] = ['name']
-    protected readonly UNKNOWN_ERROR_CODE?: MetadataErrorCode = undefined
-
     constructor(
         public target: EntityTarget,
         ...triggers: Constructor<Trigger>[]
     ) {
         super(target, ...triggers)
         this.init()
+    }
+
+    // Getters ================================================================
+    // Protecteds -------------------------------------------------------------
+    protected override get SEARCH_KEYS(): never[] {
+        return []
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected override get UNIQUE_MERGE_KEYS(): ('name')[] {
+        return ['name']
+    }
+
+    // Static Getters =========================================================
+    // Protecteds -------------------------------------------------------------
+    protected static override get KEY(): string {
+        return 'triggers-metadata'
     }
 }

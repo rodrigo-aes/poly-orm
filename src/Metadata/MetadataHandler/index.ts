@@ -32,7 +32,7 @@ export default class MetadataHandler {
         ...targets: EntityTarget[]
     ): void {
         for (const target of targets) EntityMetadata
-            .findOrBuild(target)
+            .findOrThrow(target)
             .defineDefaultConnection(connection)
     }
 
@@ -85,11 +85,17 @@ export default class MetadataHandler {
 
     // ------------------------------------------------------------------------
 
-    public static getConnection(target: Target): PolyORMConnection {
+    public static getConnection(target: Target, shouldThrow: boolean = true): (
+        PolyORMConnection
+    ) {
         return TempMetadata.getConnection(target)
             ?? Reflect.getOwnMetadata('default-connection', target)!
-            ?? PolyORMException.Metadata.throw(
-                'MISSING_ENTITY_CONNECTION', target.name
+            ?? (
+                shouldThrow ?
+                    PolyORMException.Metadata.throw(
+                        'MISSING_ENTITY_CONNECTION', target.name
+                    )
+                    : undefined
             )
     }
 
@@ -146,18 +152,16 @@ export default class MetadataHandler {
 
     // ------------------------------------------------------------------------
 
-    private static resolveTargetMetadataKey(target: Target): (
-        `${'entity' | 'polymorphic-Entity'}-metadata`
-    ) {
+    private static resolveTargetMetadataKey(target: Target): string {
         switch (true) {
             case target.prototype instanceof BaseEntity: return (
-                'entity-metadata'
+                EntityMetadata.KEY
             )
 
             // ----------------------------------------------------------------
 
             case target.prototype instanceof BasePolymorphicEntity: return (
-                'polymorphic-Entity-metadata'
+                PolymorphicEntityMetadata.KEY
             )
 
             // ----------------------------------------------------------------

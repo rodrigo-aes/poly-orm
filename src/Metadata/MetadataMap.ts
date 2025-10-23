@@ -11,12 +11,26 @@ export default abstract class MetadataMap<
     K extends string | number | symbol = any,
     T extends any = any
 > extends Map<K, T> {
-    protected abstract readonly KEY?: string
-    protected readonly UNKNOWN_ERROR_CODE?: MetadataErrorCode
-    protected readonly SHOULD_REGISTER: boolean = true
-
     constructor(public target?: Target | CollectionTarget) {
         super()
+    }
+
+    // Getters ================================================================
+    // Protecteds -------------------------------------------------------------
+    protected get KEY(): string {
+        return (this.constructor as typeof MetadataMap).KEY
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected get UNKNOWN_ERROR_CODE(): MetadataErrorCode | undefined {
+        return undefined
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected get SHOULD_REGISTER(): boolean {
+        return true
     }
 
     // Static Getters =========================================================

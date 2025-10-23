@@ -19,19 +19,8 @@ import PolyORMException, { type MetadataErrorCode } from '../../../Errors'
 export default class PolymorphicColumnsMetadata extends MetadataArray<
     PolymorphicColumnMetadata
 > {
-    protected static override readonly KEY: string = (
-        'polymorphic-columns-metadata'
-    )
     protected static readonly UNCLUDED_KEY: string = (
         'included-polymorphic-columns'
-    )
-
-    protected readonly KEY: string = PolymorphicColumnsMetadata.KEY
-    protected readonly SEARCH_KEYS: (keyof PolymorphicColumnMetadata)[] = [
-        'name'
-    ]
-    protected readonly UNKNOWN_ERROR_CODE?: MetadataErrorCode = (
-        'UNKNOWN_COLUMN'
     )
 
     private _primary?: PolymorphicColumnMetadata
@@ -66,6 +55,17 @@ export default class PolymorphicColumnsMetadata extends MetadataArray<
         )
     }
 
+    // Protecteds -------------------------------------------------------------
+    protected override get SEARCH_KEYS(): (keyof PolymorphicColumnMetadata)[] {
+        return ['name']
+    }
+    // ------------------------------------------------------------------------
+
+    protected override get UNKNOWN_ERROR_CODE(): MetadataErrorCode {
+        return 'UNKNOWN_COLUMN'
+    }
+
+
     // Privates ---------------------------------------------------------------
     private get targetMetadata(): PolymorphicEntityMetadata {
         return PolymorphicEntityMetadata.findOrBuild(this.target)
@@ -87,14 +87,17 @@ export default class PolymorphicColumnsMetadata extends MetadataArray<
         return PolymorphicColumnsMetadata.included(this.target)
     }
 
+    // Static Getters =========================================================
+    // Protecteds -------------------------------------------------------------
+    protected static get KEY(): string {
+        return 'polymorphic-columns-metadata'
+    }
+
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public sourceColumns(source: EntityTarget): [string, string][] {
         return Object.entries(this.included).flatMap(([name, options]) => {
-            const option = options.find(({ target }) => (
-                source.prototype instanceof target
-            ))
-
+            const option = options.find(({ target }) => source === target)
             return option ? [[option.column, name]] : []
         })
     }

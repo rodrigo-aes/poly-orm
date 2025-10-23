@@ -14,18 +14,23 @@ export default class PaginationsMetadata<
     T extends Target = Target,
     P extends typeof Pagination<InstanceType<T>> = any
 > extends CollectionsMetadata<T, P> {
-    protected static override readonly KEY: string = 'paginations-metadata'
-
-    protected readonly KEY: string = CollectionsMetadata.KEY
-    protected readonly UNKNOWN_ERROR_CODE?: MetadataErrorCode = (
-        'UNKNOWN_PAGINATION'
-    )
-
     public override default: typeof Pagination = Pagination
 
     constructor(public target: Target, ...collections: P[]) {
         super(target, ...collections)
         this.init()
+    }
+
+    // Getters ================================================================
+    // Protecteds -------------------------------------------------------------
+    protected override get UNKNOWN_ERROR_CODE(): MetadataErrorCode {
+        return 'UNKNOWN_PAGINATION'
+    }
+
+    // Static Getters =========================================================
+    // Protecteds -------------------------------------------------------------
+    protected static override get KEY(): string {
+        return 'paginations-metadata'
     }
 }
 

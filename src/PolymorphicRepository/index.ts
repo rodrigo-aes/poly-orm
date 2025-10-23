@@ -95,7 +95,7 @@ export default class PolymorphicRepository<
     * @returns - A polymorphic entity instance collection
     */
     public find(
-        options: FindQueryOptions<InstanceType<T>>,
+        options?: FindQueryOptions<InstanceType<T>>,
         mapTo: ResultMapOption = 'entity'
     ) {
         return new MySQL2QueryExecutionHandler(
@@ -116,7 +116,7 @@ export default class PolymorphicRepository<
     * @returns - A polymorphic entity instance or `null`
     */
     public findOne(
-        options: FindOneQueryOptions<InstanceType<T>>,
+        options?: FindOneQueryOptions<InstanceType<T>>,
         mapTo: ResultMapOption = 'entity'
     ) {
         return new MySQL2QueryExecutionHandler(

@@ -161,6 +161,8 @@ import PolymorphicEntityMetadata, {
     type IncludePolymorphicRelationOptions
 } from "./PolymorphicEntityMetadata"
 
+import { ColumnSchemaMetadata } from './DatabaseSchemaMetadata'
+
 import MetadataHandler from "./MetadataHandler"
 import TempMetadata from "./TempMetadata"
 
@@ -193,6 +195,8 @@ export {
     ScopeMetadataHandler,
     CollectionsMetadataHandler,
     PaginationMetadataHandler,
+
+    ColumnSchemaMetadata,
 
     type JoinTableRelated,
 

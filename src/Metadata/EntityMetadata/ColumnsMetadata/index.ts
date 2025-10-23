@@ -24,17 +24,6 @@ import type { ColumnsMetadataJSON } from './types'
 import PolyORMException, { type MetadataErrorCode } from '../../../Errors'
 
 export default class ColumnsMetadata extends MetadataArray<ColumnMetadata> {
-    protected static override readonly KEY: string = 'columns-metadata'
-
-    protected readonly KEY: string = ColumnsMetadata.KEY
-    protected readonly SEARCH_KEYS: (keyof ColumnMetadata)[] = ['name']
-    protected readonly UNIQUE_MERGE_KEYS: (keyof ColumnMetadata)[] = (
-        this.SEARCH_KEYS
-    )
-    protected readonly UNKNOWN_ERROR_CODE?: MetadataErrorCode = (
-        'UNKNOWN_COLUMN'
-    )
-
     private _primary?: ColumnMetadata
     private _foreignKeys?: ColumnMetadata[]
     private _constrainedForeignKeys?: ColumnMetadata[]
@@ -70,6 +59,29 @@ export default class ColumnsMetadata extends MetadataArray<ColumnMetadata> {
             )
     }
 
+    // Protecteds -------------------------------------------------------------
+    protected override get SEARCH_KEYS(): (keyof ColumnMetadata)[] {
+        return ['name']
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected override get UNIQUE_MERGE_KEYS(): (keyof ColumnMetadata)[] {
+        return this.SEARCH_KEYS
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected override get UNKNOWN_ERROR_CODE(): MetadataErrorCode {
+        return 'UNKNOWN_COLUMN'
+    }
+
+    // Static Getters =========================================================
+    // Protecteds -------------------------------------------------------------
+    protected static override get KEY(): string {
+        return 'columns-metadata'
+    }
+
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public registerColumn(name: string, dataType: DataType) {
@@ -86,12 +98,12 @@ export default class ColumnsMetadata extends MetadataArray<ColumnMetadata> {
         pattern: ColumnPattern,
         ...rest: any[]
     ) {
-        const column = ColumnMetadata.buildPattern(
+        const builded = ColumnMetadata.buildPattern(
             this.target, name, pattern, ...rest
         )
-        this.push(column)
+        this.push(...(Array.isArray(builded) ? builded : [builded]))
 
-        return column
+        return builded
     }
 
     // ------------------------------------------------------------------------

@@ -6,7 +6,9 @@ import ForeignKeyReferencesSchema from "../../../DatabaseSchema/TableSchema/Colu
 // SQL Builders
 import ColumnSQLBuilder, {
     ForeignKeyConstraintSQLBuilder,
+    PolymorphicId,
     CurrentTimestamp,
+
     type ColumnSQLBuilderMap
 } from "./ColumnSQLBuilder"
 
@@ -23,6 +25,17 @@ import PolyORMException from "../../../Errors"
 export default class TableSQLBuilder<
     T extends ColumnSQLBuilder = ColumnSQLBuilder
 > extends TableSchema<T> {
+    // Getters ================================================================
+    // Protecteds -------------------------------------------------------------
+    /** @internal */
+    protected static override get ColumnConstructor(): (
+        typeof ColumnSQLBuilder
+    ) {
+        return ColumnSQLBuilder
+    }
+
+    // Instance Methods =======================================================
+    // Publics ----------------------------------------------------------------
     public createSQL() {
         return SQLStringHelper.normalizeSQL(`
             CREATE TABLE ${this.name} (${this.createColumnsSQL()})
@@ -56,7 +69,7 @@ export default class TableSQLBuilder<
 
     public syncActionSQL(schema?: TableSchema): string | undefined {
         switch (this.compare(schema)) {
-            case 'ADD': return this.createSQL()
+            case 'CREATE': return this.createSQL()
             case 'ALTER': return this.syncAlterSQL(schema!)
         }
     }
@@ -162,6 +175,8 @@ export default class TableSQLBuilder<
 export {
     ColumnSQLBuilder,
     ForeignKeyConstraintSQLBuilder,
+
+    PolymorphicId,
     CurrentTimestamp,
 
     type ColumnSQLBuilderMap

@@ -1,4 +1,4 @@
-import { TriggerSQLBuilder } from "../../../SQLBuilders"
+import TriggerSQLBuilder from "../../../SQLBuilders/DatabaseSQLBuilders/TriggerSQLBuilder"
 
 // Types
 import type BaseEntity from "../../../BaseEntity"
@@ -132,7 +132,7 @@ export default class TriggerSchema<
             event: trigger.event,
             timing: trigger.timing,
             orientation: trigger.orientation,
-            action: trigger.actionSQL()
+            action: trigger.action()
         }) as InstanceType<T>
     }
 }

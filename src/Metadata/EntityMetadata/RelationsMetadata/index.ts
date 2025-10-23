@@ -60,24 +60,38 @@ import type { MetadataErrorCode } from "../../../Errors"
 export default class RelationsMetadata extends MetadataArray<
     RelationMetadata
 > {
-    protected static override readonly KEY: string = 'relations-metadata'
-    protected readonly KEY: string = RelationsMetadata.KEY
-    protected readonly SHOULD_MERGE: boolean = false
-    protected readonly SEARCH_KEYS: (keyof RelationMetadata)[] = [
-        'name', 'relatedTarget'
-    ]
-    protected readonly UNKNOWN_ERROR_CODE?: MetadataErrorCode = (
-        'UNKNOWN_RELATION'
-    )
-
     constructor(public target: EntityTarget) {
         super(target)
         this.init()
 
-        if ((this.target as StaticEntityTarget)
-            .INHERIT_POLYMORPHIC_RELATIONS) (
-                this.mergeParentPolymorphicRelations()
-            )
+        if (
+            (this.target as StaticEntityTarget).INHERIT_POLYMORPHIC_RELATIONS
+        ) this.mergeParentPolymorphicRelations()
+
+    }
+
+    // Getters ================================================================
+    // Protecteds -------------------------------------------------------------
+    protected override get SEARCH_KEYS(): (keyof RelationMetadata)[] {
+        return ['name', 'relatedTarget']
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected override get SHOULD_MERGE(): boolean {
+        return false
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected override get UNKNOWN_ERROR_CODE(): MetadataErrorCode {
+        return 'UNKNOWN_RELATION'
+    }
+
+    // Static Getters =========================================================
+    // Protecteds -------------------------------------------------------------
+    protected static override get KEY(): string {
+        return 'relations-metadata'
     }
 
     // Instance Methods =======================================================

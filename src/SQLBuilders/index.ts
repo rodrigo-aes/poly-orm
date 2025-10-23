@@ -70,6 +70,7 @@ import {
 } from "./ConditionalSQLBuilder"
 
 // Symbols
+import { Literal } from "./Symbols"
 import { Case, Exists, Cross } from "./ConditionalSQLBuilder"
 
 // Types
@@ -100,6 +101,7 @@ import {
     TriggerSQLBuilder,
 
     CurrentTimestamp,
+    PolymorphicId,
 
     type ColumnSQLBuilderMap
 } from "./DatabaseSQLBuilders"
@@ -146,7 +148,9 @@ export {
     Case,
     Exists,
     Cross,
+    PolymorphicId,
     CurrentTimestamp,
+    Literal,
 
     type FindOneQueryOptions,
     type FindQueryOptions,

@@ -8,11 +8,11 @@
     ".": "./dist/index.js"
   },
   "scripts": {
-    "test": "tsx ./src/TestTools/index.ts",
-    "build": "tsc && tsx ./scripts/FixDistImportErrors.ts"
+    "test": "tsx ./tests/index.ts",
+    "build": "rimraf dist && tsc && tsx ./scripts/FixDistImportErrors.ts"
   },
   "bin": {
-    "poly-cli": "cli.js"
+    "poly-cli": "./dist/cli.js"
   },
   "author": "",
   "license": "ISC",
@@ -22,8 +22,7 @@
     "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
-    "@types/mongodb": "^4.0.6",
     "@types/node": "^22.14.1",
-    "esbuild": "^0.25.9"
+    "rimraf": "^6.0.1"
   }
 }

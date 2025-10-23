@@ -15,18 +15,30 @@ import type { JoinTablesMetadataJSON } from "./types"
 export default class JoinTablesMetadata extends MetadataArray<
     JoinTableMetadata
 > {
-    protected static override readonly KEY: string = 'join-tables-metadata'
-
-    protected readonly KEY: string = JoinTablesMetadata.KEY
-    protected readonly SEARCH_KEYS: (keyof JoinTableMetadata)[] = ['tableName']
-    protected readonly SHOULD_MERGE: boolean = false
-
     constructor(
         public target?: EntityTarget,
         ...joinTables: JoinTableMetadata[]
     ) {
         super(target, ...joinTables)
         this.init()
+    }
+
+    // Getters ================================================================
+    // Protecteds -------------------------------------------------------------
+    protected override get SEARCH_KEYS(): (keyof JoinTableMetadata)[] {
+        return ['tableName']
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected override get SHOULD_MERGE(): boolean {
+        return false
+    }
+
+    // Static Getters =========================================================
+    // Protecteds -------------------------------------------------------------
+    protected static override get KEY(): string {
+        return 'join-tables-metadata'
     }
 
     // Instance Methods =======================================================

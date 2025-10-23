@@ -1,0 +1,1 @@
+export const Literal = Symbol('SQL Literal')

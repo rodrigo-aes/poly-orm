@@ -1,6 +1,7 @@
 import {
     EntityMetadata,
     DataType,
+    ColumnSchemaMetadata,
 
     type TextLength,
     type IntegerLength,
@@ -18,11 +19,8 @@ import ColumnSchema, {
     type ForeignKeyReferencesSchemaMap
 } from "./ColumnSchema"
 
-// Triggers
-import { PolymorphicId } from "../../Triggers"
-
 // Symbols
-import { CurrentTimestamp } from "../../SQLBuilders"
+import { PolymorphicId, CurrentTimestamp } from "../../SQLBuilders"
 
 // Types
 import type { EntityTarget, Constructor } from "../../types"
@@ -101,16 +99,16 @@ export default class TableSchema<
      * @default - 'id'
      */
     public polymorphicId(target: EntityTarget | string, name?: string): void {
-        this.buildColumn('id', DataType.VARCHAR()).primary()
+        const column = this.buildColumn(name ?? 'id', DataType.VARCHAR())
+            .unique()
+            .default(PolymorphicId)
 
-        this.buildTrigger(`${this.name}_polymorphic_pk`)
-            .before('INSERT')
-            .forEach('ROW')
-            .execute(PolymorphicId.actionSQL(
-                this.name,
-                name ?? 'id',
-                typeof target === 'string' ? target : target.name,
-            ))
+        ColumnSchemaMetadata.setPolymorphicPrefix(
+            column,
+            typeof target === 'string'
+                ? target
+                : target.name
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -707,18 +705,21 @@ export default class TableSchema<
         database: DatabaseSchema,
         source: EntityMetadata | EntityTarget
     ): InstanceType<T> {
-        const { tableName, columns } = (this as T & typeof TableSchema)
-            .metadataFromSource(source)
+        const { target, tableName, columns } = (
+            (this as T & typeof TableSchema).metadataFromSource(source)
+        )
 
-        return new this(
-            database,
-            tableName,
-            ...columns.map(
-                column => (this as T & typeof TableSchema)
-                    .ColumnConstructor
-                    .buildFromMetadata(column)
+        return new this(database, tableName, ...columns.map(column => {
+            const schema = (this as T & typeof TableSchema)
+                .ColumnConstructor
+                .buildFromMetadata(column)
+
+            if (column.pattern === 'polymorphic-id') (
+                ColumnSchemaMetadata.setPolymorphicPrefix(schema, target.name)
             )
-        ) as InstanceType<T>
+
+            return schema
+        })) as InstanceType<T>
     }
 
     // ------------------------------------------------------------------------

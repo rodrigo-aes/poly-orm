@@ -1,3 +1,5 @@
+// Symbols
+import { Literal } from "../../SQLBuilders"
 import { Old, New } from "../../Triggers"
 
 // Exceptions
@@ -82,6 +84,10 @@ export default class PropertySQLHelper {
             case this.symbolsAs(symbols, [Old, New]): return (
                 value[Old] ?? value[New]
             )
+
+            // ----------------------------------------------------------------
+
+            case this.symbolsAs(symbols, [Literal]): return value[Literal]
 
             default: throw new Error
         }

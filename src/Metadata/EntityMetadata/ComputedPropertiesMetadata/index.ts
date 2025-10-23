@@ -19,15 +19,21 @@ export default class ComputedPropertiesMetadata<
 > extends MetadataMap<
     string, ComputedPropertyFunction<T>
 > {
-    protected static override readonly KEY: string = 'connections-metadata'
-    protected readonly KEY: string = ComputedPropertiesMetadata.KEY
-    protected readonly UNKNOWN_ERROR_CODE?: MetadataErrorCode = (
-        'UNKNOWN_CONNECTION'
-    )
-
     constructor(public target: Target) {
         super(target)
         this.init()
+    }
+
+    // Getters ================================================================
+    // Protecteds -------------------------------------------------------------
+    protected override get UNKNOWN_ERROR_CODE(): MetadataErrorCode {
+        return 'UNKNOWN_CONNECTION'
+    }
+
+    // Static Getters =========================================================
+    // Protecteds -------------------------------------------------------------
+    protected static override get KEY(): string {
+        return 'computed-props-metadata'
     }
 
     // Instance Methods =======================================================

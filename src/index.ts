@@ -18,11 +18,6 @@ import type {
 // Connection
 import MySQLConnection from './Connection'
 
-// CLI
-import CLI, {
-    MigrationCommander
-} from './CLI'
-
 // Metadata
 import {
     DataType,
@@ -265,9 +260,6 @@ import {
 
 export {
     MySQLConnection as MySQLConnection,
-
-    CLI,
-    MigrationCommander,
 
     DataType,
 

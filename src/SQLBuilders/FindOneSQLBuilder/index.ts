@@ -1,4 +1,4 @@
-import { EntityMetadata, PolymorphicEntityMetadata } from "../../Metadata"
+import { PolymorphicEntityMetadata } from "../../Metadata"
 
 // Query Builders
 import UnionSQLBuilder from "../UnionSQLBuilder"
@@ -33,7 +33,7 @@ export default class FindOneSQLBuilder<T extends Target> {
 
     constructor(
         public target: T,
-        public options: FindOneQueryOptions<InstanceType<T>>,
+        public options: FindOneQueryOptions<InstanceType<T>> = {},
         public alias: string = target.name.toLowerCase(),
         protected isMain: boolean = true,
         scope: 'findOne' | 'find' = 'findOne'
@@ -43,6 +43,7 @@ export default class FindOneSQLBuilder<T extends Target> {
             this.target, scope, this.options
         )
 
+        this.buildMainUnion()
         this.select = this.buildSelect()
         this.joins = this.buildJoins()
         this.where = this.buildWhere()
@@ -115,6 +116,16 @@ export default class FindOneSQLBuilder<T extends Target> {
     }
 
     // Privates ---------------------------------------------------------------
+    private buildMainUnion(): void {
+        if (this.metadata instanceof PolymorphicEntityMetadata) (
+            this.unions.push(new UnionSQLBuilder(
+                this.metadata.tableName, this.metadata.target
+            ))
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
     private buildSelect(): SelectSQLBuilder<T> {
         return new SelectSQLBuilder(
             this.target,

@@ -19,10 +19,6 @@ export default class ScopesMetadata extends MetadataMap<
     string,
     ScopeMetadata | ScopeFunction
 > {
-    protected static override readonly KEY: string = 'scopes-metadata'
-    protected readonly KEY: string = ScopesMetadata.KEY
-    protected readonly UNKNOWN_ERROR_CODE?: MetadataErrorCode = 'UNKNOWN_SCOPE'
-
     public default?: ScopeMetadata
 
     constructor(
@@ -33,6 +29,18 @@ export default class ScopesMetadata extends MetadataMap<
         this.init()
 
         if (scopes) this.registerScopes(scopes)
+    }
+
+    // Getters ================================================================
+    // Protecteds -------------------------------------------------------------
+    protected override get UNKNOWN_ERROR_CODE(): MetadataErrorCode {
+        return 'UNKNOWN_SCOPE'
+    }
+
+    // Static Getters =========================================================
+    // Protecteds -------------------------------------------------------------
+    protected static override get KEY(): string {
+        return 'scopes-metadata'
     }
 
     // Instance Methods =======================================================

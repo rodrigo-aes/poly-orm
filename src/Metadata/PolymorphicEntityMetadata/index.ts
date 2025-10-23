@@ -48,13 +48,6 @@ import type {
 import type { MetadataErrorCode } from '../../Errors'
 
 export default class PolymorphicEntityMetadata extends Metadata {
-    protected static override readonly KEY: string = (
-        'polymorphic-entity-metadata'
-    )
-    protected static override readonly UNKNOWN_ERROR_CODE: MetadataErrorCode = (
-        'UNKNOWN_ENTITY'
-    )
-
     public target: PolymorphicEntityTarget
     public tableName: string
 
@@ -69,14 +62,17 @@ export default class PolymorphicEntityMetadata extends Metadata {
         private _sources: EntityTarget[] | (() => EntityTarget[])
     ) {
         if (!target && !tablename) throw new Error(
-            'Polymorphic metadata needs a PolymorphicEntityTarget or tablename'
+            'Polymorphic metadata needs a PolymorphicEntityTarget or tableName'
         )
+
         super()
 
         this.tableName = tablename ?? target!.name.toLocaleLowerCase()
         this.target = target ?? (
             PolymorphicEntityBuilder.buildInternalPolymorphicEntity(this)
         )
+
+        MetadataHandler.register(this, this.target)
     }
 
     // Getters ================================================================
@@ -86,7 +82,6 @@ export default class PolymorphicEntityMetadata extends Metadata {
             ...this.tableName.split('_')
         )
     }
-
     // ------------------------------------------------------------------------
 
     public get sources(): EntityTarget[] {
@@ -98,7 +93,9 @@ export default class PolymorphicEntityMetadata extends Metadata {
     // ------------------------------------------------------------------------
 
     public get connection(): PolyORMConnection {
-        return MetadataHandler.getConnection(this.target)
+        return MetadataHandler.getConnection(this.target, false) ?? (
+            this.getConnectionBySources()
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -144,38 +141,49 @@ export default class PolymorphicEntityMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public get hooks(): HooksMetadata | undefined {
-        return HooksMetadata.find(this.target!)
+    public get hooks(): HooksMetadata {
+        return HooksMetadata.findOrBuild(this.target!)
     }
 
     // ------------------------------------------------------------------------
 
-    public get scopes(): ScopesMetadata | undefined {
-        return ScopesMetadata.find(this.target!)
+    public get scopes(): ScopesMetadata {
+        return ScopesMetadata.findOrBuild(this.target!)
     }
 
     // ------------------------------------------------------------------------
 
-    public get computedProperties(): ComputedPropertiesMetadata | undefined {
-        return ComputedPropertiesMetadata.find(this.target!)
+    public get computedProperties(): ComputedPropertiesMetadata {
+        return ComputedPropertiesMetadata.findOrBuild(this.target!)
     }
 
     // ------------------------------------------------------------------------
 
-    public get collections(): CollectionsMetadata | undefined {
-        return CollectionsMetadata.find(this.target!)
+    public get collections(): CollectionsMetadata {
+        return CollectionsMetadata.findOrBuild(this.target!)
     }
 
     // ------------------------------------------------------------------------
 
-    public get paginations(): PaginationsMetadata | undefined {
-        return PaginationsMetadata.find(this.target!)
+    public get paginations(): PaginationsMetadata {
+        return PaginationsMetadata.findOrBuild(this.target!)
     }
 
     // ------------------------------------------------------------------------
 
     public get foreignKeys(): PolymorphicColumnMetadata[] {
         return this.columns.filter(({ isForeignKey }) => isForeignKey)
+    }
+
+    // Static Getters =========================================================
+    // Publics ----------------------------------------------------------------
+    public static override get KEY(): string {
+        return 'polymorphic-entity-metadata'
+    }
+
+    // Protecteds -------------------------------------------------------------
+    protected static override get UNKNOWN_ERROR_CODE(): MetadataErrorCode {
+        return 'UNKNOWN_ENTITY'
     }
 
     // Instance Methods =======================================================
@@ -213,7 +221,6 @@ export default class PolymorphicEntityMetadata extends Metadata {
     }
 
     // Privates ---------------------------------------------------------------
-
     private buildJSON<T extends PolymorphicEntityTarget = any>(): (
         PolymorphicEntityMetadataJSON | undefined
     ) {
@@ -230,6 +237,20 @@ export default class PolymorphicEntityMetadata extends Metadata {
             collections: this.collections?.toJSON(),
             paginations: this.paginations?.toJSON(),
         }
+    }
+
+    // ------------------------------------------------------------------------
+
+    private getConnectionBySources(): PolyORMConnection {
+        const [{ connection }, ...rest] = Object.values(this.sourcesMetadata)
+
+        if (rest.every(
+            ({ connection: { name } }) => connection.name === name)
+        ) (
+            this.defineDefaultConnection(connection)
+        )
+
+        return connection
     }
 }
 

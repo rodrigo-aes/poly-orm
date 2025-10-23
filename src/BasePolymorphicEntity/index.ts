@@ -67,7 +67,6 @@ import type {
     EntityProperties
 } from "../types"
 
-import type BaseEntity from "../BaseEntity"
 import type { SourceEntity } from "./types"
 import type { UnionEntitiesMap } from "../Metadata"
 import type { ResultSetHeader } from "mysql2"
@@ -707,7 +706,7 @@ export default abstract class BasePolymorphicEntity<Targets extends object[]> {
         M extends ResultMapOption = 'entity'
     >(
         this: T,
-        options: FindQueryOptions<InstanceType<T>>,
+        options?: FindQueryOptions<InstanceType<T>>,
         mapTo?: M
     ): Promise<FindResult<T, M>> {
         return (this as T & typeof BasePolymorphicEntity)
@@ -729,7 +728,7 @@ export default abstract class BasePolymorphicEntity<Targets extends object[]> {
         M extends ResultMapOption = 'entity'
     >(
         this: T,
-        options: FindOneQueryOptions<InstanceType<T>>,
+        options?: FindOneQueryOptions<InstanceType<T>>,
         mapTo?: M
     ): Promise<FindOneResult<T, M>> {
         return (this as T & typeof BasePolymorphicEntity)

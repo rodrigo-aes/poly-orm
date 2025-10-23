@@ -3,8 +3,7 @@ import {
     EntityMetadata,
     ColumnMetadata,
     JoinColumnMetadata,
-
-    type ForeignKeyActionListener
+    ColumnSchemaMetadata
 } from "../../../Metadata"
 
 import ForeignKeyReferencesSchema, {
@@ -61,7 +60,7 @@ export default class ColumnSchema {
         this.pattern = pattern
 
         const { references, ...map } = rest
-        this.map = map
+        this.map = { ...this.map, ...map }
 
         if (references) this.map.references = (
             references instanceof ForeignKeyReferencesSchema
@@ -95,6 +94,14 @@ export default class ColumnSchema {
         return this.map.unique
             ? `${this.name}_unique_key`
             : undefined
+    }
+
+
+    // ------------------------------------------------------------------------
+
+    /** @internal */
+    public get polymorphicPrefix(): string {
+        return ColumnSchemaMetadata.getPolymorphicPrefix(this)
     }
 
     // ------------------------------------------------------------------------
@@ -269,11 +276,12 @@ export default class ColumnSchema {
 
     /** @iternal */
     public compare(schema?: ColumnSchema): [ActionType, ActionType] {
-        if (!this._action) this._action = this.action(schema) as ActionType
-
-        if (!this._fkAction) this._fkAction = schema
-            ? this.foreignKeyAction(schema)
-            : 'NONE'
+        this._action = this._action ?? this.action(schema) as ActionType
+        this._fkAction = this._fkAction ?? (
+            schema
+                ? this.foreignKeyAction(schema)
+                : 'NONE'
+        )
 
         return [this._action, this._fkAction]
     }
@@ -326,6 +334,7 @@ export default class ColumnSchema {
         for (const [key, value] of Object.entries(map) as (
             [keyof ColumnSchemaMap, any][])
         ) if (!this.compareValues(value, schema.map[key])) return true
+
 
         return false
     }
@@ -422,7 +431,7 @@ export default class ColumnSchema {
     /** @iternal */
     public static buildFromMetadata<T extends Constructor<ColumnSchema>>(
         this: T,
-        metadata: ColumnMetadata | JoinColumnMetadata
+        metadata: ColumnMetadata | JoinColumnMetadata,
     ): InstanceType<T> {
         const { tableName, name, references, dataType } = metadata
 

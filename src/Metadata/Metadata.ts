@@ -5,13 +5,12 @@ import PolyORMException, { type MetadataErrorCode } from "../Errors"
 
 export default abstract class Metadata {
     // Static Getters =========================================================
-    // Protecteds -------------------------------------------------------------
-    protected static get KEY(): string {
+    // Publics ----------------------------------------------------------------
+    public static get KEY(): string {
         throw new Error
     }
 
-    // ------------------------------------------------------------------------
-
+    // Protecteds -------------------------------------------------------------
     protected static get UNKNOWN_ERROR_CODE(): MetadataErrorCode {
         throw new Error
     }

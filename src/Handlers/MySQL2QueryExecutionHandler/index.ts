@@ -185,6 +185,7 @@ export default class MySQL2QueryExecutionHandler<
 
         await this.callAfterBulkFindHook(result)
 
+
         return result
     }
 
@@ -319,7 +320,7 @@ export default class MySQL2QueryExecutionHandler<
                         this.pagination
                     ) as ExecResult<T, Builder, MapTo>
 
-                    case 'json': return handler.parseRaw() as (
+                    case 'json': return handler.json() as (
                         ExecResult<T, Builder, MapTo>
                     )
                 }

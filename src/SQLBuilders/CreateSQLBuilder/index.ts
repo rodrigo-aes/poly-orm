@@ -136,15 +136,17 @@ export default class CreateSQLBuilder<T extends EntityTarget> {
     // ------------------------------------------------------------------------
 
     private placeholderSetSQL(): string {
-        return `(${'?, '.repeat(this.columnsNames.length)})`
+        return `(${Array(this.columnsNames.length).fill('?').join(', ')})`
     }
 
     // ------------------------------------------------------------------------
 
     private bulkPlaceholderSQL(): string {
-        return `${this.placeholderSetSQL()}, `.repeat(
+        return Array(
             (this.attributes as CreationAttibutesKey<InstanceType<T>>[]).length
         )
+            .fill(this.placeholderSetSQL())
+            .join(', ')
     }
 
     // ------------------------------------------------------------------------

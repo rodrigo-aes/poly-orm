@@ -1,6 +1,8 @@
 import TableSQLBuilder, {
     ColumnSQLBuilder,
     ForeignKeyConstraintSQLBuilder,
+
+    PolymorphicId,
     CurrentTimestamp,
 
     type ColumnSQLBuilderMap
@@ -15,6 +17,7 @@ export {
 
     TriggerSQLBuilder,
 
+    PolymorphicId,
     CurrentTimestamp,
 
     type ColumnSQLBuilderMap
