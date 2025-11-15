@@ -34,11 +34,9 @@ export default class SelectSQLBuilder<T extends Target> {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     public get properties(): string[] {
-        return this._properties = this._properties ?? (
-            this.propertiesSQL().concat(
-                this.countsSQL(),
-                this.merged
-            )
+        return this._properties ??= this.propertiesSQL().concat(
+            this.countsSQL(),
+            this.merged
         )
     }
 

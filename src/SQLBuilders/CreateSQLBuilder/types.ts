@@ -9,10 +9,10 @@ export type CreationAttributesOptions<Entity extends object> = (
     CreationAttributes<Entity>[]
 )
 
-export type CreationAttibutesKey<Entity extends object> = (
+export type CreationAttributesKey<Entity extends object> = (
     keyof CreationAttributes<Entity>
 )
 
 export type AttributesNames<Entity extends object> = Set<
-    CreationAttibutesKey<Entity>
+    CreationAttributesKey<Entity>
 >

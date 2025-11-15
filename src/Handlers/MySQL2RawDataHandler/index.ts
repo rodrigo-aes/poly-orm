@@ -23,7 +23,10 @@ import type {
     Target,
     TargetMetadata,
     Entity,
-    PolymorphicEntityTarget
+    PolymorphicEntityTarget,
+    EntityTarget,
+    StaticEntityTarget,
+    StaticPolymorphicEntityTarget
 } from "../../types"
 
 import type {
@@ -153,7 +156,7 @@ export default class MySQL2RawDataHandler<T extends Target> {
     private mapToEntity(target: Target, data: any, toSource: boolean): Entity {
         switch (true) {
             case target.prototype instanceof BaseEntity: return (
-                new target(data)
+                (target as StaticEntityTarget).build(data)
             )
 
             // ----------------------------------------------------------------
@@ -182,13 +185,8 @@ export default class MySQL2RawDataHandler<T extends Target> {
         toSource: boolean
     ): Entity {
         return toSource
-            ? PolymorphicEntityBuilder.instantiateSourceEntity(
-                MetadataHandler.targetMetadata(target).sources[(
-                    data.entityType
-                )],
-                data
-            )
-            : new target(data)
+            ? (target as StaticPolymorphicEntityTarget).build(data).toSourceEntity()
+            : (target as StaticPolymorphicEntityTarget).build(data)
     }
 
     // ------------------------------------------------------------------------

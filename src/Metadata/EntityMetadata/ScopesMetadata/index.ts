@@ -46,12 +46,21 @@ export default class ScopesMetadata extends MetadataMap<
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public getScope(name: string, ...args: any[]): ScopeMetadata | undefined {
-        const value = this.get(name)
-        if (!value) return
+        return ((value?: ScopeMetadata | ScopeFunction) =>
+            typeof value === 'function'
+                ? new ScopeMetadata(value(...args))
+                : value
+        )(this.get(name))
+    }
 
-        return typeof value === 'object'
-            ? value
-            : new ScopeMetadata(value(...args))
+    // ------------------------------------------------------------------------
+
+    public override getOrThrow(name: string, ...args: any[]): ScopeMetadata {
+        return ((value: ScopeMetadata | ScopeFunction) =>
+            typeof value === 'object'
+                ? value
+                : new ScopeMetadata(value(...args))
+        )(super.getOrThrow(name))
     }
 
     // ------------------------------------------------------------------------

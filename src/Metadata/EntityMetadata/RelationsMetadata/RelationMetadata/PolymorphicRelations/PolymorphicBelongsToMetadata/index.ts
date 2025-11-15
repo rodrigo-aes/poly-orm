@@ -55,12 +55,10 @@ export default class PolymorphicBelongsToMetadata extends RelationMetadata {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     public get relatedTarget(): PolymorphicEntityTarget {
-        return this._relatedTarget = this._relatedTarget ?? (
+        return this._relatedTarget ??= (
             this.relatedMetadata instanceof PolymorphicEntityMetadata
                 ? this.relatedMetadata.target
-                : InternalPolymorphicEntities.get(this.relatedTargetName) as (
-                    PolymorphicEntityTarget
-                )
+                : InternalPolymorphicEntities.get(this.relatedTargetName)!
         )
     }
 
@@ -69,15 +67,13 @@ export default class PolymorphicBelongsToMetadata extends RelationMetadata {
     public get relatedMetadata(): (
         PolymorphicEntityMetadata | RelatedEntitiesMap
     ) {
-        return this._relatedMetadata = (
-            this._relatedMetadata ?? this.getMetadata()
-        )
+        return this._relatedMetadata ??= this.getMetadata()
     }
 
     // ------------------------------------------------------------------------ 
 
     public get relatedTable(): string {
-        return this._relatedTable = this._relatedTable ?? (
+        return this._relatedTable ??= (
             this.relatedMetadata instanceof PolymorphicEntityMetadata
                 ? this.relatedMetadata.tableName
                 : `${this.target.name.toLowerCase()}_${this.name}`
@@ -86,7 +82,7 @@ export default class PolymorphicBelongsToMetadata extends RelationMetadata {
     // ------------------------------------------------------------------------
 
     public get relatedTargetName(): string {
-        return this._relatedTargetName = this._relatedTargetName ?? (
+        return this._relatedTargetName ??= (
             this.relatedMetadata instanceof PolymorphicEntityMetadata
                 ? this.relatedMetadata.target.name
                 : GeneralHelper.toPascalCase(...this.relatedTable.split('_'))

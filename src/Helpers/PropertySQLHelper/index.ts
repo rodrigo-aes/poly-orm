@@ -2,6 +2,9 @@
 import { Literal } from "../../SQLBuilders"
 import { Old, New } from "../../Triggers"
 
+// Types
+import type { Target } from "../.."
+
 // Exceptions
 import PolyORMException from "../../Errors"
 
@@ -17,7 +20,7 @@ export default class PropertySQLHelper {
 
     // ------------------------------------------------------------------------
 
-    public static valueSQL(value: any): string {
+    public static valueSQL(value: any, target?: Target): string {
         switch (typeof value) {
             case "string": return `'${value}'`
 
@@ -27,7 +30,7 @@ export default class PropertySQLHelper {
                 case value === null: return 'NULL'
                 case value instanceof Date: return `'${value.toISOString()}'`
                 case this.hasSymbols(value): return this.handleSymbolValue(
-                    value
+                    value, target
                 )
 
                 default: return `'${JSON.stringify(value)}'`
@@ -65,8 +68,11 @@ export default class PropertySQLHelper {
 
     // ------------------------------------------------------------------------
 
-    private static hasSymbols(value: any): boolean {
-        return Object.getOwnPropertySymbols(value).length > 0
+    private static hasSymbols(value: any, target?: Target): boolean {
+        return (
+            typeof value === 'symbol' ||
+            Object.getOwnPropertySymbols(value).length > 0
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -77,8 +83,10 @@ export default class PropertySQLHelper {
 
     // ------------------------------------------------------------------------
 
-    private static handleSymbolValue(value: any): any {
-        const symbols = Object.getOwnPropertySymbols(value)
+    private static handleSymbolValue(value: any, target?: Target): any {
+        const symbols = typeof value === 'symbol'
+            ? [value]
+            : Object.getOwnPropertySymbols(value)
 
         switch (true) {
             case this.symbolsAs(symbols, [Old, New]): return (

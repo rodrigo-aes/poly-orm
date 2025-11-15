@@ -1,8 +1,9 @@
 import MetadataArray from "../../MetadataArray"
+import PolymorphicEntityMetadata from ".."
 import EntityMetadata, { RelationMetadata } from "../../EntityMetadata"
 
 // Types
-import type { PolymorphicEntityTarget, Constructor } from "../../../types"
+import type { PolymorphicEntityTarget } from "../../../types"
 import type {
     IncludedCommonRelations,
     IncludedCommonRelationOptions,
@@ -30,7 +31,7 @@ export default class PolymorphicRelationsMetadata extends MetadataArray<
 
     constructor(
         public target: PolymorphicEntityTarget,
-        private sources: EntityMetadata[]
+        private _sources?: EntityMetadata[]
     ) {
         super(target)
         this.fillIncluded()
@@ -67,6 +68,20 @@ export default class PolymorphicRelationsMetadata extends MetadataArray<
         return 'polymorphic-relations-metadata'
     }
 
+    // Privates ---------------------------------------------------------------
+    private get targetMetadata(): PolymorphicEntityMetadata {
+        return PolymorphicEntityMetadata.findOrBuild(this.target)
+    }
+
+    // ------------------------------------------------------------------------
+
+    private get sources(): EntityMetadata[] {
+        return this._sources ??= this.targetMetadata.sources.map(
+            source => EntityMetadata.findOrThrow(source)
+        )
+
+    }
+
     // Instance Methods =======================================================
     // Privates ---------------------------------------------------------------
     private fillIncluded(): void {
@@ -81,14 +96,13 @@ export default class PolymorphicRelationsMetadata extends MetadataArray<
     private handleIncludedCommons(): RelationMetadata[] {
         return Object
             .entries(this.includedCommons)
-            .map(([name, { target, relation }]) => {
-                const source = this.sources.find(s => s.target === target) ?? (
-                    () => { throw new Error }
-                )()
+            .map(([name, options]) => this.sources
+                .find(source => source.target === options.target)
+                ?.relations.findOrThrow(name)
+                .reply(this.target, name)
 
-                const rel = source.relations.findOrThrow(relation)
-                return rel.reply(this.target, name)
-            })
+                ?? (() => { throw new Error })()
+            )
     }
 
     // ------------------------------------------------------------------------
@@ -97,31 +111,25 @@ export default class PolymorphicRelationsMetadata extends MetadataArray<
         return Object
             .entries(this.includedPolymorphics)
             .flatMap(([name, options]) => {
-                if (options.length) return []
-
-                const relations = this.getOptionsRelations(options)
-                this.verifyPolymorphicCompatibility(relations)
-
-                return relations[0].reply(this.target, name)
+                return this.verifyPolymorphicCompatibility(
+                    options
+                        ? options.map(({ target, relation }) => EntityMetadata
+                            .findOrThrow(target)
+                            .relations
+                            .findOrThrow(relation)
+                        )
+                        : this.sources.map(({ relations }) =>
+                            relations.findOrThrow(name)
+                        )
+                )[0]?.reply(this.target, name)
+                    ?? []
             })
     }
 
     // ------------------------------------------------------------------------
 
-    private getOptionsRelations(options: IncludePolymorphicRelationOptions): (
-        RelationMetadata[]
-    ) {
-        return options.flatMap(({ target, relation }) =>
-            this.sources.find(s => s.target === target)?.relations.findOrThrow(
-                relation
-            ) ?? (() => { throw new Error })()
-        )
-    }
-
-    // ------------------------------------------------------------------------
-
     private verifyPolymorphicCompatibility(relations: RelationMetadata[]): (
-        void
+        RelationMetadata[]
     ) {
         const [{ type, relatedTarget, name }] = relations
 
@@ -142,6 +150,8 @@ export default class PolymorphicRelationsMetadata extends MetadataArray<
                 this.target.name
             )
         )
+
+        return relations
     }
 
     // Static Methods =========================================================
@@ -167,7 +177,7 @@ export default class PolymorphicRelationsMetadata extends MetadataArray<
     public static includeCommon(
         target: PolymorphicEntityTarget,
         name: string,
-        options: IncludedCommonRelationOptions
+        options?: IncludedCommonRelationOptions
     ): void {
         Reflect.defineMetadata(
             this.UNCLUDED_COMMON_KEY,
@@ -181,7 +191,7 @@ export default class PolymorphicRelationsMetadata extends MetadataArray<
     public static includePolymorphic(
         target: PolymorphicEntityTarget,
         name: string,
-        options: IncludePolymorphicRelationOptions
+        options?: IncludePolymorphicRelationOptions
     ): void {
         Reflect.defineMetadata(
             this.UNCLUDED_POLYMORPHIC_KEY,

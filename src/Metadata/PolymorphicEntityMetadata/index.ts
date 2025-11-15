@@ -101,7 +101,7 @@ export default class PolymorphicEntityMetadata extends Metadata {
     // ------------------------------------------------------------------------
 
     public get entities(): UnionEntitiesMap {
-        return this._entities = this._entities ?? Object.fromEntries(
+        return this._entities ??= Object.fromEntries(
             this.sources.map(target => [target.name, target])
         )
     }

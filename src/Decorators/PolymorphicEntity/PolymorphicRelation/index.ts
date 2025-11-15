@@ -8,7 +8,7 @@ import type BasePolymorphicEntity from "../../../BasePolymorphicEntity"
 import type { PolymorphicEntityTarget } from "../../../types"
 
 export default function PolymorphicRelation(
-    options: IncludePolymorphicRelationOptions
+    options?: IncludePolymorphicRelationOptions
 ) {
     return function <Entity extends BasePolymorphicEntity<any>>(
         target: Entity,

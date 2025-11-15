@@ -18,9 +18,7 @@ import {
 import { MetadataHandler, TempMetadata } from "../Metadata"
 
 // Query Builder
-import {
-    EntityQueryBuilder,
-} from "../QueryBuilder"
+import { EntityQueryBuilder } from "../QueryBuilder"
 
 // Components
 import {
@@ -60,7 +58,9 @@ import type {
     PolymorphicEntityTarget,
     LocalOrInternalPolymorphicEntityTarget,
     Constructor,
-    EntityProperties
+    EntityProperties,
+    EntityObject,
+    EntityJSON,
 } from "../types"
 
 import type {
@@ -88,19 +88,12 @@ export default abstract class BaseEntity {
     public static readonly INHERIT_HOOKS: boolean = true
     public static readonly INHERIT_ONLY_HOOKS?: HookType[]
 
-    constructor(properties?: any) {
-        if (properties) Object.assign(this, properties)
-        this.getTrueMetadata().computedProperties?.assign(this)
-
-        ColumnsSnapshots.set(this, this.toJSON())
-    }
-
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     /**
      * An array of properties keys that must be hidden in JSON
      */
-    protected get hidden(): string[] {
+    public get hidden(): string[] {
         return []
     }
 
@@ -109,7 +102,7 @@ export default abstract class BaseEntity {
     /**
      * An array of properties keys that must be included in JSON
      */
-    protected get include(): string[] {
+    public get include(): string[] {
         return []
     }
 
@@ -147,34 +140,41 @@ export default abstract class BaseEntity {
     // ------------------------------------------------------------------------
 
     /**
-     * Make as JSON object of entity properties
-     * @returns - A object with included properties and without hidden
-     * properties
+     * Make a JSON object of entity properties and relations
+     * @returns - Entity object without hidden properties and relations
      */
-    public toJSON<T extends BaseEntity>(this: T): EntityProperties<T> {
-        return this.hide(Object.fromEntries([
-            ...this.getTrueMetadata().columns.map(({ name }) => [
-                name,
-                this[name as keyof T]
-            ]),
-            ...this.getIncludedProperties()
-        ]))
+    public toJSON<T extends BaseEntity>(this: T): EntityJSON<T, T['hidden']> {
+        return Object.fromEntries(this.entries(true)) as (
+            EntityJSON<T, T['hidden']>
+        )
     }
 
     // ------------------------------------------------------------------------
 
     /**
-     * Hidde entity hidden properties
-     * @param json - Optional data to make hidden
-     * @returns A object without hidden properties
+     * Make a JSON object of entity properties and relations
+     * @returns - Entity complete object properties and relations
      */
-    public hide<T extends BaseEntity>(this: T, json?: EntityProperties<T>): (
-        EntityProperties<T>
-    ) {
-        if (!json) json = this.toJSON()
-        for (const key of this.hidden) delete json[key as keyof typeof json]
+    public toObject<T extends BaseEntity>(this: T): EntityObject<T> {
+        return Object.fromEntries(this.entries()) as EntityObject<T>
+    }
 
-        return json
+    // ------------------------------------------------------------------------
+
+    /**
+     * Get entity properties and relations entries
+     * @param {boolean} hide - Exclude hidden properties if `true`
+     * @returns {[keyof T, any][]} - Entity entries tuple array
+     */
+    public entries<T extends BaseEntity>(this: T, hide: boolean = false): (
+        [keyof T, any][]
+    ) {
+        return this
+            .columnsEntries(hide)
+            .concat(
+                this.includedPropsEntries(),
+                this.relationsEntries(hide)
+            )
     }
 
     // ------------------------------------------------------------------------
@@ -458,46 +458,66 @@ export default abstract class BaseEntity {
     // Privates ---------------------------------------------------------------
     /** @internal */
     private getTrueMetadata(): EntityMetadata {
-        return MetadataHandler.targetMetadata(
-            this.constructor as EntityTarget
-        ) as EntityMetadata
+        return MetadataHandler.targetMetadata(this.constructor as EntityTarget)
     }
 
     // ------------------------------------------------------------------------
 
     /** @internal */
-    private getRelationMetadata(name: string): (
-        RelationMetadataType
-    ) {
-        const meta = this.getTrueMetadata().relations?.find(
-            rel => rel.name === name
-        )
-
-        if (meta) return meta
-
-        throw PolyORMException.Metadata.instantiate(
-            'UNKNOWN_RELATION', name, this.constructor.name
-        )
+    private getRelationMetadata(name: string): RelationMetadataType {
+        return this.getTrueMetadata().relations.findOrThrow(name)
     }
 
     // ------------------------------------------------------------------------
 
     /** @internal */
-    private getIncludedProperties<T extends BaseEntity>(this: T): (
-        [keyof T, any][]
-    ) {
-        return (this.include as (keyof T)[]).map(key => {
-            if (['symbol', 'function'].includes(typeof this[key])) (
-                PolyORMException.Metadata.throw(
-                    'INVALID_INCLUDED_VALUE',
-                    (this[key] as Symbol | Function).toString(),
-                    typeof this[key],
-                    this.constructor.name
-                )
+    private columnsEntries<T extends BaseEntity>(
+        this: T,
+        hide: boolean = false
+    ): [keyof T, any][] {
+        return hide
+            ? this.getTrueMetadata().columns.flatMap(({ name }) =>
+                this.hidden.includes(name)
+                    ? []
+                    : [[name as keyof T, this[name as keyof T]]]
             )
 
-            return [key, this[key as keyof T]]
-        })
+            : this.getTrueMetadata().columns.map(({ name }) =>
+                [name as keyof T, this[name as keyof T]]
+            )
+    }
+
+    // ------------------------------------------------------------------------
+
+    /** @internal */
+    private relationsEntries<T extends BaseEntity>(
+        this: T,
+        hide: boolean = false
+    ): [keyof T, any][] {
+        return hide
+            ? this.getTrueMetadata().relations.flatMap(({ name }) =>
+                this.hidden.includes(name)
+                    ? []
+                    : [[
+                        name as keyof T,
+                        (this[name as keyof T] as any)?.toJSON()
+                    ]]
+            )
+
+            : this.getTrueMetadata().relations.map(({ name }) =>
+                [name as keyof T, (this[name as keyof T] as any)?.toJSON()]
+            )
+    }
+
+    // ------------------------------------------------------------------------
+
+    /** @internal */
+    private includedPropsEntries<T extends BaseEntity>(this: T): (
+        [keyof T, any][]
+    ) {
+        return (this.include as (keyof T)[]).map(key =>
+            [key, this.verifyIncludedProp(this[key as keyof T])]
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -513,7 +533,19 @@ export default abstract class BaseEntity {
             metadata.name,
             shouldBe.name.replace('Metadata', '')
         )
+    }
 
+    // ------------------------------------------------------------------------
+
+    private verifyIncludedProp(prop: any): any {
+        return ['symbol', 'function'].includes(typeof prop)
+            ? PolyORMException.Metadata.throw(
+                'INVALID_INCLUDED_VALUE',
+                (prop as Symbol | Function).toString(),
+                typeof prop,
+                this.constructor.name
+            )
+            : prop
     }
 
     // Static Methods =========================================================
@@ -522,7 +554,9 @@ export default abstract class BaseEntity {
      * Get entity metadata
      */
     public static getMetadata<T extends EntityTarget>(this: T) {
-        return (this as T & typeof BaseEntity).getMetadataInstance().toJSON<T>()
+        return (this as T & typeof BaseEntity)
+            .getTrueMetadata()
+            .toJSON<T>()
     }
 
     // ------------------------------------------------------------------------
@@ -534,7 +568,7 @@ export default abstract class BaseEntity {
         Target extends EntityTarget = any
     >(this: Target): T {
         return (this as Target & typeof BaseEntity)
-            .getMetadataInstance()
+            .getTrueMetadata()
             .getRepository() as T
     }
 
@@ -565,7 +599,7 @@ export default abstract class BaseEntity {
 
         TempMetadata.reply(scoped, this).setScope(
             scoped,
-            (this as T & typeof BaseEntity).getMetadataInstance().scopes
+            (this as T & typeof BaseEntity).getTrueMetadata().scopes
                 ?.getScope(name, ...args)! ?? PolyORMException.Metadata.throw(
                     "UNKNOWN_SCOPE", name, this.name
                 )
@@ -591,7 +625,7 @@ export default abstract class BaseEntity {
             scoped,
             typeof collection === 'object'
                 ? collection
-                : (this as T & typeof BaseEntity).getMetadataInstance()
+                : (this as T & typeof BaseEntity).getTrueMetadata()
                     .collections?.findOrThrow(collection) ?? (
                     PolyORMException.Metadata.throw(
                         'UNKNOWN_COLLECTION', collection, this.name
@@ -613,7 +647,11 @@ export default abstract class BaseEntity {
         this: T,
         attributes: CreationAttributes<InstanceType<T>>
     ): InstanceType<T> {
-        return new this(attributes) as InstanceType<T>
+        const instance = new this().fill(attributes) as InstanceType<T>
+        instance.getTrueMetadata().computedProperties?.assign(instance)
+        ColumnsSnapshots.set(instance, instance.toObject())
+
+        return instance
     }
 
     // ------------------------------------------------------------------------
@@ -820,7 +858,7 @@ export default abstract class BaseEntity {
 
     // Privates ---------------------------------------------------------------
     /** @internal */
-    public static getMetadataInstance<T extends EntityTarget>(this: T): (
+    public static getTrueMetadata<T extends EntityTarget>(this: T): (
         EntityMetadata
     ) {
         return MetadataHandler.targetMetadata(this) as EntityMetadata

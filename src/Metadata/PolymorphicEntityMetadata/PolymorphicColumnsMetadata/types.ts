@@ -7,7 +7,7 @@ export type IncludeColumnOptions = {
 }[]
 
 export type IncludedColumns = {
-    [Key: string]: IncludeColumnOptions
+    [Key: string]: IncludeColumnOptions | undefined
 }
 
 export type PolymorphicColumnsMetadataJSON = PolymorphicColumnMetadataJSON[]

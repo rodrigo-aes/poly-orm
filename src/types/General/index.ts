@@ -2,6 +2,8 @@ import type {
     Entity,
     Target,
     StaticTarget,
+    EntityObject,
+    EntityJSON,
 
     EntityTarget,
     StaticEntityTarget,
@@ -31,6 +33,8 @@ export type {
     Entity,
     Target,
     StaticTarget,
+    EntityObject,
+    EntityJSON,
 
     EntityTarget,
     StaticEntityTarget,

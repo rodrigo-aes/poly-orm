@@ -5,7 +5,8 @@ import BasePolymorphicEntity, {
 import { MetadataHandler } from "../../Metadata"
 
 import type { PolymorphicEntityMetadata } from "../../Metadata"
-import type { PolymorphicEntityTarget, EntityTarget } from "../../types"
+import type { PolymorphicEntityTarget, EntityTarget, StaticEntityTarget } from "../../types"
+import type { CreationAttributes } from "../../SQLBuilders"
 
 export default class PolymorphicEntityBuilder {
     public static readonly entityNameRegExp = /^[A-Z][A-Za-z0-9]*$/
@@ -24,16 +25,15 @@ export default class PolymorphicEntityBuilder {
             PolymorphicEntityTarget
         ))
 
-        return new source({
+        return (source as StaticEntityTarget<Source>).build({
             [pk]: target.primaryKey,
 
             ...Object.fromEntries(meta.columns.sourceColumns(source).map(
                 ([sourceCol, targetCol]) => [sourceCol, target[targetCol as (
                     keyof T
                 )]]
-            )),
-
-        }) as InstanceType<Source>
+            ))
+        } as CreationAttributes<InstanceType<Source>>)
     }
 
     // ------------------------------------------------------------------------
@@ -45,14 +45,10 @@ export default class PolymorphicEntityBuilder {
 
         const entity = new Function(
             'BasePolymorphicEntity',
-            `
-                return class ${metadata.name} 
-                extends BasePolymorphicEntity {
-                    constructor () {
-                        super()
-                    }
-                }
-            `
+            `return class ${metadata.name} extends BasePolymorphicEntity {
+                static __ROLE = 'INTERNAL'
+                constructor () { super() }
+            }`
         )(BasePolymorphicEntity)
 
         InternalPolymorphicEntities.set(entity.name, entity)

@@ -15,5 +15,5 @@ export type IncludePolymorphicRelationOptions = {
 }[]
 
 export type IncludedPolymorphicRelations = {
-    [Key: string]: IncludePolymorphicRelationOptions
+    [Key: string]: IncludePolymorphicRelationOptions | undefined
 }

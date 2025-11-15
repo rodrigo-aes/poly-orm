@@ -30,7 +30,10 @@ export default class PolymorphicColumnMetadata {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public targetSource(target: EntityTarget): ColumnMetadata | undefined {
-        return this.sources?.find(source => source.target === target)
+        return this.sources?.find(source =>
+            target.prototype instanceof source.target ||
+            target === source.target
+        )
     }
 
     // ------------------------------------------------------------------------

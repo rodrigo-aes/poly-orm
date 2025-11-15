@@ -37,7 +37,7 @@ export default class JoinSQLBuilder<T extends Target> {
         public relation: RelationMetadataType,
         options?: Omit<RelationOptions<any>, 'relations'>,
         public alias: string = target.name.toLowerCase(),
-        public relatedAlias: string = `${this.alias}_${this.relation.name}`,
+        public relatedAlias: string = `${alias}_${relation.name}`,
     ) {
         Object.assign(this, options)
 
@@ -55,13 +55,12 @@ export default class JoinSQLBuilder<T extends Target> {
     // ------------------------------------------------------------------------
 
     public get selectSQLBuilder(): SelectSQLBuilder<any> {
-        return this._selectSQLBuilder = this._selectSQLBuilder ?? (
-            new SelectSQLBuilder(
-                this.relatedTarget,
-                this.select,
-                this.relatedAlias
-            )
+        return this._selectSQLBuilder ??= new SelectSQLBuilder(
+            this.relatedTarget,
+            this.select,
+            this.relatedAlias
         )
+
     }
 
     // ------------------------------------------------------------------------

@@ -187,7 +187,6 @@ export default class ColumnMetadata {
                 primary: true,
                 unique: true,
                 nullable: false,
-                defaultValue: PolymorphicId,
                 pattern: 'polymorphic-id',
             }
         )
@@ -223,7 +222,7 @@ export default class ColumnMetadata {
             isForeignKey: true,
             pattern: 'polymorphic-foreign-id'
         })
-            .defineForeignKey(config)
+            .defineForeignKey({ constrained: false, ...config })
     }
 
     // ------------------------------------------------------------------------

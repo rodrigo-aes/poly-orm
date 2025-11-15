@@ -1,7 +1,13 @@
+// Dependencies
+import { v4 as UUIDV4 } from "uuid"
+
 import { EntityMetadata } from "../../Metadata"
 
 // Handlers
 import { MetadataHandler } from "../../Metadata"
+
+// Symbols
+import { Literal } from "../Symbols"
 
 // Helpers
 import { SQLStringHelper, PropertySQLHelper } from "../../Helpers"
@@ -11,7 +17,7 @@ import type { EntityTarget } from "../../types"
 import type {
     CreationAttributesOptions,
     CreationAttributes,
-    CreationAttibutesKey,
+    CreationAttributesKey,
     AttributesNames,
 } from "./types"
 
@@ -19,14 +25,19 @@ export default class CreateSQLBuilder<T extends EntityTarget> {
     protected metadata: EntityMetadata
 
     private _bulk: boolean
-    private _propertiesNames?: AttributesNames<InstanceType<T>>
+    private _names?: AttributesNames<InstanceType<T>>
     private _values?: any[]
+
+    private _patternNames?: CreationAttributesKey<InstanceType<T>>[]
+    private _patternValues: Partial<CreationAttributes<InstanceType<T>>> = {}
+
+    private _mapped?: CreationAttributesOptions<InstanceType<T>>
 
     constructor(
         public target: T,
         public attributes?: CreationAttributesOptions<InstanceType<T>>,
         public alias: string = target.name.toLowerCase(),
-        public absolute: boolean = false
+        public absolute: boolean = true
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
         this._bulk = Array.isArray(this.attributes)
@@ -34,14 +45,14 @@ export default class CreateSQLBuilder<T extends EntityTarget> {
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get columnsNames(): CreationAttibutesKey<InstanceType<T>>[] {
-        return Array.from(this._propertiesNames ?? this.getFields())
+    public get columnsNames(): CreationAttributesKey<InstanceType<T>>[] {
+        return Array.from(this._names ??= this.handleNames())
     }
 
     // ------------------------------------------------------------------------
 
     public get columnsValues(): any[] {
-        return this._values ?? this.getValues()
+        return this._values ??= this.handleValues()
     }
 
     // Setters ================================================================
@@ -61,8 +72,8 @@ export default class CreateSQLBuilder<T extends EntityTarget> {
 
     // ------------------------------------------------------------------------
 
-    public fields(...names: CreationAttibutesKey<InstanceType<T>>[]): this {
-        this._propertiesNames = new Set(names)
+    public fields(...names: CreationAttributesKey<InstanceType<T>>[]): this {
+        this._names = new Set(names)
         return this
     }
 
@@ -79,7 +90,7 @@ export default class CreateSQLBuilder<T extends EntityTarget> {
         this
     ) {
         this.attributes = attributes
-        this._propertiesNames = undefined
+        this._names = undefined
         this._values = undefined
 
         return this
@@ -88,11 +99,13 @@ export default class CreateSQLBuilder<T extends EntityTarget> {
     // ------------------------------------------------------------------------
 
     public mapAttributes(): CreationAttributesOptions<InstanceType<T>> {
-        return this.bulk
-            ? this._values?.map(values => this.mapAttributeOption(values)) ?? (
-                []
-            )
-            : this.mapAttributeOption(this._values as any[])
+        return this._mapped ??= (
+            this.bulk
+                ? this.columnsValues
+                    ?.map(values => this.mapAttributeOption(values)) ?? []
+
+                : this.mapAttributeOption(this.columnsValues as any[])
+        )
     }
 
     // Privates ---------------------------------------------------------------
@@ -103,22 +116,6 @@ export default class CreateSQLBuilder<T extends EntityTarget> {
     // ------------------------------------------------------------------------
 
     private valuesSQL(): string {
-        return this.absolute
-            ? this.handleValuesSQL()
-            : this.placeholdersSQL()
-    }
-
-    // ------------------------------------------------------------------------
-
-    private placeholdersSQL(): string {
-        return this._bulk
-            ? this.bulkPlaceholderSQL()
-            : this.placeholderSetSQL()
-    }
-
-    // ------------------------------------------------------------------------
-
-    private handleValuesSQL(): string {
         return Array.isArray(this.columnsValues[0])
             ? this.columnsValues
                 .map(values => this.valueSetSQL(values))
@@ -135,57 +132,68 @@ export default class CreateSQLBuilder<T extends EntityTarget> {
 
     // ------------------------------------------------------------------------
 
-    private placeholderSetSQL(): string {
-        return `(${Array(this.columnsNames.length).fill('?').join(', ')})`
-    }
-
-    // ------------------------------------------------------------------------
-
-    private bulkPlaceholderSQL(): string {
-        return Array(
-            (this.attributes as CreationAttibutesKey<InstanceType<T>>[]).length
-        )
-            .fill(this.placeholderSetSQL())
-            .join(', ')
-    }
-
-    // ------------------------------------------------------------------------
-
-    private getFields(): AttributesNames<InstanceType<T>> {
-        return this._propertiesNames = new Set(
-            this._bulk
-                ? this.bulkPropertyNames()
-                : this.propertyNames()
+    private handleNames(): AttributesNames<InstanceType<T>> {
+        return new Set(this._bulk
+            ? this.bulkPropertyNames()
+            : this.propertyNames()
         ) as AttributesNames<InstanceType<T>>
     }
 
     // ------------------------------------------------------------------------
 
-    private propertyNames(attributes?: CreationAttributes<InstanceType<T>>): (
-        CreationAttibutesKey<InstanceType<T>>[]
-    ) {
-        return Object
-            .keys(attributes ?? this.attributes!)
-            .filter(key => this.metadata.columns.search(key)) as (
-                CreationAttibutesKey<InstanceType<T>>[]
-            )
-    }
-
-    // ------------------------------------------------------------------------
-
-    private bulkPropertyNames(): CreationAttibutesKey<InstanceType<T>>[] {
+    private bulkPropertyNames(): CreationAttributesKey<InstanceType<T>>[] {
         return (this.attributes as CreationAttributes<InstanceType<T>>[])
             .flatMap(att => this.propertyNames(att)) as (
-                CreationAttibutesKey<InstanceType<T>>[]
+                CreationAttributesKey<InstanceType<T>>[]
             )
     }
 
     // ------------------------------------------------------------------------
 
-    private getValues(): any[] | any[][] {
+    private propertyNames(attributes?: CreationAttributes<InstanceType<T>>): (
+        CreationAttributesKey<InstanceType<T>>[]
+    ) {
+        return this.patternPropsNames().concat(Object
+            .keys(attributes ?? this.attributes!)
+            .filter(key => this.metadata.columns.search(key)) as (
+                CreationAttributesKey<InstanceType<T>>[]
+            )
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
+    private patternPropsNames(): CreationAttributesKey<InstanceType<T>>[] {
+        return this._patternNames ??= this.PKPatternName()
+    }
+
+    // ------------------------------------------------------------------------
+
+    private PKPatternName(): CreationAttributesKey<InstanceType<T>>[] {
+        switch (this.metadata.columns.primary.pattern) {
+            case 'polymorphic-id': return [
+                this.metadata.columns.primary.name as (
+                    CreationAttributesKey<InstanceType<T>>
+                )
+            ]
+
+            default: return []
+        }
+    }
+
+    // ------------------------------------------------------------------------
+
+    private handleValues(): any[] | any[][] {
         return this._bulk
             ? this.bulkCreateValues()
             : this.createValues()
+    }
+
+    // ------------------------------------------------------------------------
+
+    private bulkCreateValues(): any[][] {
+        return (this.attributes as CreationAttributes<InstanceType<T>>[])
+            .map(att => this.createValues(att))
     }
 
     // ------------------------------------------------------------------------
@@ -197,17 +205,23 @@ export default class CreateSQLBuilder<T extends EntityTarget> {
     ): any[] {
         return this.columnsNames.map(column =>
             attributes[column]
+            ?? this.patternCreateValue(column)
             ?? this.metadata.columns.search(column as string)?.defaultValue
             ?? null
         )
     }
 
+
     // ------------------------------------------------------------------------
 
-    private bulkCreateValues(): any[][] {
-        return (this.attributes as CreationAttributes<InstanceType<T>>[]).map(
-            att => this.createValues(att)
-        )
+    private patternCreateValue(
+        column: CreationAttributesKey<InstanceType<T>>
+    ): any {
+        switch (this.metadata.columns.findOrThrow(column).pattern) {
+            case 'polymorphic-id': return `${this.target.name}_${UUIDV4()}`
+
+            default: return undefined
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -224,5 +238,5 @@ export default class CreateSQLBuilder<T extends EntityTarget> {
 export {
     type CreationAttributesOptions,
     type CreationAttributes,
-    type CreationAttibutesKey
+    type CreationAttributesKey as CreationAttibutesKey
 }

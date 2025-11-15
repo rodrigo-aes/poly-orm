@@ -6,7 +6,11 @@ import PolymorphicColumnMetadata, {
 } from './PolymorphicColumnMetadata'
 
 // Types
-import type { PolymorphicEntityTarget, EntityTarget } from '../../../types'
+import type {
+    PolymorphicEntityTarget,
+    StaticPolymorphicEntityTarget,
+    EntityTarget,
+} from '../../../types'
 import type {
     PolymorphicColumnsMetadataJSON,
     IncludedColumns,
@@ -25,6 +29,7 @@ export default class PolymorphicColumnsMetadata extends MetadataArray<
 
     private _primary?: PolymorphicColumnMetadata
     private _foreignKeys?: PolymorphicColumnMetadata[]
+    private _sourcesColumns: { [K: string]: [string, string][] } = {}
 
     constructor(
         public target: PolymorphicEntityTarget,
@@ -40,8 +45,7 @@ export default class PolymorphicColumnsMetadata extends MetadataArray<
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     public get primary(): PolymorphicColumnMetadata {
-        return this._primary = this._primary
-            ?? this.find(({ primary }) => primary)!
+        return this._primary ??= this.find(({ primary }) => primary)!
             ?? PolyORMException.Metadata.throw(
                 'MISSING_PRIMARY_KEY', this.target.name
             )
@@ -50,7 +54,7 @@ export default class PolymorphicColumnsMetadata extends MetadataArray<
     // ------------------------------------------------------------------------
 
     public get foreignKeys(): PolymorphicColumnMetadata[] {
-        return this._foreignKeys = this._foreignKeys ?? this.filter(
+        return this._foreignKeys ??= this.filter(
             ({ isForeignKey }) => isForeignKey
         )
     }
@@ -74,10 +78,8 @@ export default class PolymorphicColumnsMetadata extends MetadataArray<
     // ------------------------------------------------------------------------
 
     private get sources(): EntityMetadata[] {
-        return this._sources = this._sources ?? (
-            this.targetMetadata.sources.map(
-                source => EntityMetadata.findOrThrow(source)
-            )
+        return this._sources ??= this.targetMetadata.sources.map(
+            source => EntityMetadata.findOrThrow(source)
         )
     }
 
@@ -96,13 +98,39 @@ export default class PolymorphicColumnsMetadata extends MetadataArray<
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public sourceColumns(source: EntityTarget): [string, string][] {
-        return Object.entries(this.included).flatMap(([name, options]) => {
-            const option = options.find(({ target }) => source === target)
-            return option ? [[option.column, name]] : []
-        })
+        switch ((this.target as StaticPolymorphicEntityTarget).__ROLE) {
+            case 'INTERNAL': return this.internalSourceColumns(source)
+            case 'EXTERNAL': return this.externalSourceColumns(source)
+        }
     }
 
     // Privates ---------------------------------------------------------------
+    private externalSourceColumns(source: EntityTarget): [string, string][] {
+        return this._sourcesColumns[source.name] ??= (
+            Object.entries(this.included).flatMap(([name, options]) => {
+                const option = options?.find(({ target }) => source === target)
+                return option ? [[option.column, name]] : []
+            })
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
+    private internalSourceColumns(source: EntityTarget): [string, string][] {
+        return this._sourcesColumns[source.name] ??= this.flatMap(
+            ({ name, sources }) => {
+                const sourceCol = sources?.find(col => name === col.name && (
+                    source.prototype instanceof col.target ||
+                    source === col.target
+                ))
+
+                return sourceCol ? [[sourceCol.name, name]] : []
+            }
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
     private mergePrimaryKeys(): void {
         this.push(new PolymorphicColumnMetadata(
             this.target,
@@ -120,17 +148,51 @@ export default class PolymorphicColumnsMetadata extends MetadataArray<
     // ------------------------------------------------------------------------
 
     private mergeIncluded(): void {
-        this.push(...Object.entries(this.included).map(
+        this.push(...(() => {
+            switch ((this.target as StaticPolymorphicEntityTarget).__ROLE) {
+                case 'INTERNAL': return this.internalIncluded()
+                case 'EXTERNAL': return this.externalIncluded()
+            }
+        })())
+    }
+
+    // ------------------------------------------------------------------------
+
+    private externalIncluded(): PolymorphicColumnMetadata[] {
+        return Object.entries(this.included).map(
             ([name, options]) => new PolymorphicColumnMetadata(
                 this.target,
                 name,
-                options.map(({ target, column }) => (
-                    EntityMetadata.findOrThrow(target).columns.findOrThrow(
-                        column
-                    )
-                ))
+                (options ?? this.sources).map(source =>
+                    source instanceof EntityMetadata
+                        ? source.columns.findOrThrow(name)
+                        : EntityMetadata
+                            .findOrThrow(source.target)
+                            .columns
+                            .findOrThrow(source.column)
+                )
             )
-        ))
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
+    private internalIncluded(): PolymorphicColumnMetadata[] {
+        const included = new Set<string>()
+        const columns = this.sources.flatMap(({ columns }) => columns)
+        return columns.flatMap(column => included.has(column.name)
+            ? []
+            : (() => {
+                included.add(column.name)
+                return new PolymorphicColumnMetadata(
+                    this.target,
+                    column.name,
+                    [column].concat(columns.filter(({ name, target }) =>
+                        name === column.name && target !== column.target
+                    ))
+                )
+            })()
+        )
     }
 
     // Static Methods =========================================================
@@ -144,7 +206,7 @@ export default class PolymorphicColumnsMetadata extends MetadataArray<
     public static include(
         target: PolymorphicEntityTarget,
         name: string,
-        options: IncludeColumnOptions
+        options?: IncludeColumnOptions
     ): void {
         Reflect.defineMetadata(
             this.UNCLUDED_KEY,

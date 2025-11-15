@@ -45,7 +45,7 @@ export default class FindOneSQLBuilder<T extends Target> {
 
         this.buildMainUnion()
         this.select = this.buildSelect()
-        this.joins = this.buildJoins()
+        this.joins = this.buildJoins(this.options.relations)
         this.where = this.buildWhere()
         this.group = this.buildGroup()
     }
@@ -136,7 +136,7 @@ export default class FindOneSQLBuilder<T extends Target> {
     // ------------------------------------------------------------------------
 
     private buildJoins(
-        relations: RelationsOptions<any> | undefined = this.options.relations,
+        relations: RelationsOptions<any> | undefined,
         alias: string = this.alias
     ): JoinSQLBuilder<any>[] {
         return relations

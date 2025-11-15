@@ -47,7 +47,7 @@ export default abstract class MetadataMap<
 
     // ------------------------------------------------------------------------
 
-    public getOrThrow(key: K): T {
+    public getOrThrow(key: K, ..._: any[]): T {
         return this.get(key)! ?? this.throwUnknownError(key)
     }
 

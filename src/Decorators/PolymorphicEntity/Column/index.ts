@@ -7,7 +7,7 @@ import {
 import type BasePolymorphicEntity from "../../../BasePolymorphicEntity"
 import type { PolymorphicEntityTarget } from "../../../types"
 
-export default function Column(options: IncludeColumnOptions) {
+export default function Column(options?: IncludeColumnOptions) {
     return function <Entity extends BasePolymorphicEntity<any>>(
         target: Entity,
         name: string

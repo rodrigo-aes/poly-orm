@@ -226,11 +226,7 @@ export default class MySQL2QueryExecutionHandler<
         this.callBeforeCreateHook()
 
         const result = this.buildCreatedEntities(
-            await this.connection.query(
-                this.sqlBuilder.SQL(),
-                (this.sqlBuilder as CreateSQLBuilder<Extract<T, EntityTarget>>)
-                    .columnsValues
-            ) as any
+            await this.connection.query(this.sqlBuilder.SQL()) as any
         ) as CreateResult<Extract<T, EntityTarget>>
 
         await this.callAfterCreateHook(result)
@@ -294,8 +290,7 @@ export default class MySQL2QueryExecutionHandler<
     ) {
         return new EntityBuilder(
             this.target as EntityTarget,
-            (this.sqlBuilder as CreateSQLBuilder<Extract<T, EntityTarget>>)
-                .attributes!,
+            (this.sqlBuilder as any).mapAttributes(),
             resultHeader.insertId ?? undefined
         )
             .build() as ExecResult<T, Builder, MapTo>

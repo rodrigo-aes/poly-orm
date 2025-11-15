@@ -281,9 +281,6 @@ export default class ColumnSQLBuilder extends ColumnSchema {
 
             case "symbol": switch (this.map.defaultValue) {
                 case CurrentTimestamp: return 'DEFAULT CURRENT_TIMESTAMP'
-                case PolymorphicId: return `DEFAULT (CONCAT('${(
-                    this.polymorphicPrefix
-                )}_', UUID()))`
             }
 
             default: return ''

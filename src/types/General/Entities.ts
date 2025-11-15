@@ -1,14 +1,22 @@
 import type { EntityMetadata, PolymorphicEntityMetadata } from "../../Metadata"
-import BaseEntity from "../../BaseEntity"
+import type BaseEntity from "../../BaseEntity"
 import type BasePolymorphicEntity from "../../BasePolymorphicEntity"
 import type Repository from "../../Repository"
 import type PolymorphicRepository from "../../PolymorphicRepository"
 import type { Constructor, InstancesOf } from "."
+import type { EntityProperties, EntityRelations } from "../.."
 
 export type Entity = BaseEntity | BasePolymorphicEntity<any>
 export type Target = EntityTarget | PolymorphicEntityTarget
 export type StaticTarget = StaticEntityTarget | StaticPolymorphicEntityTarget
 
+export type EntityObject<T extends Entity> = (
+    EntityProperties<T> & EntityRelations<T>
+)
+
+export type EntityJSON<T extends Entity, Hidden extends string[]> = Omit<
+    EntityObject<T>, Hidden[number]
+>
 // ----------------------------------------------------------------------------
 
 export type EntityTarget = Constructor<BaseEntity>

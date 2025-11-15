@@ -51,7 +51,7 @@ export default class Collection<T extends Entity> extends Array<T> {
                 data: this.map((entity: any) => entity.toJSON())
             })
 
-            : this.map((entity: any) => entity.toJSON())
+            : Array.from(this.map((entity: any) => entity.toJSON()))
     }
 
     // ------------------------------------------------------------------------
