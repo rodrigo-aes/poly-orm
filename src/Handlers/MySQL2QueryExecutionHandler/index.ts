@@ -1,5 +1,5 @@
 import { EntityMetadata, PolymorphicEntityMetadata } from "../../Metadata"
-import BaseEntity, { type PaginationInitMap } from "../../BaseEntity"
+import { BaseEntity, type PaginationInitMap } from "../../Entities"
 
 // Childs
 import RelationQueryExecutionHandler from "./RelationQueryExecutionHandler"

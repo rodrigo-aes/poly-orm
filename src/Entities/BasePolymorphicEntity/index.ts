@@ -1,6 +1,7 @@
+import Entity from "../Entity"
+
 import {
     MetadataHandler,
-    TempMetadata,
 
     HasOneMetadata,
     HasManyMetadata,
@@ -16,21 +17,17 @@ import {
     type EntityMetadata,
     type RelationMetadataType,
     type HookType
-} from "../Metadata"
+} from "../../Metadata"
 
 // Childs
 import { InternalPolymorphicEntities } from "./Components"
-import { ColumnsSnapshots, Collection, Pagination } from "../BaseEntity"
+import type { Collection } from "../BaseEntity"
 
 // Query Builder
-import { PolymorphicEntityQueryBuilder } from "../QueryBuilder"
+import { PolymorphicEntityQueryBuilder } from "../../QueryBuilder"
 
 // Repository
-import PolymorphicRepository, {
-    type FindOneResult,
-    type FindResult,
-    type CountManyQueryResult
-} from "../PolymorphicRepository"
+import PolymorphicRepository from "../../PolymorphicRepository"
 
 // Relations
 import {
@@ -43,48 +40,40 @@ import {
     PolymorphicHasOne,
     PolymorphicHasMany,
     PolymorphicBelongsTo
-} from '../Relations'
+} from '../../Relations'
 
 // Decorators
 import {
     PolymorphicColumn,
     CommonRelation,
     PolymorphicRelation,
-} from "../Decorators"
+} from "../../Decorators"
 
 // Handlers
-import { PolymorphicEntityBuilder } from "../Handlers"
+import { PolymorphicEntityBuilder } from "../../Handlers"
 
 // Types
 import type {
     PolymorphicEntityTarget,
+    StaticPolymorphicEntityTarget,
     EntityTarget,
     LocalOrInternalPolymorphicEntityTarget,
     Constructor,
-    EntityProperties,
-    EntityObject,
-    EntityJSON,
-    StaticPolymorphicEntityTarget,
-} from "../types"
+} from "../../types"
 
 import type { SourceEntity } from "./types"
-import type { UnionEntitiesMap } from "../Metadata"
+import type { UnionEntitiesMap } from "../../Metadata"
 import type { ResultSetHeader } from "mysql2"
-import type { ResultMapOption, DeleteResult } from "../Handlers"
+import type { DeleteResult } from "../../Handlers"
 import type {
-    FindQueryOptions,
-    FindOneQueryOptions,
-    PaginationQueryOptions,
-    CountQueryOption,
-    CountQueryOptions,
     CreationAttributes,
     UpdateAttributes,
     UpdateOrCreateAttibutes,
     ConditionalQueryOptions,
-} from "../SQLBuilders"
+} from "../../SQLBuilders"
 
 // Exceptions
-import PolyORMException from "../Errors"
+import PolyORMException from "../../Errors"
 
 /**
  * All polymorphic entities needs to extends BaseEntity class
@@ -92,7 +81,9 @@ import PolyORMException from "../Errors"
 * class Authenticable extends BasePolymorphicEntity<[User, Admin]> {}
 */
 
-export default abstract class BasePolymorphicEntity<Targets extends object[]> {
+export default abstract class BasePolymorphicEntity<
+    Targets extends object[]
+> extends Entity {
     /** @internal */
     public static readonly __ROLE: 'INTERNAL' | 'EXTERNAL' = 'EXTERNAL'
 
@@ -113,112 +104,17 @@ export default abstract class BasePolymorphicEntity<Targets extends object[]> {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     public get entities(): UnionEntitiesMap {
-        return this.getTrueMetadata().entities
-    }
-
-    // ------------------------------------------------------------------------
-    /**
-     * An array of properties keys that must be hidden in JSON
-     */
-    public get hidden(): string[] {
-        return []
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * An array of properties keys that must be included in JSON
-     */
-    public get include(): string[] {
-        return []
+        return (this.getTrueMetadata() as PolymorphicEntityMetadata).entities
     }
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    /**
-     * Get polymorphic entity metadata
-     */
-    public getMetadata() {
-        return this.getTrueMetadata().toJSON()
-    }
-
-    // ------------------------------------------------------------------------
-    /**
-     * Get a instance of polymorphic entity repository
-     */
-    public getRepository<
-        T extends PolymorphicRepository<Constructor<this>> = (
-            PolymorphicRepository<Constructor<this>>
-        )
-    >(): T {
-        return this.getTrueMetadata().getRepository() as T
-    }
-
-    // ------------------------------------------------------------------------
-    /**
-     * Get a instance of polymorphic entity query builder
-     */
-    public getQueryBuilder<T extends PolymorphicEntityTarget>(
-        this: T
-    ): PolymorphicEntityQueryBuilder<T> {
-        return new PolymorphicEntityQueryBuilder(this)
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Make a JSON object of entity properties and relations
-     * @returns - Entity object without hidden properties and relations
-     */
-    public toJSON<T extends BasePolymorphicEntity<any>>(this: T): (
-        EntityJSON<T, T['hidden']>
+    public getQueryBuilder<T extends BasePolymorphicEntity<any>>(this: T): (
+        PolymorphicEntityQueryBuilder<Constructor<T>>
     ) {
-        return Object.fromEntries(this.entries(true)) as (
-            EntityJSON<T, T['hidden']>
+        return new PolymorphicEntityQueryBuilder(
+            this.constructor as Constructor<T>
         )
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Make a JSON object of entity properties and relations
-     * @returns - Entity complete object properties and relations
-     */
-    public toObject<T extends BasePolymorphicEntity<any>>(this: T): (
-        EntityObject<T>
-    ) {
-        return Object.fromEntries(this.entries()) as EntityObject<T>
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Get entity properties and relations entries
-     * @param {boolean} hide - Exclude hidden properties if `true`
-     * @returns {[keyof T, any][]} - Entity entries tuple array
-     */
-    public entries<T extends BasePolymorphicEntity<any>>(
-        this: T,
-        hide: boolean = false): [keyof T, any][] {
-        return this
-            .columnsEntries(hide)
-            .concat(
-                this.includedPropsEntries(),
-                this.relationsEntries(hide)
-            )
-    }
-
-    // ------------------------------------------------------------------------
-    /**
-     * Fill entity properties with a data object
-     * @returns {this} - Same entity instance
-     */
-    public fill<T extends BasePolymorphicEntity<Targets>>(
-        this: T,
-        data: Partial<EntityProperties<T>>
-    ): T {
-        Object.assign(this, data)
-        return this
     }
 
     // ------------------------------------------------------------------------
@@ -250,10 +146,11 @@ export default abstract class BasePolymorphicEntity<Targets extends object[]> {
     public async save<T extends BasePolymorphicEntity<any>>(this: T): (
         Promise<T>
     ) {
-        return this.fill(await this.getRepository().updateOrCreate(
-            this.entities[this.entityType] as EntityTarget,
-            this,
+        return this.fill(await (this.getRepository() as (
+            PolymorphicRepository<Constructor<T>>
         ))
+            .updateOrCreate(this.entities[this.entityType], this)
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -264,15 +161,16 @@ export default abstract class BasePolymorphicEntity<Targets extends object[]> {
      * @param attributes - Update attributes data
      * @returns - Same polymorphic instance
      */
-    public async update(attributes: UpdateAttributes<this>): Promise<this> {
-        const source = this.fill(attributes).toSourceEntity()
-        const pk = this.getTrueSourceMetadata().columns.primary.name
-
-        await this.getRepository().update(
-            this.entities[this.entityType],
-            source,
-            { [pk]: source[pk as keyof typeof source] }
-        )
+    public async update<T extends BasePolymorphicEntity<any>>(
+        this: T,
+        attributes: UpdateAttributes<T>
+    ): Promise<T> {
+        await (this.getRepository() as PolymorphicRepository<Constructor<T>>)
+            .update(
+                this.entities[this.entityType],
+                this.fill(attributes).toSourceEntity(),
+                this._wherePK
+            )
 
         return this
     }
@@ -283,7 +181,10 @@ export default abstract class BasePolymorphicEntity<Targets extends object[]> {
      * Delete the register of the source entity in database
      */
     public async delete<T extends BasePolymorphicEntity<any>>(this: T) {
-        await this.getRepository().delete(this.entities[this.entityType], this)
+        await this.getRepository().delete(
+            this.entities[this.entityType],
+            this._wherePK
+        )
     }
 
     // Protecteds -------------------------------------------------------------
@@ -508,15 +409,6 @@ export default abstract class BasePolymorphicEntity<Targets extends object[]> {
 
     // Privates ---------------------------------------------------------------
     /** @internal */
-    private getTrueMetadata(): PolymorphicEntityMetadata {
-        return MetadataHandler.targetMetadata(
-            this.constructor as PolymorphicEntityTarget
-        )
-    }
-
-    // ------------------------------------------------------------------------
-
-    /** @internal */
     private getTrueSourceMetadata(): EntityMetadata {
         return MetadataHandler.targetMetadata(this.entities[this.entityType])
     }
@@ -532,58 +424,6 @@ export default abstract class BasePolymorphicEntity<Targets extends object[]> {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    private columnsEntries<T extends BasePolymorphicEntity<any>>(
-        this: T,
-        hide: boolean = false
-    ): [keyof T, any][] {
-        return hide
-            ? this.getTrueMetadata().columns.flatMap(({ name }) =>
-                this.hidden.includes(name)
-                    ? []
-                    : [[name as keyof T, this[name as keyof T]]]
-            )
-
-            : this.getTrueMetadata().columns.map(({ name }) =>
-                [name as keyof T, this[name as keyof T]]
-            )
-    }
-
-    // ------------------------------------------------------------------------
-
-    /** @internal */
-    private relationsEntries<T extends BasePolymorphicEntity<any>>(
-        this: T,
-        hide: boolean = false
-    ): [keyof T, any][] {
-        return hide
-            ? this.getTrueMetadata().relations.flatMap(({ name }) =>
-                this.hidden.includes(name)
-                    ? []
-                    : [[
-                        name as keyof T,
-                        (this[name as keyof T] as any)?.toJSON()
-                    ]]
-            )
-
-            : this.getTrueMetadata().relations.map(({ name }) =>
-                [name as keyof T, (this[name as keyof T] as any)?.toJSON()]
-            )
-    }
-
-    // ------------------------------------------------------------------------
-
-    /** @internal */
-    private includedPropsEntries<T extends BasePolymorphicEntity<any>>(
-        this: T
-    ): [keyof T, any][] {
-        return (this.include as (keyof T)[]).map(key =>
-            [key, this.verifyIncludedProp(this[key as keyof T])]
-        )
-    }
-
-    // ------------------------------------------------------------------------
-
-    /** @internal */
     private verifyRelationMetadata(
         metadata: RelationMetadataType,
         shouldBe: Constructor<RelationMetadataType>
@@ -594,19 +434,6 @@ export default abstract class BasePolymorphicEntity<Targets extends object[]> {
             metadata.name,
             shouldBe.name.replace('Metadata', '')
         )
-    }
-
-    // ------------------------------------------------------------------------
-
-    private verifyIncludedProp(prop: any): any {
-        return ['symbol', 'function'].includes(typeof prop)
-            ? PolyORMException.Metadata.throw(
-                'INVALID_INCLUDED_VALUE',
-                (prop as Symbol | Function).toString(),
-                typeof prop,
-                this.constructor.name
-            )
-            : prop
     }
 
     // Static Getters =========================================================
@@ -638,227 +465,10 @@ export default abstract class BasePolymorphicEntity<Targets extends object[]> {
 
     // Static Methods =========================================================
     // Publics ----------------------------------------------------------------
-    /**
-     * Get polymorphic entity metadata
-     */
-    public static getMetadata<T extends PolymorphicEntityTarget>(this: T) {
-        return (this as StaticPolymorphicEntityTarget<T>)
-            .getTrueMetadata()
-            .toJSON()
-    }
-
-    // ------------------------------------------------------------------------
-    /**
-     * Get a instance of polymorphic entity repository
-     */
-    public static getRepository<
-        T extends PolymorphicRepository<Target> = PolymorphicRepository<
-            typeof this
-        >,
-        Target extends PolymorphicEntityTarget = any
-    >(this: Target): T {
-        return (this as Target & typeof BasePolymorphicEntity)
-            .getTrueMetadata()
-            .getRepository() as T
-    }
-
-    // ------------------------------------------------------------------------
-    /**
-     * Get a instance of polymorphic entity query builder
-     */
     public static getQueryBuilder<T extends PolymorphicEntityTarget>(
         this: T
     ): PolymorphicEntityQueryBuilder<T> {
         return new PolymorphicEntityQueryBuilder(this)
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Apply scope to polymorphic entity
-     * @param name - Scope name
-     * @param args - Scope args
-     * @returns - Scoped static polymorphic entity
-     */
-    public static scope<T extends PolymorphicEntityTarget>(
-        this: T,
-        name: string,
-        ...args: any[]
-    ): T {
-        const scoped: T = (this as StaticPolymorphicEntityTarget<T>).reply()
-        TempMetadata
-            .reply(scoped, this)
-            .setScope(scoped, (this as StaticPolymorphicEntityTarget<T>)
-                .getTrueMetadata()
-                .scopes
-                .getOrThrow(name, ...args)
-            )
-
-        return scoped
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Scope polymorphic entity collection 
-     * @param collection - Collection name or constructor
-     * @returns - Scoped static polymorphic entity
-     */
-    public static collection<T extends PolymorphicEntityTarget>(
-        this: T,
-        collection: string | typeof Collection
-    ): T {
-        const scoped: T = (this as StaticPolymorphicEntityTarget<T>).reply()
-        TempMetadata.reply(scoped, this).setCollection(
-            scoped,
-            typeof collection === 'object'
-                ? collection
-                : (this as StaticPolymorphicEntityTarget<T>)
-                    .getTrueMetadata()
-                    .collections
-                    .findOrThrow(collection)
-        )
-
-        return scoped
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Build a instance of polymorphic entity with attributes data
-     * @param attributes - Entity attributes
-     * @returns - Polymorphic entity instance
-     */
-    public static build<T extends PolymorphicEntityTarget>(
-        this: T,
-        attributes: CreationAttributes<InstanceType<T>>
-    ): InstanceType<T> {
-        const instance = new this().fill(attributes) as InstanceType<T>
-        instance.getTrueMetadata().computedProperties?.assign(instance)
-        ColumnsSnapshots.set(instance, instance.toObject())
-
-        return instance
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Search a register in database and return a polymorphic 
-     * entity instance case finded
-     * @param pk - Entity primary key
-     * @param mapTo - Switch data mapped return
-     * @default - 'entity'
-     * @returns - Entity instance or `null`
-     */
-    public static findByPk<
-        T extends PolymorphicEntityTarget,
-        M extends ResultMapOption = 'entity'
-    >(
-        this: T,
-        pk: any,
-        mapTo?: M
-    ): Promise<FindOneResult<T, M>> {
-        return (this as T & typeof BasePolymorphicEntity)
-            .getRepository()
-            .findByPk(pk, mapTo) as Promise<FindOneResult<T, M>>
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-    *  Search all register matched by options in database
-    * @param options - Find options
-    * @param mapTo @param mapTo - Switch data mapped return
-    * @default 'entity'
-    * @returns - A polymorphic entity instance collection
-    */
-    public static find<
-        T extends PolymorphicEntityTarget,
-        M extends ResultMapOption = 'entity'
-    >(
-        this: T,
-        options?: FindQueryOptions<InstanceType<T>>,
-        mapTo?: M
-    ): Promise<FindResult<T, M>> {
-        return (this as T & typeof BasePolymorphicEntity)
-            .getRepository()
-            .find(options, mapTo) as Promise<FindResult<T, M>>
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-    *  Search the first register matched by options in database
-    * @param options - Find one options
-    * @param mapTo @param mapTo - Switch data mapped return
-    * @default 'entity'
-    * @returns - A polymorphic entity instance or `null`
-    */
-    public static findOne<
-        T extends PolymorphicEntityTarget,
-        M extends ResultMapOption = 'entity'
-    >(
-        this: T,
-        options?: FindOneQueryOptions<InstanceType<T>>,
-        mapTo?: M
-    ): Promise<FindOneResult<T, M>> {
-        return (this as T & typeof BasePolymorphicEntity)
-            .getRepository()
-            .findOne(options, mapTo) as Promise<FindOneResult<T, M>>
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-    *  Search all register matched by options in database and paginate
-    * @param options - Find options
-    * @param mapTo @param mapTo - Switch data mapped return
-    * @default 'entity'
-    * @returns - A polymorphic entity instance pagination collection
-    */
-    public static paginate<T extends PolymorphicEntityTarget>(
-        this: T,
-        options: PaginationQueryOptions<InstanceType<T>>
-    ): Promise<Pagination<InstanceType<T>>> {
-        return (this as T & typeof BasePolymorphicEntity)
-            .getRepository()
-            .paginate(options) as Promise<Pagination<InstanceType<T>>>
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Count database registers matched by options
-     * @param options - Count options
-     * @returns - The count number result
-     */
-    public static count<T extends PolymorphicEntityTarget>(
-        this: T,
-        options: CountQueryOption<InstanceType<T>>
-    ): Promise<number> {
-        return (this as T & typeof BasePolymorphicEntity)
-            .getRepository()
-            .count(options)
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Make multiple count database registers matched by options
-     * @param options - A object containing the count name key and count
-     * options value
-     * @returns - A object with count names keys and count results
-     */
-    public static countMany<
-        T extends PolymorphicEntityTarget,
-        Opts extends CountQueryOptions<InstanceType<T>>
-    >(
-        this: T,
-        options: Opts
-    ): Promise<CountManyQueryResult<T, Opts>> {
-        return (this as T & typeof BasePolymorphicEntity)
-            .getRepository()
-            .countMany(options)
     }
 
     // ------------------------------------------------------------------------
@@ -881,7 +491,7 @@ export default abstract class BasePolymorphicEntity<Targets extends object[]> {
         attributes: CreationAttributes<InstanceType<Source>>,
         mapTo: 'this' | 'source' = 'this'
     ): Promise<InstanceType<T>> {
-        return (this as T & typeof BasePolymorphicEntity)
+        return (this as StaticPolymorphicEntityTarget<T>)
             .getRepository()
             .create(source, attributes, mapTo) as Promise<InstanceType<T>>
     }
@@ -908,7 +518,7 @@ export default abstract class BasePolymorphicEntity<Targets extends object[]> {
         attributes: CreationAttributes<InstanceType<Source>>[],
         mapTo: 'this' | 'source' = 'this'
     ): Promise<Collection<InstanceType<T>>> {
-        return (this as T & typeof BasePolymorphicEntity)
+        return (this as StaticPolymorphicEntityTarget<T>)
             .getRepository()
             .createMany(source, attributes, mapTo) as (
                 Promise<Collection<InstanceType<T>>>
@@ -934,7 +544,7 @@ export default abstract class BasePolymorphicEntity<Targets extends object[]> {
         attributes: UpdateAttributes<InstanceType<Source>>,
         where: ConditionalQueryOptions<InstanceType<Source>>
     ): Promise<ResultSetHeader> {
-        return (this as T & typeof BasePolymorphicEntity)
+        return (this as StaticPolymorphicEntityTarget<T>)
             .getRepository()
             .update(source, attributes, where) as Promise<ResultSetHeader>
     }
@@ -960,7 +570,7 @@ export default abstract class BasePolymorphicEntity<Targets extends object[]> {
         attributes: UpdateOrCreateAttibutes<InstanceType<Source>>,
         mapTo: 'this' | 'source' = 'this'
     ): Promise<Collection<InstanceType<T>>> {
-        return (this as T & typeof BasePolymorphicEntity)
+        return (this as StaticPolymorphicEntityTarget<T>)
             .getRepository()
             .updateOrCreate(source, attributes, mapTo) as (
                 Promise<Collection<InstanceType<T>>>
@@ -984,27 +594,9 @@ export default abstract class BasePolymorphicEntity<Targets extends object[]> {
         source: Source,
         where: ConditionalQueryOptions<InstanceType<Source>>
     ): Promise<DeleteResult> {
-        return (this as T & typeof BasePolymorphicEntity)
+        return (this as StaticPolymorphicEntityTarget<T>)
             .getRepository()
             .delete(source, where)
-    }
-
-    // Privates ---------------------------------------------------------------
-    /** @internal */
-    private static getTrueMetadata<T extends PolymorphicEntityTarget>(
-        this: T
-    ): PolymorphicEntityMetadata {
-        return MetadataHandler.targetMetadata(this)
-    }
-
-    // ------------------------------------------------------------------------
-
-    /** @internal */
-    private static reply<T extends PolymorphicEntityTarget>(this: T): T {
-        const replic = class extends (this as new (...args: any[]) => any) { }
-        Object.assign(replic, this)
-
-        return replic as T
     }
 }
 

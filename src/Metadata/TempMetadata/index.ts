@@ -5,7 +5,7 @@ import MetadataHandler from "../MetadataHandler"
 import type { Target, TargetMetadata } from "../../types"
 import type { PolyORMConnection } from "../ConnectionsMetadata"
 import type { ScopeMetadata } from "../EntityMetadata"
-import type { Collection, Pagination } from "../../BaseEntity"
+import type { Collection, Pagination } from "../../Entities"
 import type { TempMetadataValue } from "./types"
 
 class TempMetadata extends WeakMap<Target, TempMetadataValue> {

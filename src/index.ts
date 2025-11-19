@@ -38,8 +38,8 @@ import {
 } from './Metadata'
 
 // Bases
-import BaseEntity, { Collection, Pagination } from './BaseEntity'
-import BasePolymorphicEntity from './BasePolymorphicEntity'
+import { BaseEntity, Collection, Pagination } from './Entities'
+import { BasePolymorphicEntity } from './Entities'
 
 // Repositories
 import Repository from './Repository'

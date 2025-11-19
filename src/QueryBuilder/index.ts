@@ -1,3 +1,4 @@
+import type QueryBuilder from "./QueryBuilder"
 import EntityQueryBuilder from "./EntityQueryBuilder"
 import PolymorphicEntityQueryBuilder from "./PolymorphicEntityQueryBuilder"
 import ConnectionQueryBuilder from "./ConnectionQueryBuilder"
@@ -32,6 +33,7 @@ import type {
 } from "./types"
 
 export {
+    type QueryBuilder,
     EntityQueryBuilder,
     PolymorphicEntityQueryBuilder,
     ConnectionQueryBuilder,

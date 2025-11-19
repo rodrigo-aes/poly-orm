@@ -1,6 +1,6 @@
 import type { EntityTarget, PolymorphicEntityTarget } from "../types"
-import type BaseEntity from "../BaseEntity"
-import type BasePolymorphicEntity from "../BasePolymorphicEntity"
+import type { BaseEntity } from "../Entities"
+import type { BasePolymorphicEntity } from "../Entities"
 import type { ResultSetHeader } from "mysql2"
 import type { UpdateAttributes, CountQueryOptions } from "../SQLBuilders"
 

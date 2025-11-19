@@ -1,4 +1,4 @@
-import type BaseEntity from "../../../BaseEntity"
+import type { BaseEntity } from "../../../Entities"
 import type TriggerSchema from "."
 import type {
     TriggerEvent,

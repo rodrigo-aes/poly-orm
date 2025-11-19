@@ -5,7 +5,7 @@ import RelationMetadata from "../../RelationMetadata"
 import MetadataHandler from "../../../../../MetadataHandler"
 import {
     InternalPolymorphicEntities
-} from "../../../../../../BasePolymorphicEntity"
+} from "../../../../../../Entities"
 
 // Helpers
 import GeneralHelper from "../../../../../../Helpers/GeneralHelper"

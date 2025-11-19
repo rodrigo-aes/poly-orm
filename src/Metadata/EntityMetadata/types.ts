@@ -9,14 +9,14 @@ import type { ScopesMetadataJSON } from "./ScopesMetadata"
 import type Repository from "../../Repository"
 import type { Trigger } from "../../Triggers"
 
-export type EntityMetadataJSON<T extends EntityTarget = any> = {
-    target: T
+export type EntityMetadataJSON = {
+    target: EntityTarget
     name: string
     tableName: string
-    columns: ColumnsMetadataJSON<T>
+    columns: ColumnsMetadataJSON
     relations?: RelationsMetadataJSON
     joinTables?: JoinTableMetadataJSON[]
-    Repository: typeof Repository<T>
+    Repository: typeof Repository
     hooks?: HooksMetadataJSON
     scopes?: ScopesMetadataJSON
     computedProperties?: ComputedPropertiesJSON

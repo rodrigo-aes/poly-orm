@@ -1,5 +1,5 @@
 import ConditionalSQLBuilder from "../ConditionalSQLBuilder"
-import BasePolymorphicEntity from "../../../BasePolymorphicEntity"
+import { BasePolymorphicEntity } from "../../../Entities"
 
 import {
     MetadataHandler,

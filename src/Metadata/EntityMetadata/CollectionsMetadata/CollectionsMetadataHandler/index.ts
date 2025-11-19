@@ -1,4 +1,4 @@
-import { Collection } from "../../../../BaseEntity"
+import { Collection } from "../../../../Entities"
 import CollectionsMetadata from ".."
 import TempMetadata from "../../../TempMetadata"
 

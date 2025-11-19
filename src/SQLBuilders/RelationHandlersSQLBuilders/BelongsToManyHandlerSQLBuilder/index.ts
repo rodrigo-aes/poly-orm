@@ -1,6 +1,6 @@
 import ManyRelationHandlerSQLBuilder from "../ManyRelationHandlerSQLBuilder"
 
-import BaseEntity from "../../../BaseEntity"
+import { BaseEntity } from "../../../Entities"
 
 // Procedures
 import { SyncManyToMany } from "../../Procedures"

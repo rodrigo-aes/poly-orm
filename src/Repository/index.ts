@@ -1,4 +1,4 @@
-import BaseEntity, { type Pagination } from "../BaseEntity"
+import { BaseEntity, type Pagination } from "../Entities"
 
 // SQL Builders
 import {

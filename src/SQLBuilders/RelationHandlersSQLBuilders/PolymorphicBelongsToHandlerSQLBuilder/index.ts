@@ -7,7 +7,7 @@ import {
 
 // SQL Builders
 import UnionSQLBuilder from "../../UnionSQLBuilder"
-import { InternalPolymorphicEntities } from "../../../BasePolymorphicEntity"
+import { InternalPolymorphicEntities } from "../../../Entities"
 
 // Helpers
 import { SQLStringHelper, PropertySQLHelper } from "../../../Helpers"

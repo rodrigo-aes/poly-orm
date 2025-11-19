@@ -1,4 +1,4 @@
-import type { PolymorphicEntityTarget } from "../../../types";
+import type { PolymorphicEntityTarget } from "../../../../types";
 
 class InternalPolymorphicEntities extends Map<
     string,

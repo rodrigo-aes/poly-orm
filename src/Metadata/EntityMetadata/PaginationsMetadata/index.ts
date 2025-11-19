@@ -1,5 +1,5 @@
 import CollectionsMetadata from "../CollectionsMetadata"
-import { Pagination } from "../../../BaseEntity"
+import { Pagination } from "../../../Entities"
 
 // Handlers
 import PaginationMetadataHandler from "./PaginationMetadataHandler"

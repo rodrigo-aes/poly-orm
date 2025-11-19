@@ -4,8 +4,8 @@ import {
     MetadataHandler
 } from "../../Metadata"
 
-import BaseEntity, { ColumnsSnapshots } from "../../BaseEntity"
-import BasePolymorphicEntity from "../../BasePolymorphicEntity"
+import { BaseEntity, ColumnsSnapshots } from "../../Entities"
+import { BasePolymorphicEntity } from "../../Entities"
 
 // SQL Builders
 import ConditionalSQLBuilder from "../ConditionalSQLBuilder"

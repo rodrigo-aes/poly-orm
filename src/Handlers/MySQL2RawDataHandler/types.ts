@@ -1,4 +1,5 @@
 import type {
+    Target,
     EntityTarget,
     PolymorphicEntityTarget,
     EntityProperties,
@@ -8,7 +9,7 @@ import type {
 export type MySQL2RawData = any
 export type DataFillMethod = 'One' | 'Many' | 'Paginate'
 
-export type RawData<T extends EntityTarget | PolymorphicEntityTarget> = (
+export type RawData<T extends Target> = (
     EntityProperties<InstanceType<T>> &
     Partial<EntityRelations<InstanceType<T>>>
 )

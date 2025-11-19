@@ -1,6 +1,6 @@
 import MetadataArray from "../../MetadataArray"
 
-import { Collection } from "../../../BaseEntity"
+import { Collection } from "../../../Entities"
 import CollectionsMetadataHandler from "./CollectionsMetadataHandler"
 
 // Types

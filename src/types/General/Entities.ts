@@ -1,14 +1,20 @@
 import type { EntityMetadata, PolymorphicEntityMetadata } from "../../Metadata"
-import type BaseEntity from "../../BaseEntity"
-import type BasePolymorphicEntity from "../../BasePolymorphicEntity"
+import type { Entity, BaseEntity, BasePolymorphicEntity } from "../../Entities"
 import type Repository from "../../Repository"
 import type PolymorphicRepository from "../../PolymorphicRepository"
+import type {
+    EntityQueryBuilder,
+    PolymorphicEntityQueryBuilder
+} from "../../QueryBuilder"
 import type { Constructor, InstancesOf } from "."
 import type { EntityProperties, EntityRelations } from "../.."
 
-export type Entity = BaseEntity | BasePolymorphicEntity<any>
-export type Target = EntityTarget | PolymorphicEntityTarget
-export type StaticTarget = StaticEntityTarget | StaticPolymorphicEntityTarget
+export type Target = Constructor<
+    Entity |
+    BaseEntity |
+    BasePolymorphicEntity<any>
+>
+export type StaticTarget<T extends Target = Target> = T & typeof Entity
 
 export type EntityObject<T extends Entity> = (
     EntityProperties<T> & EntityRelations<T>
@@ -46,6 +52,14 @@ export type TargetRepository<T extends Target> = (
     ? Repository<T>
     : T extends PolymorphicEntityTarget
     ? PolymorphicRepository<T>
+    : never
+)
+
+export type TargetQueryBuilder<T extends Target = Target> = (
+    T extends EntityTarget
+    ? EntityQueryBuilder<T>
+    : T extends PolymorphicEntityTarget
+    ? PolymorphicEntityQueryBuilder<T>
     : never
 )
 

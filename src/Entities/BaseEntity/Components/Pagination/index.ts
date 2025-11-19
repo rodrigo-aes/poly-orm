@@ -1,7 +1,7 @@
 import Collection from "../Collection"
 
 // Types
-import type { Entity } from "../../../types"
+import type { Entity } from "../../../../types"
 import type { PaginationInitMap, PaginationJSON } from "./types"
 
 export default class Pagination<T extends Entity> extends Collection<T> {

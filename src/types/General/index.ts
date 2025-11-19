@@ -1,5 +1,4 @@
 import type {
-    Entity,
     Target,
     StaticTarget,
     EntityObject,
@@ -13,6 +12,7 @@ import type {
 
     TargetMetadata,
     TargetRepository,
+    TargetQueryBuilder,
     InternalPolymorphicEntityTarget,
     LocalOrInternalPolymorphicEntityTarget,
 
@@ -30,7 +30,6 @@ export type InstancesOf<T extends Constructor<any>[]> = {
 export type Primitive = string | number | boolean | Date | null
 
 export type {
-    Entity,
     Target,
     StaticTarget,
     EntityObject,
@@ -44,6 +43,7 @@ export type {
 
     TargetMetadata,
     TargetRepository,
+    TargetQueryBuilder,
     InternalPolymorphicEntityTarget,
     LocalOrInternalPolymorphicEntityTarget,
 

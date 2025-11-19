@@ -1,4 +1,4 @@
-import BasePolymorphicEntity from "../../BasePolymorphicEntity"
+import { BasePolymorphicEntity } from "../../Entities"
 
 // SQL Builders
 import CountSQL from "./CountSQL"

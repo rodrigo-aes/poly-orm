@@ -1,4 +1,4 @@
-import { Pagination, type PaginationInitMap } from "../../../../BaseEntity"
+import { Pagination, type PaginationInitMap } from "../../../../Entities"
 import PaginationMetadata from ".."
 import TempMetadata from "../../../TempMetadata"
 import type {

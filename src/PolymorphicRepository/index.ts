@@ -1,5 +1,5 @@
 import { MetadataHandler, type PolymorphicEntityMetadata } from "../Metadata"
-import BasePolymorphicEntity from "../BasePolymorphicEntity"
+import { BasePolymorphicEntity } from "../Entities"
 
 // SQL Builders
 import {
@@ -47,7 +47,7 @@ import type {
     UpdateOrCreateQueryResult
 } from "./types"
 
-import type { Pagination } from "../BaseEntity"
+import type { Pagination } from "../Entities"
 
 // Exceptions
 import PolyORMException from "../Errors"

@@ -3,7 +3,7 @@ import { TriggerSchema } from "../../../../DatabaseSchema"
 
 // Types
 import type { PolyORMConnection } from "../../../../Metadata"
-import type BaseEntity from "../../../../BaseEntity"
+import type { BaseEntity } from "../../../../Entities"
 import type { TriggerSyncAction } from "./types"
 
 export default class TriggerSyncronizer<

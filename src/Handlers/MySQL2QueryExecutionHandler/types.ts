@@ -1,6 +1,5 @@
 import type { Target, EntityTarget, PolymorphicEntityTarget } from "../../types"
 import type { ResultSetHeader } from "mysql2"
-import type { AsEntityTarget } from "../../types"
 
 import {
     FindByPkSQLBuilder,
@@ -14,7 +13,7 @@ import {
     DeleteSQLBuilder
 } from "../../SQLBuilders"
 
-import type { Collection, Pagination } from "../../BaseEntity"
+import type { Collection, Pagination } from "../../Entities"
 
 export type SQLBuilder = (
     FindByPkSQLBuilder<any> |
@@ -102,7 +101,7 @@ export type ExecResult<
     : UnionExecResult<T, Builder, MapTo>
 
 export type FindOneResult<
-    T extends EntityTarget | PolymorphicEntityTarget,
+    T extends Target,
     MapTo extends ResultMapOption
 > = (
         MapTo extends 'entity'
@@ -117,7 +116,7 @@ export type FindOneResult<
     )
 
 export type FindResult<
-    T extends EntityTarget | PolymorphicEntityTarget,
+    T extends Target,
     MapTo extends ResultMapOption
 > = (
         MapTo extends 'entity'

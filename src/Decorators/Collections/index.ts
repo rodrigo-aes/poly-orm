@@ -5,7 +5,7 @@ import DefaultCollection from "./DefaultCollection"
 
 // Types
 import type { EntityTarget, PolymorphicEntityTarget } from "../../types"
-import type { Collection } from "../../BaseEntity"
+import type { Collection } from "../../Entities"
 
 export default function Collections(...collections: (typeof Collection)[]) {
     return function (target: EntityTarget | PolymorphicEntityTarget) {

@@ -8,12 +8,12 @@ import {
 } from "../../Metadata"
 
 // Base Entity
-import BaseEntity, {
+import { BaseEntity,
     Collection,
     type PaginationInitMap
-} from "../../BaseEntity"
+} from "../../Entities"
 
-import BasePolymorphicEntity from "../../BasePolymorphicEntity"
+import { BasePolymorphicEntity } from "../../Entities"
 
 // Handlers
 import PolymorphicEntityBuilder from "../PolymorphicEntityBuilder"

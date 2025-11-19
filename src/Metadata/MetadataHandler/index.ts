@@ -3,8 +3,8 @@ import EntityMetadata from "../EntityMetadata"
 import PolymorphicEntityMetadata from "../PolymorphicEntityMetadata"
 import { JoinTablesMetadata } from "../EntityMetadata"
 
-import BaseEntity from "../../BaseEntity"
-import BasePolymorphicEntity from "../../BasePolymorphicEntity"
+import { BaseEntity } from "../../Entities"
+import { BasePolymorphicEntity } from "../../Entities"
 
 // Components
 import TempMetadata from "../TempMetadata"

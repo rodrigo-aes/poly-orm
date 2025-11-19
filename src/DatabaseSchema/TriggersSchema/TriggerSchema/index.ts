@@ -1,7 +1,7 @@
 import TriggerSQLBuilder from "../../../SQLBuilders/DatabaseSQLBuilders/TriggerSQLBuilder"
 
 // Types
-import type BaseEntity from "../../../BaseEntity"
+import type { BaseEntity } from "../../../Entities"
 import type { Constructor } from "../../../types"
 import type {
     Trigger,

@@ -20,7 +20,7 @@ import type {
     PolymorphicEntityTarget
 } from "../../../types"
 
-import type { Collection } from "../../../BaseEntity"
+import type { Collection } from "../../../Entities"
 
 import type {
     CreationAttributes,

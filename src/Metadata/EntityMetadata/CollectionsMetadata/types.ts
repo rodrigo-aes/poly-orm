@@ -1,4 +1,4 @@
-import type { Collection } from "../../../BaseEntity"
+import type { Collection } from "../../../Entities"
 
 export type CollectionsMetadataJSON = {
     default: typeof Collection

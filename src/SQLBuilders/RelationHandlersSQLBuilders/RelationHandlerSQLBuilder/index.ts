@@ -1,5 +1,5 @@
-import BaseEntity, { ColumnsSnapshots } from "../../../BaseEntity"
-import BasePolymorphicEntity from "../../../BasePolymorphicEntity"
+import { BaseEntity, ColumnsSnapshots } from "../../../Entities"
+import { BasePolymorphicEntity } from "../../../Entities"
 
 // Handlers 
 import { MetadataHandler } from "../../../Metadata"

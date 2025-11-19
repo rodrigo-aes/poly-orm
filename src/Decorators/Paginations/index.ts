@@ -7,7 +7,7 @@ import type {
     EntityTarget,
     PolymorphicEntityTarget
 } from "../../types"
-import type { Pagination } from "../../BaseEntity"
+import type { Pagination } from "../../Entities"
 
 export default function Paginations(...paginations: (typeof Pagination)[]) {
     return function (target: EntityTarget | PolymorphicEntityTarget) {

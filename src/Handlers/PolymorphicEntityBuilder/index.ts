@@ -1,6 +1,6 @@
-import BasePolymorphicEntity, {
+import { BasePolymorphicEntity,
     InternalPolymorphicEntities
-} from "../../BasePolymorphicEntity"
+} from "../../Entities"
 
 import { MetadataHandler } from "../../Metadata"
 

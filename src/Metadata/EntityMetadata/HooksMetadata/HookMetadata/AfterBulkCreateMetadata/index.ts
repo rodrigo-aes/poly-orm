@@ -1,8 +1,8 @@
 import HookMetadata from "../HookMetadata"
 
 // Types
-import type BaseEntity from "../../../../../BaseEntity"
-import type BasePolymorphicEntity from "../../../../../BasePolymorphicEntity"
+import type { BaseEntity } from "../../../../../Entities"
+import type { BasePolymorphicEntity } from "../../../../../Entities"
 import type {
     RawData,
     MySQL2RawData

@@ -1,5 +1,5 @@
 import OneRelationHandlerSQLBuilder from "../OneRelationHandlerSQLBuilder"
-import BasePolymorphicEntity from "../../../BasePolymorphicEntity"
+import { BasePolymorphicEntity } from "../../../Entities"
 
 // Types
 import type { PolymorphicHasOneMetadata } from "../../../Metadata"

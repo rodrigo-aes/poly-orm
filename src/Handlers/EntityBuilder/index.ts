@@ -1,5 +1,5 @@
 // Objects
-import BaseEntity, { Collection } from "../../BaseEntity"
+import { BaseEntity, Collection } from "../../Entities"
 
 // Handlers
 import { MetadataHandler } from "../../Metadata"

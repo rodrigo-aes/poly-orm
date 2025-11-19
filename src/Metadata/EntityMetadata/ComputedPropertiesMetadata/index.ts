@@ -1,5 +1,5 @@
 import MetadataMap from "../../MetadataMap"
-import { Collection } from "../../../BaseEntity"
+import { Collection } from "../../../Entities"
 
 // Types
 import type {

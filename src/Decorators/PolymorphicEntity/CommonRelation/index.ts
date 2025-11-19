@@ -4,7 +4,7 @@ import {
 } from "../../../Metadata"
 
 // Types
-import type BasePolymorphicEntity from "../../../BasePolymorphicEntity"
+import type { BasePolymorphicEntity } from "../../../Entities"
 import type { PolymorphicEntityTarget } from "../../../types"
 
 export default function CommonRelation(

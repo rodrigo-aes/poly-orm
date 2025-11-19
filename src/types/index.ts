@@ -3,7 +3,6 @@ import type {
     InstancesOf,
     Primitive,
 
-    Entity,
     Target,
     StaticTarget,
     EntityObject,
@@ -17,6 +16,7 @@ import type {
 
     TargetMetadata,
     TargetRepository,
+    TargetQueryBuilder,
     InternalPolymorphicEntityTarget,
     LocalOrInternalPolymorphicEntityTarget,
 
@@ -41,7 +41,6 @@ export type {
     InstancesOf,
     Primitive,
 
-    Entity,
     Target,
     StaticTarget,
     EntityObject,
@@ -55,6 +54,7 @@ export type {
 
     TargetMetadata,
     TargetRepository,
+    TargetQueryBuilder,
     InternalPolymorphicEntityTarget,
     LocalOrInternalPolymorphicEntityTarget,
 

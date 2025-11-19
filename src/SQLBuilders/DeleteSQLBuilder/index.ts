@@ -1,7 +1,7 @@
 import { EntityMetadata, PolymorphicEntityMetadata } from "../../Metadata"
 
-import BaseEntity from "../../BaseEntity"
-import BasePolymorphicEntity from "../../BasePolymorphicEntity"
+import { BaseEntity } from "../../Entities"
+import { BasePolymorphicEntity } from "../../Entities"
 
 // SQL Builders
 import ConditionalSQLBuilder, {
