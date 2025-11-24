@@ -1,4 +1,5 @@
 import type {
+    Entity,
     Target,
     StaticTarget,
     EntityObject,
@@ -23,6 +24,9 @@ import type {
 import type { CollectionTarget } from './Collections'
 
 export type Constructor<T extends object> = new (...args: any[]) => T
+export type ConstructorsOf<T extends object[]> = {
+    [K in keyof T]: Constructor<T>
+}
 export type InstancesOf<T extends Constructor<any>[]> = {
     [K in keyof T]: InstanceType<T[K]>
 }
@@ -30,6 +34,7 @@ export type InstancesOf<T extends Constructor<any>[]> = {
 export type Primitive = string | number | boolean | Date | null
 
 export type {
+    Entity,
     Target,
     StaticTarget,
     EntityObject,

@@ -1,10 +1,15 @@
 import Collection from "../Collection"
 
 // Types
-import type { Entity } from "../../../../types"
+import type Entity from '../../Entity'
+import BaseEntity from "../../BaseEntity"
+import BasePolymorphicEntity from "../../BasePolymorphicEntity"
 import type { PaginationInitMap, PaginationJSON } from "./types"
 
-export default class Pagination<T extends Entity> extends Collection<T> {
+export default class Pagination<T extends (
+    BaseEntity |
+    BasePolymorphicEntity<any>
+)> extends Collection<T> {
     public page: number = 1
     public perPage: number = 26
     public total: number = 0
@@ -59,7 +64,10 @@ export default class Pagination<T extends Entity> extends Collection<T> {
      * @param data - Entities data
      * @returns - A pagination instace with data
      */
-    public static build<T extends Entity>(
+    public static build<T extends (
+        BaseEntity |
+        BasePolymorphicEntity<any>
+    )>(
         pagination: PaginationInitMap,
         data: T[] = []
     ): Pagination<T> {

@@ -2,18 +2,16 @@ import { MetadataHandler } from "../../Metadata"
 
 // Types
 import type { EntityTarget, PolymorphicEntityTarget } from "../../types"
-import RepositoryType from "../../Repository"
-import PolymorphicRepository from "../../PolymorphicRepository"
+import { Repository, PolymorphicRepository } from "../../Repositories"
 
-export default function UseRepository<
-    Repository extends typeof RepositoryType | typeof PolymorphicRepository
->(
-    repository: Repository
-) {
+export default function UseRepository<T extends (
+    typeof Repository |
+    typeof PolymorphicRepository
+)>(repository: T) {
     return function (
-        target: Repository extends typeof RepositoryType
+        target: T extends typeof Repository
             ? EntityTarget
-            : Repository extends typeof PolymorphicRepository
+            : T extends typeof PolymorphicRepository
             ? PolymorphicEntityTarget
             : never
     ) {

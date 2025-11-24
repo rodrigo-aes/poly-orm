@@ -4,7 +4,7 @@ import {
 
     type Collection,
     type Pagination,
-} from "./BaseEntity"
+} from "./Components"
 
 // Types
 import type {
@@ -13,7 +13,7 @@ import type {
     ResultMapOption
 } from "../Handlers"
 
-import type { CountManyQueryResult } from "../Repository"
+import type { CountManyQueryResult } from "../Repositories/Repository"
 
 import type {
     FindOneQueryOptions,
@@ -26,6 +26,7 @@ import type {
 } from "../SQLBuilders"
 
 import type {
+    Entity as EntityT,
     Target,
     StaticTarget,
     TargetMetadata,
@@ -67,7 +68,7 @@ export default abstract class Entity {
     // Protecteds -------------------------------------------------------------
     /** @internal */
     protected get _pk(): string {
-        return this.getTrueMetadata().columns.primary.name
+        return (this as any).getTrueMetadata().columns.primary.name
     }
 
     // ------------------------------------------------------------------------
@@ -80,22 +81,12 @@ export default abstract class Entity {
         >
     }
 
-    // Static Getters =========================================================
-    /** @internal */
-    protected static get QueryBuilder(): Constructor<TargetQueryBuilder> {
-        throw PolyORMException.Common.instantiate(
-            'UNIMPLEMENTED_GET',
-            'QueryBuilder',
-            this.name
-        )
-    }
-
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     /**
      * Get entity metadata
      */
-    public getMetadata<T extends Entity>(this: T) {
+    public getMetadata<T extends EntityT>(this: T) {
         return this.getTrueMetadata().toJSON()
     }
 
@@ -104,20 +95,14 @@ export default abstract class Entity {
     /**
      * Get a instance of entity repository
      */
-    public getRepository<T extends TargetRepository<Constructor<this>> = (
-        TargetRepository<Constructor<this>>
-    )>(): T {
-        return this.getTrueMetadata().getRepository() as T
-    }
+    public abstract getRepository(): TargetRepository<any>
 
     // ------------------------------------------------------------------------
 
     /**
      * Get a instance of query builder
      */
-    public abstract getQueryBuilder(): TargetQueryBuilder<
-        EntityTarget | PolymorphicEntityTarget
-    >
+    public abstract getQueryBuilder(): TargetQueryBuilder
 
     // ------------------------------------------------------------------------
 
@@ -125,7 +110,7 @@ export default abstract class Entity {
      * Make a JSON object of entity properties and relations
      * @returns - Entity object without hidden properties and relations
      */
-    public toJSON<T extends Entity>(this: T): EntityJSON<T, T['hidden']> {
+    public toJSON<T extends EntityT>(this: T): EntityJSON<T, T['hidden']> {
         return Object.fromEntries(this.entries(true)) as (
             EntityJSON<T, T['hidden']>
         )
@@ -137,7 +122,7 @@ export default abstract class Entity {
      * Make a JSON object of entity properties and relations
      * @returns - Entity complete object properties and relations
      */
-    public toObject<T extends Entity>(this: T): EntityObject<T> {
+    public toObject<T extends EntityT>(this: T): EntityObject<T> {
         return Object.fromEntries(this.entries()) as EntityObject<T>
     }
 
@@ -148,9 +133,9 @@ export default abstract class Entity {
      * @param {boolean} hide - Exclude hidden properties if `true`
      * @returns {[keyof T, any][]} - Entity entries tuple array
      */
-    public entries<T extends Entity>(this: T, hide: boolean = false): (
-        [keyof T, any][]
-    ) {
+    public entries<T extends EntityT>(this: T, hide: boolean = false): [
+        keyof T, any
+    ][] {
         return this
             .columnsEntries(hide)
             .concat(
@@ -165,7 +150,7 @@ export default abstract class Entity {
      * Fill entity properties with a data object
      * @returns {this} - Same entity instance
      */
-    public fill<T extends Entity>(
+    public fill<T extends EntityT>(
         this: T,
         data: Partial<EntityProperties<T>>
     ): T {
@@ -176,17 +161,13 @@ export default abstract class Entity {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    public getTrueMetadata<T extends Entity>(this: T): (
-        TargetMetadata<Constructor<T>>
-    ) {
-        return MetadataHandler.targetMetadata(
-            this.constructor as Constructor<T>
-        )
+    public getTrueMetadata<T extends EntityT>(this: T): TargetMetadata {
+        return MetadataHandler.targetMetadata(this.constructor as Target)
     }
 
     // Privates ---------------------------------------------------------------
     /** @internal */
-    private columnsEntries<T extends Entity>(
+    private columnsEntries<T extends EntityT>(
         this: T,
         hide: boolean = false
     ): [keyof T, any][] {
@@ -205,7 +186,7 @@ export default abstract class Entity {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    private relationsEntries<T extends Entity>(
+    private relationsEntries<T extends EntityT>(
         this: T,
         hide: boolean = false
     ): [keyof T, any][] {
@@ -227,9 +208,9 @@ export default abstract class Entity {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    private includedPropsEntries<T extends Entity>(this: T): (
-        [keyof T, any][]
-    ) {
+    private includedPropsEntries<T extends EntityT>(this: T): [
+        keyof T, any
+    ][] {
         return (this.include as (keyof T)[]).map(key =>
             [key, this.verifyIncludedProp(this[key as keyof T])]
         )
@@ -264,13 +245,13 @@ export default abstract class Entity {
     /**
      * Get a instance of entity repository
      */
-    public static getRepository<
-        T extends Constructor<Entity>,
-        R extends TargetRepository<T> = TargetRepository<T>
-    >(this: T): R {
-        return (this as T & typeof Entity)
-            .getTrueMetadata()
-            .getRepository() as R
+    public static getRepository(): TargetRepository {
+        throw PolyORMException.Common.instantiate(
+            'UNIMPLEMENTED_METHOD',
+            'static',
+            'getRepository',
+            this.name
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -278,9 +259,7 @@ export default abstract class Entity {
     /**
      * Get a instance of query builder
      */
-    public static getQueryBuilder(): TargetQueryBuilder<
-        EntityTarget | PolymorphicEntityTarget
-    > {
+    public static getQueryBuilder(): TargetQueryBuilder {
         throw PolyORMException.Common.instantiate(
             'UNIMPLEMENTED_METHOD',
             'static',
@@ -352,13 +331,8 @@ export default abstract class Entity {
         this: T,
         attributes: CreationAttributes<InstanceType<T>>
     ): InstanceType<T> {
-        const instance = new (this as Constructor<Entity>)()
-            .fill(attributes) as InstanceType<T>
-
-        (instance.getTrueMetadata() as TargetMetadata<T>)
-            .computedProperties
-            ?.assign(instance)
-
+        const instance = new this().fill(attributes) as InstanceType<T>
+        instance.getTrueMetadata().computedProperties?.assign(instance)
         ColumnsSnapshots.set(instance, instance.toObject())
 
         return instance
@@ -405,7 +379,7 @@ export default abstract class Entity {
     ): Promise<FindOneResult<T, M>> {
         return (this as StaticTarget<T>)
             .getRepository()
-            .findOne(options, mapTo) as Promise<FindOneResult<T, M>>
+            .findOne(options as any, mapTo) as Promise<FindOneResult<T, M>>
     }
 
     // ------------------------------------------------------------------------
@@ -427,7 +401,7 @@ export default abstract class Entity {
     ): Promise<FindResult<T, M>> {
         return (this as StaticTarget<T>)
             .getRepository()
-            .find(options, mapTo) as Promise<FindResult<T, M>>
+            .find(options as any, mapTo) as Promise<FindResult<T, M>>
     }
 
     // ------------------------------------------------------------------------
@@ -445,7 +419,7 @@ export default abstract class Entity {
     ): Promise<Pagination<InstanceType<T>>> {
         return (this as StaticTarget<T>)
             .getRepository()
-            .paginate(options)
+            .paginate(options as any) as Promise<Pagination<InstanceType<T>>>
     }
 
     // ------------------------------------------------------------------------

@@ -6,7 +6,7 @@ import type { HooksMetadataJSON } from "./HooksMetadata"
 import type { ComputedPropertiesJSON } from "./ComputedPropertiesMetadata"
 import type { CollectionsMetadataJSON } from "./CollectionsMetadata"
 import type { ScopesMetadataJSON } from "./ScopesMetadata"
-import type Repository from "../../Repository"
+import type Repository from "../../Repositories/Repository"
 import type { Trigger } from "../../Triggers"
 
 export type EntityMetadataJSON = {

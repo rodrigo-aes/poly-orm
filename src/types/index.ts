@@ -1,8 +1,10 @@
 import type {
     Constructor,
+    ConstructorsOf,
     InstancesOf,
     Primitive,
 
+    Entity,
     Target,
     StaticTarget,
     EntityObject,
@@ -38,9 +40,11 @@ import type {
 
 export type {
     Constructor,
+    ConstructorsOf,
     InstancesOf,
     Primitive,
 
+    Entity,
     Target,
     StaticTarget,
     EntityObject,

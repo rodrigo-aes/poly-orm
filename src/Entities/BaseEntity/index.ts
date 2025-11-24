@@ -1,7 +1,6 @@
 import Entity from "../Entity"
 
 import {
-    EntityMetadata,
     HasOneMetadata,
     HasManyMetadata,
     BelongsToMetadata,
@@ -12,33 +11,11 @@ import {
     PolymorphicHasManyMetadata,
     PolymorphicBelongsToMetadata,
 
-    // Handlers
-    MetadataHandler,
-    TempMetadata,
-
     type RelationMetadataType,
 } from "../../Metadata"
 
 // Query Builder
 import { EntityQueryBuilder } from "../../QueryBuilder"
-
-// Components
-import {
-    Collection,
-    Pagination,
-    ColumnsSnapshots,
-
-    type PaginationInitMap
-} from "./Components"
-
-// Repository
-import Repository, {
-    type FindOneResult,
-    type FindResult,
-    type CountManyQueryResult,
-    type ResultMapOption,
-    type DeleteResult
-} from "../../Repository"
 
 // Relations
 import {
@@ -63,12 +40,9 @@ import type {
     StaticEntityTarget,
 } from "../../types"
 
+import type { DeleteResult } from "../../Handlers"
+
 import type {
-    FindQueryOptions,
-    FindOneQueryOptions,
-    PaginationQueryOptions,
-    CountQueryOption,
-    CountQueryOptions,
     CreationAttributes,
     UpdateAttributes,
     UpdateOrCreateAttibutes,
@@ -77,6 +51,7 @@ import type {
 
 // Exceptions
 import PolyORMException from "../../Errors"
+import { Repository } from "../../Repositories"
 
 /**
  * All entities needs to extends BaseEntity class
@@ -84,8 +59,16 @@ import PolyORMException from "../../Errors"
  * class User extends BaseEntity {}
  */
 export default abstract class BaseEntity extends Entity {
+    public abstract readonly name: string
+
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
+    public getRepository<T extends Repository<this> = Repository<this>>(): T {
+        return this.getTrueMetadata().getRepository()
+    }
+
+    // ------------------------------------------------------------------------
+
     public getQueryBuilder<T extends BaseEntity>(this: T): EntityQueryBuilder<
         Constructor<T>
     > {
@@ -99,11 +82,7 @@ export default abstract class BaseEntity extends Entity {
      * @returns {this} - Same entity instance
      */
     public async save<T extends BaseEntity>(this: T): Promise<T> {
-        return this.fill(await (this.getRepository() as (
-            Repository<Constructor<T>>
-        ))
-            .updateOrCreate(this, 'json')
-        )
+        return this.getRepository().updateOrCreate(this, 'json') as Promise<T>
     }
 
     // ------------------------------------------------------------------------
@@ -117,10 +96,10 @@ export default abstract class BaseEntity extends Entity {
         this: T,
         attributes: UpdateAttributes<T>
     ): Promise<T> {
-        await (this.getRepository() as Repository<Constructor<T>>)
-            .update(attributes, this._wherePK)
-
-        return this.fill(attributes)
+        return this.getRepository().update(
+            this.fill(attributes),
+            this._wherePK
+        ) as Promise<T>
     }
 
     // ------------------------------------------------------------------------
@@ -129,9 +108,7 @@ export default abstract class BaseEntity extends Entity {
      * Delete the register of the current instance in database
      */
     public async delete<T extends BaseEntity>(this: T): Promise<T> {
-        await (this.getRepository() as Repository<Constructor<T>>)
-            .delete(this._wherePK)
-
+        await this.getRepository().delete(this._wherePK)
         return this
     }
 
@@ -388,6 +365,17 @@ export default abstract class BaseEntity extends Entity {
 
     // Static Methods =========================================================
     // Publics ----------------------------------------------------------------
+    public static getRepository<
+        T extends EntityTarget,
+        R extends Repository<InstanceType<T>>
+    >(this: T): R {
+        return (this as StaticEntityTarget<T>)
+            .getTrueMetadata()
+            .getRepository() as R
+    }
+
+    // ------------------------------------------------------------------------
+
     public static getQueryBuilder<T extends EntityTarget>(this: T): (
         EntityQueryBuilder<T>
     ) {
@@ -406,9 +394,11 @@ export default abstract class BaseEntity extends Entity {
         this: T,
         attributes: CreationAttributes<InstanceType<T>>
     ): Promise<InstanceType<T>> {
-        return (this as StaticEntityTarget<T>)
-            .getRepository()
-            .create(attributes) as Promise<InstanceType<T>>
+        return (
+            (this as StaticEntityTarget<T>)
+                .getRepository() as Repository<InstanceType<T>>
+        )
+            .create(attributes)
     }
 
     // ------------------------------------------------------------------------
@@ -424,9 +414,11 @@ export default abstract class BaseEntity extends Entity {
         this: T,
         attributes: CreationAttributes<InstanceType<T>>[]
     ): Promise<InstanceType<T>[]> {
-        return (this as StaticEntityTarget<T>)
-            .getRepository()
-            .createMany(attributes) as Promise<InstanceType<T>[]>
+        return (
+            (this as StaticEntityTarget<T>)
+                .getRepository() as Repository<InstanceType<T>>
+        )
+            .createMany(attributes)
     }
 
     // ------------------------------------------------------------------------
@@ -443,8 +435,10 @@ export default abstract class BaseEntity extends Entity {
         attributes: UpdateAttributes<InstanceType<T>>,
         where: ConditionalQueryOptions<InstanceType<T>>
     ): Promise<ResultSetHeader> {
-        return (this as StaticEntityTarget<T>)
-            .getRepository()
+        return (
+            (this as StaticEntityTarget<T>)
+                .getRepository() as Repository<InstanceType<T>>
+        )
             .update(attributes, where) as Promise<ResultSetHeader>
     }
 
@@ -459,9 +453,11 @@ export default abstract class BaseEntity extends Entity {
         this: T,
         attributes: UpdateOrCreateAttibutes<InstanceType<T>>,
     ): Promise<InstanceType<T>> {
-        return (this as StaticEntityTarget<T>)
-            .getRepository()
-            .updateOrCreate(attributes) as Promise<InstanceType<T>>
+        return (
+            (this as StaticEntityTarget<T>)
+                .getRepository() as Repository<InstanceType<T>>
+        )
+            .updateOrCreate(attributes)
     }
 
     // ------------------------------------------------------------------------
@@ -475,14 +471,6 @@ export default abstract class BaseEntity extends Entity {
         this: T,
         where: ConditionalQueryOptions<InstanceType<T>>
     ): Promise<DeleteResult> {
-        return (this as T & typeof BaseEntity).getRepository().delete(where)
+        return (this as StaticEntityTarget<T>).getRepository().delete(where)
     }
-}
-
-export {
-    ColumnsSnapshots,
-    Collection,
-    Pagination,
-
-    type PaginationInitMap
 }

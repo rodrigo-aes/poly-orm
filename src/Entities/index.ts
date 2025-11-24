@@ -1,15 +1,23 @@
 import Entity from "./Entity"
-import BaseEntity, {
+import BaseEntity from "./BaseEntity"
+import BasePolymorphicEntity, {
+    InternalPolymorphicEntities,
+
+    type Source,
+    type ResolveSource,
+    type SourceEntities,
+    type SourceEntity,
+    type EntitiesMap,
+    type EntityNames,
+} from "./BasePolymorphicEntity"
+
+import {
     ColumnsSnapshots,
     Collection,
     Pagination,
 
     type PaginationInitMap
-} from "./BaseEntity"
-
-import BasePolymorphicEntity, {
-    InternalPolymorphicEntities
-} from "./BasePolymorphicEntity"
+} from "./Components"
 
 export {
     type Entity,
@@ -22,5 +30,11 @@ export {
 
     InternalPolymorphicEntities,
 
+    type Source,
+    type ResolveSource,
+    type SourceEntities,
+    type SourceEntity,
+    type EntitiesMap,
+    type EntityNames,
     type PaginationInitMap
 }

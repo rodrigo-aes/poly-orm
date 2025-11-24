@@ -1,4 +1,4 @@
-import type { Entity } from "../../../types"
+import type Entity from "../../Entity"
 
 export type PaginationInitMap = {
     page: number,

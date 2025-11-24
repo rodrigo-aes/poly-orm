@@ -8,25 +8,22 @@ import {
 } from "../../Metadata"
 
 // Base Entity
-import { BaseEntity,
+import {
+    Entity,
+    BaseEntity,
+    BasePolymorphicEntity,
     Collection,
     type PaginationInitMap
 } from "../../Entities"
 
-import { BasePolymorphicEntity } from "../../Entities"
-
-// Handlers
-import PolymorphicEntityBuilder from "../PolymorphicEntityBuilder"
-
 // Types
 import type {
-    Target,
+    ConcretTarget,
     TargetMetadata,
-    Entity,
     PolymorphicEntityTarget,
-    EntityTarget,
     StaticEntityTarget,
-    StaticPolymorphicEntityTarget
+    StaticPolymorphicEntityTarget,
+    Target
 } from "../../types"
 
 import type {
@@ -39,7 +36,7 @@ import type {
 // Exceptions
 import PolyORMException from "../../Errors"
 
-export default class MySQL2RawDataHandler<T extends Target> {
+export default class MySQL2RawDataHandler<T extends ConcretTarget> {
     private metadata: TargetMetadata<T>
 
     constructor(
@@ -64,7 +61,7 @@ export default class MySQL2RawDataHandler<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    public parseEntity<Entity extends Target = T>(
+    public parseEntity<Entity extends ConcretTarget = T>(
         mapToEntity?: Entity,
         pagination?: PaginationInitMap
     ): InstanceType<Entity> | Collection<InstanceType<Entity>> {
@@ -97,7 +94,7 @@ export default class MySQL2RawDataHandler<T extends Target> {
     }
 
     // Privates ---------------------------------------------------------------
-    private reduceMySQL2RawData<Entity extends Target = T>(
+    private reduceMySQL2RawData<Entity extends ConcretTarget = T>(
         rawData: MySQL2RawData[],
         metadata: TargetMetadata<any> = this.metadata,
         method: 'json' | 'entity' = 'json',
@@ -153,7 +150,7 @@ export default class MySQL2RawDataHandler<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    private mapToEntity(target: Target, data: any, toSource: boolean): Entity {
+    private mapToEntity(target: ConcretTarget, data: any, toSource: boolean): Entity {
         switch (true) {
             case target.prototype instanceof BaseEntity: return (
                 (target as StaticEntityTarget).build(data)
@@ -191,7 +188,7 @@ export default class MySQL2RawDataHandler<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    private filterColumns<Entity extends Target = T>(raw: MySQL2RawData): (
+    private filterColumns<Entity extends ConcretTarget = T>(raw: MySQL2RawData): (
         RawData<Entity>
     ) {
         return Object.fromEntries(Object.entries(raw).flatMap(
@@ -203,7 +200,7 @@ export default class MySQL2RawDataHandler<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    private filterRelations<Entity extends Target = T>(
+    private filterRelations<Entity extends ConcretTarget = T>(
         raw: MySQL2RawData[],
         metadata: TargetMetadata<any> = this.metadata,
         method: 'json' | 'entity' = 'json'

@@ -114,7 +114,7 @@ import JoinTablesMetadata, {
     type JoinTableMetadataJSON
 } from './JoinTablesMetadata'
 
-import Repository from '../../Repository'
+import Repository from '../../Repositories/Repository'
 
 // Hooks
 import HooksMetadata, {

@@ -1,15 +1,14 @@
-import { ComputedPropertiesMetadata } from "../../../../Metadata"
+import { ComputedPropertiesMetadata } from "../../../Metadata"
 
 // Types
-import type {
-    CollectionTarget,
-    Entity,
-    EntityProperties
-} from "../../../../types"
+import type { CollectionTarget, EntityProperties } from "../../../types"
+import type BaseEntity from "../../BaseEntity"
+import type BasePolymorphicEntity from "../../BasePolymorphicEntity"
+import type { UpdateAttributes } from "../../../SQLBuilders"
 
-import type { UpdateAttributes } from "../../../../SQLBuilders"
-
-export default class Collection<T extends Entity> extends Array<T> {
+export default class Collection<T extends (
+    BaseEntity | BasePolymorphicEntity<any>
+)> extends Array<T> {
     public static readonly alias: string = this.name
 
     constructor(...entities: T[]) {
@@ -42,7 +41,7 @@ export default class Collection<T extends Entity> extends Array<T> {
      * @returns - A object with included properties and without hidden
      * properties
      */
-    public toJSON<This extends Collection<Entity>>(this: This): (
+    public toJSON<This extends Collection<T>>(this: This): (
         { [K: string]: any, data: T[] } | T[]
     ) {
         return this.hasComputedProperties()

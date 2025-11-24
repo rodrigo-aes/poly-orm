@@ -42,8 +42,7 @@ import { BaseEntity, Collection, Pagination } from './Entities'
 import { BasePolymorphicEntity } from './Entities'
 
 // Repositories
-import Repository from './Repository'
-import PolymorphicRepository from './PolymorphicRepository'
+import { Repository, PolymorphicRepository } from './Repositories'
 
 // Query Builders
 import {

@@ -4,19 +4,19 @@ import { Collection } from "../../../Entities"
 import CollectionsMetadataHandler from "./CollectionsMetadataHandler"
 
 // Types
-import type { Target } from "../../../types"
+import type { ConcretTarget } from "../../../types"
 import type { CollectionsMetadataJSON } from "./types"
 
 // Exceptions
 import type { MetadataErrorCode } from "../../../Errors"
 
 export default class CollectionsMetadata<
-    T extends Target = Target,
+    T extends ConcretTarget = ConcretTarget,
     C extends typeof Collection<InstanceType<T>> = any
 > extends MetadataArray<C> {
     public default: typeof Collection = Collection
 
-    constructor(public target: Target, ...collections: C[]) {
+    constructor(public target: T, ...collections: C[]) {
         super(target, ...collections)
         this.init()
     }
