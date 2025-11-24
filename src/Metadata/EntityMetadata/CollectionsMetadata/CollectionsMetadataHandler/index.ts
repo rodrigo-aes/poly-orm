@@ -3,10 +3,10 @@ import CollectionsMetadata from ".."
 import TempMetadata from "../../../TempMetadata"
 
 // Types
-import type { ConcretTarget } from "../../../../types"
+import type { Target } from "../../../../types"
 
 export default class CollectionsMetadataHandler {
-    public static loadCollection(target: ConcretTarget): typeof Collection {
+    public static loadCollection(target: Target): typeof Collection {
         return TempMetadata.getCollection(target)
             ?? CollectionsMetadata.find(target)?.default
             ?? Collection
@@ -14,7 +14,7 @@ export default class CollectionsMetadataHandler {
 
     // ------------------------------------------------------------------------
 
-    public static build<T extends ConcretTarget>(
+    public static build<T extends Target>(
         target: T,
         entities: InstanceType<T>[]
     ): Collection<InstanceType<T>> {

@@ -1,4 +1,4 @@
-import { MetadataHandler, TempMetadata } from "../Metadata"
+import { MetadataHandler, TempMetadata, type HookType } from "../Metadata"
 import {
     ColumnsSnapshots,
 
@@ -33,11 +33,6 @@ import type {
     TargetRepository,
     TargetQueryBuilder,
 
-    EntityTarget,
-
-    PolymorphicEntityTarget,
-
-    Constructor,
     EntityJSON,
     EntityObject,
     EntityProperties
@@ -47,6 +42,9 @@ import type {
 import PolyORMException from "../Errors"
 
 export default abstract class Entity {
+    public static readonly INHERIT_HOOKS: boolean = true
+    public static readonly INHERIT_ONLY_HOOKS?: HookType[]
+
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     /**
@@ -348,7 +346,7 @@ export default abstract class Entity {
      * @returns - Entity instance or `null`
      */
     public static findByPk<
-        T extends EntityTarget,
+        T extends Target,
         M extends ResultMapOption = 'entity'
     >(
         this: T,
@@ -452,7 +450,7 @@ export default abstract class Entity {
     >(
         this: T,
         options: Opts
-    ): Promise<CountManyQueryResult<T, Opts>> {
+    ): Promise<CountManyQueryResult<InstanceType<T>, Opts>> {
         return (this as StaticTarget<any>)
             .getRepository()
             .countMany(options)

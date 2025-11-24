@@ -25,7 +25,7 @@ import PolymorphicRelationsMetadata, {
 } from "./PolymorphicRelationsMetadata"
 
 // Repository
-import PolymorphicRepository from "../../PolymorphicRepository"
+import { PolymorphicRepository } from "../../Repositories"
 
 // Handlers
 import MetadataHandler from '../MetadataHandler'

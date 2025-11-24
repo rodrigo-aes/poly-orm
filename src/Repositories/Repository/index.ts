@@ -37,10 +37,9 @@ import {
 // Types 
 import type { Constructor } from "../../types"
 import type { UpdateQueryResult, CountManyQueryResult } from "../types"
-import type { ResultSetHeader } from "mysql2"
 
 export default class Repository<T extends BaseEntity> extends BaseRepository<
-    Constructor<T>
+    T
 > {
     constructor(
         /** @intenral */

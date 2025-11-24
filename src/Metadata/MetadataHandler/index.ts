@@ -126,7 +126,7 @@ export default class MetadataHandler {
     // ------------------------------------------------------------------------
 
     public static getRepository<T extends Target>(target: T): (
-        Constructor<TargetRepository<T>> | undefined
+        Constructor<TargetRepository<InstanceType<T>>> | undefined
     ) {
         return Reflect.getOwnMetadata('repository', target)
     }
@@ -134,7 +134,7 @@ export default class MetadataHandler {
     // ------------------------------------------------------------------------
 
     public static setRepository<T extends Target>(
-        repository: Constructor<TargetRepository<T>>,
+        repository: Constructor<TargetRepository<InstanceType<T>>>,
         target: T
     ): void {
         Reflect.defineMetadata('repository', repository, target)

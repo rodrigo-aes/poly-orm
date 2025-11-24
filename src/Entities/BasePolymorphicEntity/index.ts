@@ -93,10 +93,6 @@ export default abstract class BasePolymorphicEntity<
     /** @internal */
     public static readonly __ROLE: 'INTERNAL' | 'EXTERNAL' = 'EXTERNAL'
 
-    public static readonly MERGE_POLYMORPHIC_RELATIONS: boolean = true
-    public static readonly INHERIT_HOOKS: boolean = true
-    public static readonly INHERIT_ONLY_HOOKS?: HookType[]
-
     /**
      * Entity primary key
      */
@@ -134,7 +130,7 @@ export default abstract class BasePolymorphicEntity<
     public getRepository<
         T extends PolymorphicRepository<this> = PolymorphicRepository<this>
     >(): T {
-        return this.getTrueMetadata().getRepository()
+        return this.getTrueMetadata().getRepository() as T
     }
 
     // ------------------------------------------------------------------------

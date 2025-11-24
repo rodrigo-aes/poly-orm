@@ -1,5 +1,4 @@
-import type { Target } from "../types"
-import type { Entity } from "../Entities"
+import type { Target, Entity } from "../types"
 import type { ResultSetHeader } from "mysql2"
 import type { UpdateAttributes } from "../SQLBuilders"
 import type { CountQueryOptions } from "../SQLBuilders"
@@ -14,6 +13,6 @@ export type UpdateQueryResult<
     )
 
 export type CountManyQueryResult<
-    T extends Target,
-    Opts extends CountQueryOptions<InstanceType<T>>
+    T extends Entity,
+    Opts extends CountQueryOptions<T>
 > = { [K in keyof Opts]: number }

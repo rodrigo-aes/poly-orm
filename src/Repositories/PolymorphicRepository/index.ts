@@ -32,7 +32,7 @@ import PolyORMException from "../../Errors"
 
 export default class PolymorphicRepository<
     T extends BasePolymorphicEntity<any>
-> extends BaseRepository<Constructor<T>> {
+> extends BaseRepository<T> {
     constructor(
         /** @intenral */
         protected target: Constructor<T>

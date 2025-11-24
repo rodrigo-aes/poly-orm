@@ -12,7 +12,7 @@ import type {
     PolymorphicColumnsMetadataJSON
 } from "./PolymorphicColumnsMetadata"
 
-import type PolymorphicRepository from "../../PolymorphicRepository"
+import type { PolymorphicRepository } from "../../Repositories"
 
 export type UnionEntitiesMap = {
     [K: string]: EntityTarget

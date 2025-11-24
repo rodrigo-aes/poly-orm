@@ -12,6 +12,7 @@ import {
     PolymorphicBelongsToMetadata,
 
     type RelationMetadataType,
+    type HookType,
 } from "../../Metadata"
 
 // Query Builder
@@ -59,12 +60,15 @@ import { Repository } from "../../Repositories"
  * class User extends BaseEntity {}
  */
 export default abstract class BaseEntity extends Entity {
+    /** Entity name */
     public abstract readonly name: string
+
+    public static readonly INHERIT_POLYMORPHIC_RELATIONS = false
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public getRepository<T extends Repository<this> = Repository<this>>(): T {
-        return this.getTrueMetadata().getRepository()
+        return this.getTrueMetadata().getRepository() as T
     }
 
     // ------------------------------------------------------------------------
