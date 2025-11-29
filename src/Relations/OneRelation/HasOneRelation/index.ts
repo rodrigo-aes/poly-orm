@@ -1,7 +1,7 @@
 import OneRelation from ".."
 
 // Types
-import type { EntityTarget } from "../../../types"
+import type { Constructor, Entity } from "../../../types"
 import type {
     HasOneMetadata,
     PolymorphicHasOneMetadata
@@ -16,21 +16,24 @@ import type {
  * Has one relation handler
  */
 export default abstract class HasOneRelation<
-    Target extends object,
-    Related extends EntityTarget
-> extends OneRelation<Target, Related> {
+    T extends Entity,
+    R extends Entity
+> extends OneRelation<T, R> {
     /** @internal */
     constructor(
         /** @internal */
         protected metadata: HasOneMetadata | PolymorphicHasOneMetadata,
 
         /** @internal */
-        protected target: Target,
+        protected target: T,
 
         /** @internal */
-        protected related: Related
+        protected related: Constructor<R>,
+
+        /** @internal */
+        protected instance?: R | null
     ) {
-        super(metadata, target, related)
+        super(metadata, target, related, instance)
     }
 
     // Instance Methods =======================================================
@@ -40,13 +43,13 @@ export default abstract class HasOneRelation<
      * @param attributes - Related creation attributes data
      * @returns - Instance of created related entity
      */
-    public create(attributes: CreationAttributes<InstanceType<Related>>): (
-        Promise<InstanceType<Related>>
-    ) {
-        return this.queryExecutionHandler.executeCreate(
+    public async create(attributes: CreationAttributes<R>): Promise<this> {
+        this.instance = await this.queryExecutionHandler.executeCreate(
             this.sqlBuilder.createSQL(attributes),
             attributes
         )
+
+        return this
     }
 
     // ------------------------------------------------------------------------
@@ -56,11 +59,11 @@ export default abstract class HasOneRelation<
      * @param attributes - Related update or create attributes data
      * @returns - Instance of updated or created related entity
      */
-    public updateOrCreate(
-        attributes: UpdateOrCreateAttibutes<InstanceType<Related>>
-    ): Promise<InstanceType<Related>> {
-        return this.queryExecutionHandler.executeUpdateOrCreate(
+    public async updateOrCreate(attributes: UpdateOrCreateAttibutes<R>): Promise<this> {
+        this.instance = await this.queryExecutionHandler.executeUpdateOrCreate(
             this.sqlBuilder.updateOrCreateSQL(attributes)
         )
+
+        return this
     }
 }

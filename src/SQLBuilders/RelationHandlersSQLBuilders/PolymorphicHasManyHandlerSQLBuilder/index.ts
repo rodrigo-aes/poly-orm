@@ -3,20 +3,16 @@ import { BasePolymorphicEntity } from "../../../Entities"
 
 // Types
 import type { PolymorphicHasManyMetadata } from "../../../Metadata"
-import type { Target as TargetType } from "../../../types"
+import type { Entity, Constructor } from "../../../types"
 
 export default class PolymorphicHasManyHandlerSQLBuilder<
-    Target extends object,
-    Related extends TargetType
-> extends ManyRelationHandlerSQLBuilder<
-    PolymorphicHasManyMetadata,
-    Target,
-    Related
-> {
+    T extends Entity,
+    R extends Entity
+> extends ManyRelationHandlerSQLBuilder<PolymorphicHasManyMetadata, T, R> {
     constructor(
         protected metadata: PolymorphicHasManyMetadata,
-        protected target: Target,
-        protected related: Related
+        protected target: T,
+        protected related: Constructor<R>
     ) {
         super(metadata, target, related)
     }

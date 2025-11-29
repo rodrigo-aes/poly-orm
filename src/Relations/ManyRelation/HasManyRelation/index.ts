@@ -1,7 +1,8 @@
 import ManyRelation from ".."
+import { Collection } from "../../../Entities"
 
 // Types
-import type { EntityTarget } from "../../../types"
+import type { Constructor, Entity, EntityTarget } from "../../../types"
 import type {
     HasManyMetadata,
     PolymorphicHasManyMetadata,
@@ -15,9 +16,9 @@ import type {
 
 /** Has many relation handler */
 export default abstract class HasManyRelation<
-    Target extends object,
-    Related extends EntityTarget
-> extends ManyRelation<Target, Related> {
+    T extends Entity,
+    R extends Entity
+> extends ManyRelation<T, R> {
     /** @internal */
     constructor(
         /** @internal */
@@ -28,12 +29,18 @@ export default abstract class HasManyRelation<
         ),
 
         /** @internal */
-        protected target: Target,
+        protected target: T,
 
         /** @internal */
-        protected related: Related
+        protected related: Constructor<R>,
+
+        /** @internal */
+        protected collection: typeof Collection = Collection,
+
+        /** @internal */
+        protected instances: Collection<R> = new collection
     ) {
-        super(metadata, target, related)
+        super(metadata, target, related, collection, instances)
     }
 
     // Instance Methods =======================================================
@@ -43,17 +50,14 @@ export default abstract class HasManyRelation<
      * @param attributes - Related entity creation attributes
      * @returns - Related entity instance
      */
-    public async create(
-        attributes: CreationAttributes<InstanceType<Related>>
-    ): Promise<InstanceType<Related>> {
-        const entity = await this.queryExecutionHandler.executeCreate(
+    public async create(attributes: CreationAttributes<R>): Promise<R> {
+        const instance = await this.queryExecutionHandler.executeCreate(
             this.sqlBuilder.createSQL(attributes),
             attributes
         )
+        this.instances.push(instance)
 
-        this.push(entity)
-
-        return entity
+        return instance
     }
 
     // ------------------------------------------------------------------------
@@ -63,17 +67,14 @@ export default abstract class HasManyRelation<
      * @param attributes - An array of creation attributes data
      * @returns - Related entity instances
      */
-    public async createMany(
-        attributes: CreationAttributes<InstanceType<Related>>[]
-    ): Promise<InstanceType<Related>[]> {
-        const entities = await this.queryExecutionHandler.executeCreateMany(
+    public async createMany(attributes: CreationAttributes<R>[]): Promise<R[]> {
+        const instances = await this.queryExecutionHandler.executeCreateMany(
             this.sqlBuilder.createManySQL(attributes),
             attributes
         )
+        this.instances.push(...instances)
 
-        this.push(...entities)
-
-        return entities
+        return instances
     }
 
     // ------------------------------------------------------------------------
@@ -83,15 +84,14 @@ export default abstract class HasManyRelation<
      * @param attributes - Update or create attributes data
      * @returns - Related entity instance
      */
-    public async updateOrCreate(
-        attributes: UpdateOrCreateAttibutes<InstanceType<Related>>
-    ): Promise<InstanceType<Related>> {
-        const entity = await this.queryExecutionHandler.executeUpdateOrCreate(
+    public async updateOrCreate(attributes: UpdateOrCreateAttibutes<R>): (
+        Promise<R>
+    ) {
+        const instance = await this.queryExecutionHandler.executeUpdateOrCreate(
             this.sqlBuilder.updateOrCreateSQL(attributes)
         )
+        this.instances.push(instance)
 
-        this.mergeResult(entity)
-
-        return entity
+        return instance
     }
 }

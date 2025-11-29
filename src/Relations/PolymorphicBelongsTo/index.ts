@@ -10,23 +10,24 @@ import {
 } from "../../Handlers"
 
 // Types
-import type { PolymorphicEntityTarget } from "../../types"
+import type { Entity, Constructor } from "../../types"
+import type { BasePolymorphicEntity } from "../../Entities"
 import type { PolymorphicBelongsToMetadata } from "../../Metadata"
 
 export default class PolymorphicBelongsTo<
-    Target extends object,
-    Related extends PolymorphicEntityTarget
-> extends OneRelation<Target, Related> {
+    T extends Entity,
+    R extends BasePolymorphicEntity<any>
+> extends OneRelation<T, R> {
     /** @internal */
     constructor(
         /** @internal */
         protected metadata: PolymorphicBelongsToMetadata,
 
         /** @internal */
-        protected target: Target,
+        protected target: T,
 
         /** @internal */
-        protected related: Related
+        protected related: Constructor<R>
     ) {
         super(metadata, target, related)
     }
@@ -34,9 +35,7 @@ export default class PolymorphicBelongsTo<
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected get sqlBuilder(): (
-        PolymorphicBelongsToHandlerSQLBuilder<Target, Related>
-    ) {
+    protected get sqlBuilder(): PolymorphicBelongsToHandlerSQLBuilder<T, R> {
         return new PolymorphicBelongsToHandlerSQLBuilder(
             this.metadata,
             this.target

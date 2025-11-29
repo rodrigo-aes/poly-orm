@@ -463,7 +463,7 @@ export default class MySQL2QueryExecutionHandler<
 
     // Static Methods =========================================================
     // Publics ----------------------------------------------------------------
-    public static relation<T extends EntityTarget | PolymorphicEntityTarget>(
+    public static relation<T extends Target>(
         related: T
     ): RelationQueryExecutionHandler<InstanceType<T>> {
         return new RelationQueryExecutionHandler(related as any)

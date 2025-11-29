@@ -4,24 +4,24 @@ import HasManyRelation from "../ManyRelation/HasManyRelation"
 import { HasManyHandlerSQLBuilder } from "../../SQLBuilders"
 
 // Types
-import type { EntityTarget } from "../../types"
+import type { Entity, Constructor } from "../../types"
 import type { HasManyMetadata } from "../../Metadata"
 
 /** HasMany relation handler */
 export default class HasMany<
-    Target extends object,
-    Related extends EntityTarget
-> extends HasManyRelation<Target, Related> {
+    T extends Entity,
+    R extends Entity
+> extends HasManyRelation<T, R> {
     /** @internal */
     constructor(
         /** @internal */
         protected metadata: HasManyMetadata,
 
         /** @internal */
-        protected target: Target,
+        protected target: T,
 
         /** @internal */
-        protected related: Related
+        protected related: Constructor<R>
     ) {
         super(metadata, target, related)
     }
@@ -29,7 +29,7 @@ export default class HasMany<
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected get sqlBuilder(): HasManyHandlerSQLBuilder<Target, Related> {
+    protected get sqlBuilder(): HasManyHandlerSQLBuilder<T, R> {
         return new HasManyHandlerSQLBuilder(
             this.metadata,
             this.target,

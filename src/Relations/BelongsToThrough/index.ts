@@ -10,24 +10,24 @@ import {
 } from "../../Handlers"
 
 // Types
-import type { EntityTarget } from "../../types"
+import type { Entity, Constructor } from "../../types"
 import type { BelongsToThroughMetadata } from "../../Metadata"
 
 /** BelongsToThrough relation handler */
 export default class BelongsToThrough<
-    Target extends object,
-    Related extends EntityTarget
-> extends OneRelation<Target, Related> {
+    T extends Entity,
+    R extends Entity
+> extends OneRelation<T, R> {
     /** @internal */
     constructor(
         /** @internal */
         protected metadata: BelongsToThroughMetadata,
 
         /** @internal */
-        protected target: Target,
+        protected target: T,
 
         /** @internal */
-        protected related: Related
+        protected related: Constructor<R>
     ) {
         super(metadata, target, related)
     }
@@ -35,9 +35,7 @@ export default class BelongsToThrough<
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected get sqlBuilder(): (
-        BelongsToThroughHandlerSQLBuilder<Target, Related>
-    ) {
+    protected get sqlBuilder(): BelongsToThroughHandlerSQLBuilder<T, R> {
         return new BelongsToThroughHandlerSQLBuilder(
             this.metadata,
             this.target,

@@ -9,26 +9,26 @@ import { PropertySQLHelper } from "../../../Helpers"
 
 // Types
 import type { RelationMetadataType, } from "../../../Metadata"
-import type { Target as TargetType, TargetMetadata } from "../../../types"
+import type { Constructor, Entity, TargetMetadata } from "../../../types"
 import type { CreationAttributes } from "../../CreateSQLBuilder"
 import type { UpdateOrCreateAttibutes } from "../../UpdateOrCreateSQLBuilder"
 import type { UpdateAttributes } from "../../UpdateSQLBuilder"
 
 export default abstract class RelationHandlerSQLBuilder<
     RelationMetadata extends RelationMetadataType,
-    Target extends object,
-    Related extends TargetType
+    T extends Entity,
+    R extends Entity
 > {
-    protected targetMetadata: TargetMetadata<any>
-    protected relatedMetadata: TargetMetadata<Related>
+    protected targetMetadata: TargetMetadata<Constructor<T>>
+    protected relatedMetadata: TargetMetadata<Constructor<R>>
 
     constructor(
         protected metadata: RelationMetadata,
-        protected target: Target,
-        protected related: Related
+        protected target: T,
+        protected related: Constructor<R>
     ) {
         this.targetMetadata = MetadataHandler.targetMetadata(
-            this.target.constructor as TargetType
+            this.target.constructor as Constructor<T>
         )
         this.relatedMetadata = MetadataHandler.targetMetadata(this.related)
     }
@@ -47,9 +47,9 @@ export default abstract class RelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected get targetPrimary(): Extract<keyof Target, string> {
+    protected get targetPrimary(): Extract<keyof T, string> {
         return this.targetMetadata.columns.primary.name as (
-            Extract<keyof Target, string>
+            Extract<keyof T, string>
         )
     }
 
@@ -79,12 +79,10 @@ export default abstract class RelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected get relatedPrimary(): (
-        Extract<keyof InstanceType<Related>, string>
-    ) {
-        return this.relatedMetadata.columns.primary.name as (
-            Extract<keyof InstanceType<Related>, string>
-        )
+    protected get relatedPrimary(): Extract<keyof R, string> {
+        return this.relatedMetadata.columns.primary.name as Extract<
+            keyof R, string
+        >
     }
 
     // Protecteds ------------------------------------------------------------
@@ -118,66 +116,54 @@ export default abstract class RelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected mergeAttributes<
-        Att extends (
-            CreationAttributes<InstanceType<Related>> |
-            UpdateAttributes<InstanceType<Related>> |
-            UpdateOrCreateAttibutes<InstanceType<Related>>
-        )
-    >(attributes: Att): Att {
+    protected mergeAttributes<Att extends (
+        CreationAttributes<R> |
+        UpdateAttributes<R> |
+        UpdateOrCreateAttibutes<R>
+    )>(attributes: Att): Att {
         return { ...attributes, ...this.includedAtrributes }
     }
 
     // ------------------------------------------------------------------------
 
-    protected attributesKeys(
-        attributes: (
-            CreationAttributes<InstanceType<Related>> |
-            UpdateAttributes<InstanceType<Related>>
-        )
-    ): (keyof Related)[] {
+    protected attributesKeys(attributes: (
+        CreationAttributes<R> |
+        UpdateAttributes<R>
+    )): (keyof R)[] {
         return Object.keys(this.mergeAttributes(attributes)) as (
-            (keyof Related)[]
+            (keyof R)[]
         )
     }
 
     // ------------------------------------------------------------------------
 
-    protected attributesValues(
-        attributes: (
-            CreationAttributes<InstanceType<Related>> |
-            UpdateAttributes<InstanceType<Related>>
-        )
-    ): any[] {
+    protected attributesValues(attributes: (
+        CreationAttributes<R> |
+        UpdateAttributes<R>
+    )): any[] {
         return Object.values(this.mergeAttributes(attributes))
     }
 
     // ------------------------------------------------------------------------
 
-    protected attributesEntries(
-        attributes: (
-            CreationAttributes<InstanceType<Related>> |
-            UpdateAttributes<InstanceType<Related>>
-        )
-    ): [(keyof Related), any][] {
+    protected attributesEntries(attributes: (
+        CreationAttributes<R> |
+        UpdateAttributes<R>
+    )): [(keyof R), any][] {
         return Object.entries(this.mergeAttributes(attributes)) as (
-            [(keyof Related), any][]
+            [(keyof R), any][]
         )
     }
 
     // ------------------------------------------------------------------------
 
-    protected setSQL(attributes: UpdateAttributes<InstanceType<Related>>): (
-        string
-    ) {
+    protected setSQL(attributes: UpdateAttributes<R>): string {
         return `SET ${this.setValuesSQL(attributes)}`
     }
 
     // ------------------------------------------------------------------------
 
-    protected setValuesSQL(
-        attributes: UpdateAttributes<InstanceType<Related>>
-    ): string {
+    protected setValuesSQL(attributes: UpdateAttributes<R>): string {
         return Object
             .entries(this.onlyChangedAttributes(attributes))
             .map(([column, value]) => `${this.relatedAlias}.${column} = ${(
@@ -188,9 +174,7 @@ export default abstract class RelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected onlyChangedAttributes(
-        attributes: UpdateAttributes<InstanceType<Related>>
-    ): any {
+    protected onlyChangedAttributes(attributes: UpdateAttributes<R>): any {
         return (
             attributes instanceof BaseEntity ||
             attributes instanceof BasePolymorphicEntity
@@ -201,12 +185,11 @@ export default abstract class RelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected placeholderSetSQL(
-        attributes: (
-            CreationAttributes<InstanceType<Related>> |
-            UpdateAttributes<InstanceType<Related>>
-        ) | number
-    ): string {
+    protected placeholderSetSQL(attributes: (
+        CreationAttributes<R> |
+        UpdateAttributes<R> |
+        number
+    )): string {
         return `(${(
             Array(typeof attributes === 'number'
                 ? attributes
@@ -219,12 +202,10 @@ export default abstract class RelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected bulkPlaceholderSQL(
-        attributes: (
-            CreationAttributes<InstanceType<Related>> |
-            UpdateAttributes<InstanceType<Related>>
-        )[]
-    ): string {
+    protected bulkPlaceholderSQL(attributes: (
+        CreationAttributes<R> |
+        UpdateAttributes<R>
+    )[]): string {
         return Array(attributes.length)
             .fill(
                 this.placeholderSetSQL(
@@ -236,12 +217,12 @@ export default abstract class RelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected createValues<
-        Att extends (
-            CreationAttributes<InstanceType<Related>> |
-            UpdateAttributes<InstanceType<Related>>
-        )
-    >(attributes: Att | Att[]): any[] | any[][] {
+    protected createValues<Att extends (
+        CreationAttributes<R> |
+        UpdateAttributes<R>
+    )>(
+        attributes: Att | Att[]
+    ): any[] | any[][] {
         if (Array.isArray(attributes)) {
             const columns = this.bulkCreateColumns(attributes) as (keyof Att)[]
             return attributes.map(att => columns.map(col => att[col] ?? null))
@@ -252,12 +233,10 @@ export default abstract class RelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected bulkCreateColumns(
-        attributes: (
-            CreationAttributes<InstanceType<Related>> |
-            UpdateAttributes<InstanceType<Related>>
-        )[]
-    ): string[] {
+    protected bulkCreateColumns(attributes: (
+        CreationAttributes<R> |
+        UpdateAttributes<R>
+    )[]): string[] {
         return Array.from(new Set<string>(
             attributes.flatMap(att => Object.keys(att))
         ))

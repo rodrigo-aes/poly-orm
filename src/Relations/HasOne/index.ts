@@ -4,32 +4,35 @@ import HasOneRelation from "../OneRelation/HasOneRelation"
 import { HasOneHandlerSQLBuilder } from "../../SQLBuilders"
 
 // Types
-import type { EntityTarget } from "../../types"
+import type { Constructor, Entity } from "../../types"
 import type { HasOneMetadata } from "../../Metadata"
 
 /** HasOne relation handler */
 export default class HasOne<
-    Target extends object,
-    Related extends EntityTarget
-> extends HasOneRelation<Target, Related> {
+    T extends Entity,
+    R extends Entity
+> extends HasOneRelation<T, R> {
     /** @internal */
     constructor(
         /** @internal */
         protected metadata: HasOneMetadata,
 
         /** @internal */
-        protected target: Target,
+        protected target: T,
 
         /** @internal */
-        protected related: Related
+        protected related: Constructor<R>,
+
+        /** @internal */
+        protected instance?: R | null
     ) {
-        super(metadata, target, related)
+        super(metadata, target, related, instance)
     }
 
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected get sqlBuilder(): HasOneHandlerSQLBuilder<Target, Related> {
+    protected get sqlBuilder(): HasOneHandlerSQLBuilder<T, R> {
         return new HasOneHandlerSQLBuilder(
             this.metadata,
             this.target,

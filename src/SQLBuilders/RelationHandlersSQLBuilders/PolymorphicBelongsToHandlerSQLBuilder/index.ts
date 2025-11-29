@@ -17,7 +17,8 @@ import type {
     PolymorphicBelongsToMetadata,
 } from "../../../Metadata"
 
-import type { PolymorphicEntityTarget } from "../../../types"
+import type { Entity, Constructor } from "../../../types"
+import type { BasePolymorphicEntity } from "../../../Entities"
 
 import { CreationAttributes } from "../../CreateSQLBuilder"
 import { OptionalNullable } from "../../../types/Properties"
@@ -29,21 +30,17 @@ import type { UpdateAttributes } from "../../UpdateSQLBuilder"
 import PolyORMException from "../../../Errors"
 
 export default class PolymorphicBelongsToHandlerSQLBuilder<
-    Target extends object,
-    Related extends PolymorphicEntityTarget
-> extends OneRelationHandlerSQLBuilder<
-    PolymorphicBelongsToMetadata,
-    Target,
-    Related
-> {
+    T extends Entity,
+    R extends BasePolymorphicEntity<any>
+> extends OneRelationHandlerSQLBuilder<PolymorphicBelongsToMetadata, T, R> {
     private _sourceMetadata?: EntityMetadata
 
     constructor(
         protected metadata: PolymorphicBelongsToMetadata,
-        protected target: Target,
-        protected related: Related = InternalPolymorphicEntities.get(
+        protected target: T,
+        protected related: Constructor<R> = InternalPolymorphicEntities.get(
             metadata.relatedTargetName
-        ) as Related
+        ) as Constructor<R>
     ) {
         super(metadata, target, related)
     }
@@ -61,8 +58,8 @@ export default class PolymorphicBelongsToHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    private get foreignKey(): keyof Target {
-        return this.metadata.FKName as keyof Target
+    private get foreignKey(): keyof T {
+        return this.metadata.FKName as keyof T
     }
 
     // ------------------------------------------------------------------------
@@ -73,8 +70,8 @@ export default class PolymorphicBelongsToHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    private get typeKey(): keyof Target | undefined {
-        return this.metadata.TKName as keyof Target | undefined
+    private get typeKey(): keyof T | undefined {
+        return this.metadata.TKName as keyof T | undefined
     }
 
     // ------------------------------------------------------------------------
@@ -124,9 +121,7 @@ export default class PolymorphicBelongsToHandlerSQLBuilder<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public override createSQL(_: CreationAttributes<InstanceType<Related>>): (
-        [string, any[]]
-    ) {
+    public override createSQL(_: CreationAttributes<R>): [string, any[]] {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'createSQL', this.constructor.name
         )
@@ -135,7 +130,7 @@ export default class PolymorphicBelongsToHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     public override updateOrCreateSQL(
-        _: Partial<OptionalNullable<EntityProperties<InstanceType<Related>>>>
+        _: Partial<OptionalNullable<EntityProperties<R>>>
     ): string {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'updateOrCreateSQL', this.constructor.name
@@ -144,9 +139,9 @@ export default class PolymorphicBelongsToHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public override updateSQL(
-        attributes: Partial<EntityProperties<InstanceType<Related>>>
-    ): string {
+    public override updateSQL(attributes: Partial<EntityProperties<R>>): (
+        string
+    ) {
         return SQLStringHelper.normalizeSQL(`
             UPDATE ${this.sourceTable} ${this.sourceAlias} 
             ${this.setSQL(attributes)}
@@ -167,9 +162,7 @@ export default class PolymorphicBelongsToHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected override setValuesSQL(
-        attributes: UpdateAttributes<InstanceType<Related>>
-    ): string {
+    protected override setValuesSQL(attributes: UpdateAttributes<R>): string {
         return Object
             .entries(this.onlyChangedAttributes(attributes))
             .map(([column, value]) => `${this.sourceAlias}.${column} = ${(

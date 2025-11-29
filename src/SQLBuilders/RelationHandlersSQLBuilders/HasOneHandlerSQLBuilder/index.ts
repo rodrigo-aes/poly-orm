@@ -3,20 +3,16 @@ import OneRelationHandlerSQLBuilder from "../OneRelationHandlerSQLBuilder"
 // Types
 import type { HasOneMetadata } from "../../../Metadata"
 
-import type { Target as TargetType } from "../../../types"
+import type { Constructor, Entity } from "../../../types"
 
 export default class HasOneHandlerSQLBuilder<
-    Target extends object,
-    Related extends TargetType
-> extends OneRelationHandlerSQLBuilder<
-    HasOneMetadata,
-    Target,
-    Related
-> {
+    T extends Entity,
+    R extends Entity
+> extends OneRelationHandlerSQLBuilder<HasOneMetadata, T, R> {
     constructor(
         protected metadata: HasOneMetadata,
-        protected target: Target,
-        protected related: Related
+        protected target: T,
+        protected related: Constructor<R>
     ) {
         super(metadata, target, related)
     }

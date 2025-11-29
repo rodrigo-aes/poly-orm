@@ -4,24 +4,24 @@ import OneRelation from "../OneRelation"
 import { BelongsToHandlerSQLBuilder } from "../../SQLBuilders"
 
 // Types
-import type { EntityTarget } from "../../types"
+import type { Entity, Constructor } from "../../types"
 import type { BelongsToMetadata } from "../../Metadata"
 
 /** BelongsTo relation handler */
 export default class BelongsTo<
-    Target extends object,
-    Related extends EntityTarget
-> extends OneRelation<Target, Related> {
+    T extends Entity,
+    R extends Entity
+> extends OneRelation<T, R> {
     /** @internal */
     constructor(
         /** @internal */
         protected metadata: BelongsToMetadata,
 
         /** @internal */
-        protected target: Target,
+        protected target: T,
 
         /** @internal */
-        protected related: Related
+        protected related: Constructor<R>
     ) {
         super(metadata, target, related)
     }
@@ -29,7 +29,7 @@ export default class BelongsTo<
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected get sqlBuilder(): BelongsToHandlerSQLBuilder<Target, Related> {
+    protected get sqlBuilder(): BelongsToHandlerSQLBuilder<T, R> {
         return new BelongsToHandlerSQLBuilder(
             this.metadata,
             this.target,

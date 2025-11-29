@@ -4,23 +4,23 @@ import HasOneRelation from "../OneRelation/HasOneRelation"
 import { PolymorphicHasOneHandlerSQLBuilder } from "../../SQLBuilders"
 
 // Types
-import type { EntityTarget } from "../../types"
+import type { Entity, Constructor, Target } from "../../types"
 import type { PolymorphicHasOneMetadata } from "../../Metadata"
 
 export default class PolymorphicHasOne<
-    Target extends object,
-    Related extends EntityTarget
-> extends HasOneRelation<Target, Related> {
+    T extends Entity,
+    R extends Entity
+> extends HasOneRelation<T, R> {
     /** @internal */
     constructor(
         /** @internal */
         protected metadata: PolymorphicHasOneMetadata,
 
         /** @internal */
-        protected target: Target,
+        protected target: T,
 
         /** @internal */
-        protected related: Related
+        protected related: Constructor<R>
     ) {
         super(metadata, target, related)
     }
@@ -28,9 +28,7 @@ export default class PolymorphicHasOne<
     // Getters ================================================================
     // protecteds -------------------------------------------------------------
     /** @internal */
-    protected get sqlBuilder(): (
-        PolymorphicHasOneHandlerSQLBuilder<Target, Related>
-    ) {
+    protected get sqlBuilder(): PolymorphicHasOneHandlerSQLBuilder<T, R> {
         return new PolymorphicHasOneHandlerSQLBuilder(
             this.metadata,
             this.target,

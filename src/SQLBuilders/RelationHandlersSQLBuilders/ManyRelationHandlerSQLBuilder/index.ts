@@ -13,9 +13,9 @@ import { SQLStringHelper, PropertySQLHelper } from "../../../Helpers"
 import type { ManyRelationMetadatatype } from "../../../Metadata"
 
 import type {
-    Target as TargetType,
-    EntityTarget,
-    PolymorphicEntityTarget
+    Entity,
+    Constructor,
+    EntityTarget
 } from "../../../types"
 
 import type { ConditionalQueryOptions } from "../../ConditionalSQLBuilder"
@@ -24,16 +24,16 @@ import type { UpdateAttributes } from "../../UpdateSQLBuilder"
 
 export default abstract class ManyRelationHandlerSQLBuilder<
     RelationMetadata extends ManyRelationMetadatatype,
-    Target extends object,
-    Related extends TargetType
+    T extends Entity,
+    R extends Entity
 > extends RelationHandlerSQLBuilder<
     RelationMetadata,
-    Target,
-    Related
+    T,
+    R
 > {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public loadSQL(where?: ConditionalQueryOptions<InstanceType<Related>>): (
+    public loadSQL(where?: ConditionalQueryOptions<R>): (
         string
     ) {
         return SQLStringHelper.normalizeSQL(
@@ -44,14 +44,14 @@ export default abstract class ManyRelationHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     public loadOneSQL(
-        where?: ConditionalQueryOptions<InstanceType<Related>>
+        where?: ConditionalQueryOptions<R>
     ): string {
         return `${this.loadSQL(where)} LIMIT 1`
     }
 
     // ------------------------------------------------------------------------
 
-    public createSQL(attributes: CreationAttributes<InstanceType<Related>>): (
+    public createSQL(attributes: CreationAttributes<R>): (
         [string, any[]]
     ) {
         return [
@@ -67,7 +67,7 @@ export default abstract class ManyRelationHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     public createManySQL(
-        attributes: CreationAttributes<InstanceType<Related>>[]
+        attributes: CreationAttributes<R>[]
     ): [string, any[][]] {
         return [
             SQLStringHelper.normalizeSQL(`
@@ -81,9 +81,7 @@ export default abstract class ManyRelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public updateOrCreateSQL(
-        attributes: UpdateOrCreateAttibutes<InstanceType<Related>>
-    ) {
+    public updateOrCreateSQL(attributes: UpdateOrCreateAttibutes<R>): string {
         return new UpdateOrCreateSQLBuilder(
             this.related as EntityTarget,
             this.mergeAttributes(attributes)
@@ -94,8 +92,8 @@ export default abstract class ManyRelationHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     public updateSQL(
-        attributes: UpdateAttributes<InstanceType<Related>>,
-        where?: ConditionalQueryOptions<InstanceType<Related>>
+        attributes: UpdateAttributes<R>,
+        where?: ConditionalQueryOptions<R>
     ): string {
         return SQLStringHelper.normalizeSQL(
             `UPDATE ${this.relatedTable}
@@ -106,24 +104,18 @@ export default abstract class ManyRelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public deleteSQL(
-        where?: ConditionalQueryOptions<InstanceType<Related>>
-    ): string {
+    public deleteSQL(where?: ConditionalQueryOptions<R>): string {
         return `DELETE FROM ${this.relatedTable} ${this.whereSQL(where)}`
     }
 
     // Protecteds -------------------------------------------------------------
-    protected whereSQL(
-        where?: ConditionalQueryOptions<InstanceType<Related>>
-    ): string {
+    protected whereSQL(where?: ConditionalQueryOptions<R>): string {
         return this.fixedWhereSQL() + this.andSQL(where)
     }
 
     // ------------------------------------------------------------------------
 
-    protected andSQL(where?: ConditionalQueryOptions<InstanceType<Related>>): (
-        string
-    ) {
+    protected andSQL(where?: ConditionalQueryOptions<R>): string {
         return where
             ? ` AND ${(
                 new WhereSQLBuilder(this.related, where).conditionalSQL()
@@ -133,17 +125,13 @@ export default abstract class ManyRelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected insertColumnsSQL(
-        attributes: CreationAttributes<InstanceType<Related>>
-    ): string {
+    protected insertColumnsSQL(attributes: CreationAttributes<R>): string {
         return this.attributesKeys(attributes).join(', ')
     }
 
     // ------------------------------------------------------------------------
 
-    protected insertValuesSQL(
-        attributes: CreationAttributes<InstanceType<Related>>
-    ): string {
+    protected insertValuesSQL(attributes: CreationAttributes<R>): string {
         return this.attributesValues(attributes)
             .map(value => PropertySQLHelper.valueSQL(value))
             .join(', ')

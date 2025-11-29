@@ -6,21 +6,18 @@ import type {
 } from "../../../Metadata"
 
 import type {
-    EntityTarget
+    Entity,
+    Constructor
 } from "../../../types"
 
 export default class HasManyHandlerSQLBuilder<
-    Target extends object,
-    Related extends EntityTarget
-> extends ManyRelationHandlerSQLBuilder<
-    HasManyMetadata,
-    Target,
-    Related
-> {
+    T extends Entity,
+    R extends Entity
+> extends ManyRelationHandlerSQLBuilder<HasManyMetadata, T, R> {
     constructor(
         protected metadata: HasManyMetadata,
-        protected target: Target,
-        protected related: Related
+        protected target: T,
+        protected related: Constructor<R>
     ) {
         super(metadata, target, related)
     }

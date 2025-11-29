@@ -1,8 +1,5 @@
-import {
-    MetadataHandler,
-    type EntityMetadata,
-    type PolymorphicEntityMetadata
-} from "../../Metadata"
+import { MetadataHandler } from "../../Metadata"
+import { Collection } from "../../Entities"
 
 // Handlers
 import {
@@ -13,7 +10,7 @@ import {
 
 // Types
 import type { ResultSetHeader } from "mysql2"
-import type { EntityTarget, PolymorphicEntityTarget } from "../../types"
+import type { Constructor, Entity, TargetMetadata } from "../../types"
 import type { ManyRelationMetadatatype } from "../../Metadata"
 import type { ManyRelationHandlerSQLBuilder } from "../../SQLBuilders"
 import type {
@@ -23,11 +20,11 @@ import type {
 
 /** Many relation handler */
 export default abstract class ManyRelation<
-    Target extends object,
-    Related extends EntityTarget | PolymorphicEntityTarget
-> extends Array<InstanceType<Related>> {
+    T extends Entity,
+    R extends Entity
+> {
     /** @internal */
-    private _relatedMetadata?: EntityMetadata | PolymorphicEntityMetadata
+    private _relatedMetadata?: TargetMetadata<Constructor<R>>
 
     /** @internal */
     constructor(
@@ -35,13 +32,39 @@ export default abstract class ManyRelation<
         protected metadata: ManyRelationMetadatatype,
 
         /** @internal */
-        protected target: Target,
+        protected target: T,
 
         /** @internal */
-        protected related: Related,
-        ...instances: InstanceType<Related>[]
+        protected related: Constructor<R>,
+
+        /** @internal */
+        protected collection: typeof Collection = Collection,
+
+        /** @internal */
+        protected instances: Collection<R> = new collection
     ) {
-        super(...instances)
+        return new Proxy(this, {
+            get: (target, prop, receiver) => {
+                const [t, value] = target.instances && prop in target.instances
+                    ? [
+                        target.instances,
+                        Reflect.get(target.instances, prop, receiver)
+                    ]
+                    : [target, Reflect.get(target, prop, receiver)]
+
+                return typeof value === "function"
+                    ? value.bind(t)
+                    : value
+            },
+
+            // ----------------------------------------------------------------
+
+            set(target, prop, value, receiver) {
+                return target.instances && prop in target.instances
+                    ? Reflect.set(target.instances, prop, value, receiver)
+                    : Reflect.set(target, prop, value, receiver)
+            }
+        })
     }
 
     // Getters ================================================================
@@ -52,26 +75,24 @@ export default abstract class ManyRelation<
     // ------------------------------------------------------------------------
 
     /** @internal */
-    protected get queryExecutionHandler(): (
-        RelationQueryExecutionHandler<Related>
-    ) {
+    protected get queryExecutionHandler(): RelationQueryExecutionHandler<R> {
         return MySQL2QueryExecutionHandler.relation(this.related)
     }
 
     // ------------------------------------------------------------------------
 
     /** @internal */
-    protected get relatedMetadata(): EntityMetadata | PolymorphicEntityMetadata {
-        return this._relatedMetadata ?? this.loadRelatedMetadata()
+    protected get relatedMetadata(): TargetMetadata<Constructor<R>> {
+        return this._relatedMetadata ??= MetadataHandler.targetMetadata(
+            this.related
+        )
     }
 
     // ------------------------------------------------------------------------
 
     /** @internal */
-    protected get relatedPrimary(): keyof InstanceType<Related> {
-        return this.relatedMetadata.columns.primary.name as (
-            keyof InstanceType<Related>
-        )
+    protected get relatedPrimary(): keyof R {
+        return this.relatedMetadata.columns.primary.name as keyof R
     }
 
     // Instance Methods =======================================================
@@ -81,14 +102,12 @@ export default abstract class ManyRelation<
      * @param where - conditional where options
      * @returns - 
      */
-    public async load(
-        where?: ConditionalQueryOptions<InstanceType<Related>>
-    ): Promise<this> {
-        return this.mergeResults(
-            await this.queryExecutionHandler.executeFind(
-                this.sqlBuilder.loadSQL(where)
-            )
+    public async load(where?: ConditionalQueryOptions<R>): Promise<this> {
+        this.instances = await this.queryExecutionHandler.executeFind(
+            this.sqlBuilder.loadSQL(where)
         )
+
+        return this
     }
 
     // ------------------------------------------------------------------------
@@ -99,13 +118,15 @@ export default abstract class ManyRelation<
      * @param where - Conditional where options
      * @returns - Related entity instance or `null`
      */
-    public async loadOne(
-        where?: ConditionalQueryOptions<InstanceType<Related>>
-    ): Promise<InstanceType<Related> | null> {
-        return this.mergeResult(
-            await this.queryExecutionHandler
-                .executeFindOne(this.sqlBuilder.loadOneSQL(where))
+    public async loadOne(where?: ConditionalQueryOptions<R>): Promise<
+        R | null
+    > {
+        const instance = await this.queryExecutionHandler.executeFindOne(
+            this.sqlBuilder.loadOneSQL(where)
         )
+        if (instance) this.instances.push(instance)
+
+        return instance
     }
 
     // ------------------------------------------------------------------------
@@ -118,11 +139,12 @@ export default abstract class ManyRelation<
      * @returns - A result header with details of operation
      */
     public update(
-        attributes: UpdateAttributes<InstanceType<Related>>,
-        where?: ConditionalQueryOptions<InstanceType<Related>>
+        attributes: UpdateAttributes<R>,
+        where?: ConditionalQueryOptions<R>
     ): Promise<ResultSetHeader> {
-        return this.queryExecutionHandler
-            .executeUpdate(this.sqlBuilder.updateSQL(attributes, where))
+        return this.queryExecutionHandler.executeUpdate(
+            this.sqlBuilder.updateSQL(attributes, where)
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -133,48 +155,9 @@ export default abstract class ManyRelation<
      * @param where - Conditional where options
      * @returns - Delete result
      */
-    public delete(where?: ConditionalQueryOptions<InstanceType<Related>>): (
-        Promise<DeleteResult>
-    ) {
-        return this.queryExecutionHandler
-            .executeDelete(this.sqlBuilder.deleteSQL(where))
-    }
-
-    // Protecteds -------------------------------------------------------------
-    /** @internal */
-    protected mergeResult(result: InstanceType<Related> | null): (
-        InstanceType<Related> | null
-    ) {
-        if (!result) return result
-
-        const existent = this.find(existent => (
-            existent[this.relatedPrimary] === result[this.relatedPrimary]
-        ))
-
-        if (existent) {
-            Object.assign(existent, result)
-            return existent
-        }
-
-        this.push(result)
-        return result
-    }
-
-    // ------------------------------------------------------------------------
-
-    /** @internal */
-    protected mergeResults(results: InstanceType<Related>[]): this {
-        results.map(result => this.mergeResult(result) as (
-            InstanceType<Related>
-        ))
-
-        return this
-    }
-
-    // Privates ---------------------------------------------------------------
-    /** @internal */
-    private loadRelatedMetadata(): EntityMetadata | PolymorphicEntityMetadata {
-        this._relatedMetadata = MetadataHandler.targetMetadata(this.related)
-        return this._relatedMetadata
+    public delete(where?: ConditionalQueryOptions<R>): Promise<DeleteResult> {
+        return this.queryExecutionHandler.executeDelete(
+            this.sqlBuilder.deleteSQL(where)
+        )
     }
 }

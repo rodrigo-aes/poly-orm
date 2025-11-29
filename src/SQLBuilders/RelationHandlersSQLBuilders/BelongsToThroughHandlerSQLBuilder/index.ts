@@ -1,34 +1,23 @@
 import OneRelationHandlerSQLBuilder from "../OneRelationHandlerSQLBuilder"
 
 // Types
-import type {
-    BelongsToThroughMetadata,
-} from "../../../Metadata"
-
-import type {
-    EntityTarget,
-    PolymorphicEntityTarget
-} from "../../../types"
-
-import { CreationAttributes } from "../../CreateSQLBuilder"
-import { OptionalNullable } from "../../../types/Properties"
-import { EntityProperties } from "../../../types"
+import type { BelongsToThroughMetadata } from "../../../Metadata"
+import type { Entity, Constructor } from "../../../types"
+import type { CreationAttributes } from "../../CreateSQLBuilder"
+import type { OptionalNullable } from "../../../types/Properties"
+import type { EntityProperties } from "../../../types"
 
 // Exceptions
 import PolyORMException from "../../../Errors"
 
 export default class BelongsToThroughHandlerSQLBuilder<
-    Target extends object,
-    Related extends EntityTarget | PolymorphicEntityTarget
-> extends OneRelationHandlerSQLBuilder<
-    BelongsToThroughMetadata,
-    Target,
-    Related
-> {
+    T extends Entity,
+    R extends Entity
+> extends OneRelationHandlerSQLBuilder<BelongsToThroughMetadata, T, R> {
     constructor(
         protected metadata: BelongsToThroughMetadata,
-        protected target: Target,
-        protected related: Related
+        protected target: T,
+        protected related: Constructor<R>
     ) {
         super(metadata, target, related)
     }
@@ -41,12 +30,10 @@ export default class BelongsToThroughHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected override get relatedPrimary(): (
-        Extract<keyof InstanceType<Related>, string>
-    ) {
-        return `${this.relatedAlias}.${super.relatedPrimary}` as (
-            Extract<keyof InstanceType<Related>, string>
-        )
+    protected override get relatedPrimary(): Extract<keyof R, string> {
+        return `${this.relatedAlias}.${super.relatedPrimary}` as Extract<
+            keyof R, string
+        >
     }
 
     // Privates ---------------------------------------------------------------
@@ -74,9 +61,7 @@ export default class BelongsToThroughHandlerSQLBuilder<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public override createSQL(_: CreationAttributes<InstanceType<Related>>): (
-        [string, any[]]
-    ) {
+    public override createSQL(_: CreationAttributes<R>): [string, any[]] {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'createSQL', this.constructor.name
         )
@@ -85,7 +70,7 @@ export default class BelongsToThroughHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     public override updateOrCreateSQL(
-        _: Partial<OptionalNullable<EntityProperties<InstanceType<Related>>>>
+        _: Partial<OptionalNullable<EntityProperties<R>>>
     ): string {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'updateOrCreateSQL', this.constructor.name

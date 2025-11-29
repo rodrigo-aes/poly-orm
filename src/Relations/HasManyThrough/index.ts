@@ -4,24 +4,24 @@ import ManyRelation from "../ManyRelation"
 import { HasManyThroughHandlerSQLBuilder } from "../../SQLBuilders"
 
 // Types
-import type { EntityTarget } from "../../types"
+import type { Entity, Constructor } from "../../types"
 import type { HasManyThroughMetadata } from "../../Metadata"
 
 /** HasMany relation handler */
 export default class HasManyThrough<
-    Target extends object,
-    Related extends EntityTarget
-> extends ManyRelation<Target, Related> {
+    T extends Entity,
+    R extends Entity
+> extends ManyRelation<T, R> {
     /** @internal */
     constructor(
         /** @internal */
         protected metadata: HasManyThroughMetadata,
 
         /** @internal */
-        protected target: Target,
+        protected target: T,
 
         /** @internal */
-        protected related: Related
+        protected related: Constructor<R>
     ) {
         super(metadata, target, related)
     }
@@ -29,9 +29,7 @@ export default class HasManyThrough<
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected get sqlBuilder(): (
-        HasManyThroughHandlerSQLBuilder<Target, Related>
-    ) {
+    protected get sqlBuilder(): HasManyThroughHandlerSQLBuilder<T, R> {
         return new HasManyThroughHandlerSQLBuilder(
             this.metadata,
             this.target,

@@ -4,24 +4,24 @@ import OneRelation from "../OneRelation"
 import { HasOneThroughHandlerSQLBuilder } from "../../SQLBuilders"
 
 // Types
-import type { EntityTarget } from "../../types"
+import type { Entity, Constructor } from "../../types"
 import type { HasOneThroughMetadata } from "../../Metadata"
 
 /** HasOneThrough relation handler */
 export default class HasOneThrough<
-    Target extends object,
-    Related extends EntityTarget
-> extends OneRelation<Target, Related> {
+    T extends Entity,
+    R extends Entity
+> extends OneRelation<T, R> {
     /** @internal */
     constructor(
         /** @internal */
         protected metadata: HasOneThroughMetadata,
 
         /** @internal */
-        protected target: Target,
+        protected target: T,
 
         /** @internal */
-        protected related: Related
+        protected related: Constructor<R>
     ) {
         super(metadata, target, related)
     }
@@ -29,9 +29,7 @@ export default class HasOneThrough<
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected get sqlBuilder(): (
-        HasOneThroughHandlerSQLBuilder<Target, Related>
-    ) {
+    protected get sqlBuilder(): HasOneThroughHandlerSQLBuilder<T, R> {
         return new HasOneThroughHandlerSQLBuilder(
             this.metadata,
             this.target,

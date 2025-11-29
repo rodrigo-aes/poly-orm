@@ -183,15 +183,13 @@ export default abstract class BasePolymorphicEntity<
     public async update<T extends BasePolymorphicEntity<any>>(
         this: T,
         attributes: UpdateAttributes<T>
-    ): Promise<T> {
-        await this.getRepository()
-            .update(
-                this.entities[this.entityType],
-                this.fill(attributes).toSourceEntity(),
-                this._whereSourcePk as any
-            )
-
-        return this
+    ): Promise<ResultSetHeader> {
+        return this.getRepository().update(
+            this.entities[this.entityType],
+            (this.fill(attributes).toSourceEntity() as BaseEntity)
+                .toObject(),
+            this._whereSourcePk as any
+        ) as Promise<ResultSetHeader>
     }
 
     // ------------------------------------------------------------------------
@@ -199,7 +197,9 @@ export default abstract class BasePolymorphicEntity<
     /**
      * Delete the register of the source entity in database
      */
-    public async delete<T extends BasePolymorphicEntity<any>>(this: T) {
+    public async delete<T extends BasePolymorphicEntity<any>>(this: T): (
+        Promise<void>
+    ) {
         await this.getRepository().delete(
             this.entities[this.entityType],
             this._whereSourcePk as any

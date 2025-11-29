@@ -10,16 +10,12 @@ import { SQLStringHelper, PropertySQLHelper } from "../../../Helpers"
 
 // Types
 import type { BelongsToManyMetadata } from "../../../Metadata"
-import type { EntityTarget } from "../../../types"
+import type { Entity, Constructor } from "../../../types"
 
 export default class BelongsToManyHandlerSQLBuilder<
-    Target extends object,
-    Related extends EntityTarget
-> extends ManyRelationHandlerSQLBuilder<
-    BelongsToManyMetadata,
-    Target,
-    Related
-> {
+    T extends Entity,
+    R extends Entity
+> extends ManyRelationHandlerSQLBuilder<BelongsToManyMetadata, T, R> {
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     protected get includedAtrributes(): any {
@@ -65,9 +61,7 @@ export default class BelongsToManyHandlerSQLBuilder<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public createForeingKeysSQL(
-        relateds: InstanceType<Related> | InstanceType<Related>[]
-    ): [string, any[]] {
+    public createForeingKeysSQL(relateds: R | R[]): [string, any[]] {
         return Array.isArray(relateds)
             ? this.bulkCreateForeignKeySQL(relateds)
             : this.createForeignKeySQL(relateds)
@@ -75,19 +69,19 @@ export default class BelongsToManyHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public attachSQL(...relateds: (InstanceType<Related> | any)[]) {
+    public attachSQL(...relateds: (R | any)[]) {
         return this.syncInsertSQL(this.extractSyncPrimaryKeys(relateds))
     }
 
     // ------------------------------------------------------------------------
 
-    public detachSQL(...relateds: (InstanceType<Related> | any)[]) {
+    public detachSQL(...relateds: (R | any)[]) {
         return this.syncDeleteSQL(this.extractSyncPrimaryKeys(relateds))
     }
 
     // ------------------------------------------------------------------------
 
-    public syncSQL(...relateds: (InstanceType<Related> | any)[]) {
+    public syncSQL(...relateds: (R | any)[]) {
         const primaryKeys: any[] = this.extractSyncPrimaryKeys(relateds)
 
         return SyncManyToMany.callSQL(
@@ -98,7 +92,7 @@ export default class BelongsToManyHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public syncWithoutDeleteSQL(...relateds: (InstanceType<Related> | any)[]) {
+    public syncWithoutDeleteSQL(...relateds: R[]) {
         return SyncManyToMany.callSQL(
             this.syncInsertSQL(this.extractSyncPrimaryKeys(relateds))
         )
@@ -118,9 +112,7 @@ export default class BelongsToManyHandlerSQLBuilder<
     }
 
     // Privates ---------------------------------------------------------------
-    private createForeignKeySQL(related: InstanceType<Related>): (
-        [string, any[]]
-    ) {
+    private createForeignKeySQL(related: R): [string, any[]] {
         return [
             SQLStringHelper.normalizeSQL(`
                 INSERT INTO ${this.JT} 
@@ -133,9 +125,7 @@ export default class BelongsToManyHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    private bulkCreateForeignKeySQL(relateds: InstanceType<Related>[]): (
-        [string, any[][]]
-    ) {
+    private bulkCreateForeignKeySQL(relateds: R[]): [string, any[][]] {
         return [
             SQLStringHelper.normalizeSQL(`
                 INSERT INTO ${this.JT}
@@ -166,18 +156,16 @@ export default class BelongsToManyHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    private foreignKeysValues(related: InstanceType<Related>): any[] {
+    private foreignKeysValues(related: R): any[] {
         return [this.targetPrimaryValue, related[this.relatedPrimary]]
     }
 
     // ------------------------------------------------------------------------
 
-    private extractSyncPrimaryKeys(
-        relateds: (InstanceType<Related> | any)[]
-    ): any[] {
+    private extractSyncPrimaryKeys(relateds: R[]): any[] {
         return relateds.map(related =>
             related instanceof BaseEntity
-                ? (related as InstanceType<Related>)[this.relatedPrimary]
+                ? (related as R)[this.relatedPrimary]
                 : related
         )
     }

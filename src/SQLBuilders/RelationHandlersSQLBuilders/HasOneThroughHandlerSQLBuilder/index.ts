@@ -2,7 +2,7 @@ import OneRelationHandlerSQLBuilder from "../OneRelationHandlerSQLBuilder"
 
 // Types
 import type { HasOneThroughMetadata } from "../../../Metadata"
-import type { EntityTarget } from "../../../types"
+import type { Entity, Constructor } from "../../../types"
 import type { CreationAttributes } from "../../CreateSQLBuilder"
 import type { UpdateOrCreateAttibutes } from "../../UpdateOrCreateSQLBuilder"
 
@@ -10,17 +10,13 @@ import type { UpdateOrCreateAttibutes } from "../../UpdateOrCreateSQLBuilder"
 import PolyORMException from "../../../Errors"
 
 export default class HasOneThroughHandlerSQLBuilder<
-    Target extends object,
-    Related extends EntityTarget
-> extends OneRelationHandlerSQLBuilder<
-    HasOneThroughMetadata,
-    Target,
-    Related
-> {
+    T extends Entity,
+    R extends Entity
+> extends OneRelationHandlerSQLBuilder<HasOneThroughMetadata, T, R> {
     constructor(
         protected metadata: HasOneThroughMetadata,
-        protected target: Target,
-        protected related: Related
+        protected target: T,
+        protected related: Constructor<R>
     ) {
         super(metadata, target, related)
     }
@@ -64,9 +60,7 @@ export default class HasOneThroughHandlerSQLBuilder<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public override createSQL(_: CreationAttributes<InstanceType<Related>>): (
-        [string, any[]]
-    ) {
+    public override createSQL(_: CreationAttributes<R>): [string, any[]] {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'createSQL', this.constructor.name
         )
@@ -74,9 +68,7 @@ export default class HasOneThroughHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public override updateOrCreateSQL(
-        _: UpdateOrCreateAttibutes<InstanceType<Related>>
-    ): string {
+    public override updateOrCreateSQL(_: UpdateOrCreateAttibutes<R>): string {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'updateOrCreateSQL', this.constructor.name
         )

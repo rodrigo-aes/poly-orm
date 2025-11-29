@@ -4,24 +4,24 @@ import HasManyRelation from "../ManyRelation/HasManyRelation"
 import { PolymorphicHasManyHandlerSQLBuilder } from "../../SQLBuilders"
 
 // Types
-import type { EntityTarget } from "../../types"
+import type { Entity, Constructor, EntityTarget } from "../../types"
 import type { PolymorphicHasManyMetadata } from "../../Metadata"
 
 /** HasMany relation handler */
 export default class PolymorphicHasMany<
-    Target extends object,
-    Related extends EntityTarget
-> extends HasManyRelation<Target, Related> {
+    T extends Entity,
+    R extends Entity
+> extends HasManyRelation<T, R> {
     /** @internal */
     constructor(
         /** @internal */
         protected metadata: PolymorphicHasManyMetadata,
 
         /** @internal */
-        protected target: Target,
+        protected target: T,
 
         /** @internal */
-        protected related: Related
+        protected related: Constructor<R>
     ) {
         super(metadata, target, related)
     }
@@ -29,9 +29,7 @@ export default class PolymorphicHasMany<
     // Getters ================================================================
     // protecteds -------------------------------------------------------------
     /** @internal */
-    protected get sqlBuilder(): (
-        PolymorphicHasManyHandlerSQLBuilder<Target, Related>
-    ) {
+    protected get sqlBuilder(): PolymorphicHasManyHandlerSQLBuilder<T, R> {
         return new PolymorphicHasManyHandlerSQLBuilder(
             this.metadata,
             this.target,

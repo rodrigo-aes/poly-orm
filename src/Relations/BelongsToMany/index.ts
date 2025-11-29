@@ -7,24 +7,24 @@ import {
 } from "../../SQLBuilders"
 
 // Types
-import type { EntityTarget } from "../../types"
+import type { Entity, Constructor } from "../../types"
 import type { BelongsToManyMetadata } from "../../Metadata"
 
 /** HasMany relation handler */
 export default class BelongsToMany<
-    Target extends object,
-    Related extends EntityTarget
-> extends HasManyRelation<Target, Related> {
+    T extends Entity,
+    R extends Entity
+> extends HasManyRelation<T, R> {
     /** @internal */
     constructor(
         /** @internal */
         protected metadata: BelongsToManyMetadata,
 
         /** @internal */
-        protected target: Target,
+        protected target: T,
 
         /** @internal */
-        protected related: Related
+        protected related: Constructor<R>
     ) {
         super(metadata, target, related)
     }
@@ -33,7 +33,7 @@ export default class BelongsToMany<
     // Protecteds -------------------------------------------------------------
     /** @internal */
     protected get sqlBuilder(): (
-        BelongsToManyHandlerSQLBuilder<Target, Related>
+        BelongsToManyHandlerSQLBuilder<T, R>
     ) {
         return new BelongsToManyHandlerSQLBuilder(
             this.metadata,
@@ -44,9 +44,7 @@ export default class BelongsToMany<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public override async create(
-        attributes: CreationAttributes<InstanceType<Related>>
-    ): Promise<InstanceType<Related>> {
+    public override async create(attributes: CreationAttributes<R>): Promise<R> {
         const entity = await super.create(attributes)
 
         await this.queryExecutionHandler
@@ -59,9 +57,9 @@ export default class BelongsToMany<
 
     // ------------------------------------------------------------------------
 
-    public override async createMany(
-        attributes: CreationAttributes<InstanceType<Related>>[]
-    ): Promise<InstanceType<Related>[]> {
+    public override async createMany(attributes: CreationAttributes<R>[]): (
+        Promise<R[]>
+    ) {
         const entities = await super.createMany(attributes)
 
         await this.queryExecutionHandler
@@ -78,9 +76,7 @@ export default class BelongsToMany<
      * Attach relations on join table to relateds passed
      * @param relateds - Array of related entity instance or primary key
      */
-    public attach(...relateds: (InstanceType<Related> | any)[]): (
-        Promise<void>
-    ) {
+    public attach(...relateds: (R | any)[]): Promise<void> {
         return this.queryExecutionHandler
             .executeVoidOperation(this.sqlBuilder.attachSQL(relateds))
     }
@@ -91,9 +87,7 @@ export default class BelongsToMany<
      * Datach relations on join table to relateds passed
      * @param relateds - Array of related entity instance or primary key
      */
-    public detach(...relateds: (InstanceType<Related> | any)[]): (
-        Promise<void>
-    ) {
+    public detach(...relateds: (R | any)[]): Promise<void> {
         return this.queryExecutionHandler
             .executeVoidOperation(this.sqlBuilder.detachSQL(relateds))
     }
@@ -104,9 +98,7 @@ export default class BelongsToMany<
      * Syncronize all attachs and detachs keeping only in relateds array
      * @param relateds - Array of related entity instance or primary key
      */
-    public sync(...relateds: (InstanceType<Related> | any)[]): (
-        Promise<void>
-    ) {
+    public sync(...relateds: (R | any)[]): Promise<void> {
         return this.queryExecutionHandler
             .executeVoidOperation(this.sqlBuilder.syncSQL(relateds))
     }

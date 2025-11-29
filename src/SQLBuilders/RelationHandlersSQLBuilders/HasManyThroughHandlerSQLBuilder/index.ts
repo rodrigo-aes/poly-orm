@@ -6,7 +6,8 @@ import type {
 } from "../../../Metadata"
 
 import type {
-    EntityTarget
+    Entity,
+    Constructor
 } from "../../../types"
 import { CreationAttributes } from "../../CreateSQLBuilder"
 
@@ -14,17 +15,13 @@ import { CreationAttributes } from "../../CreateSQLBuilder"
 import PolyORMException from "../../../Errors"
 
 export default class HasManyThroughHandlerSQLBuilder<
-    Target extends object,
-    Related extends EntityTarget
-> extends ManyRelationHandlerSQLBuilder<
-    HasManyThroughMetadata,
-    Target,
-    Related
-> {
+    T extends Entity,
+    R extends Entity
+> extends ManyRelationHandlerSQLBuilder<HasManyThroughMetadata, T, R> {
     constructor(
         protected metadata: HasManyThroughMetadata,
-        protected target: Target,
-        protected related: Related
+        protected target: T,
+        protected related: Constructor<R>
     ) {
         super(metadata, target, related)
     }
@@ -60,9 +57,7 @@ export default class HasManyThroughHandlerSQLBuilder<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public override createSQL(_: CreationAttributes<InstanceType<Related>>): (
-        [string, any[]]
-    ) {
+    public override createSQL(_: CreationAttributes<R>): [string, any[]] {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'createSQL', this.constructor.name
         )
@@ -70,9 +65,9 @@ export default class HasManyThroughHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public override createManySQL(
-        _: CreationAttributes<InstanceType<Related>>[]
-    ): [string, any[][]] {
+    public override createManySQL(_: CreationAttributes<R>[]): [
+        string, any[][]
+    ] {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'updateOrCreateSQL', this.constructor.name
         )

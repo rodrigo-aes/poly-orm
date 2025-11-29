@@ -10,24 +10,15 @@ import { SQLStringHelper, PropertySQLHelper } from "../../../Helpers"
 
 // Types
 import type { OneRelationMetadataType } from "../../../Metadata"
-
-import type {
-    Target as TargetType,
-    EntityTarget
-} from "../../../types"
-
+import type { Entity, EntityTarget } from "../../../types"
 import type { CreationAttributes } from "../../CreateSQLBuilder"
 import type { UpdateAttributes } from "../../UpdateSQLBuilder"
 
 export default abstract class OneRelationHandlerSQLBuilder<
     RelationMetadata extends OneRelationMetadataType,
-    Target extends object,
-    Related extends TargetType
-> extends RelationHandlerSQLBuilder<
-    RelationMetadata,
-    Target,
-    Related
-> {
+    T extends Entity,
+    R extends Entity
+> extends RelationHandlerSQLBuilder<RelationMetadata, T, R> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public loadSQL(): string {
@@ -38,7 +29,7 @@ export default abstract class OneRelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public createSQL(attributes: CreationAttributes<InstanceType<Related>>): (
+    public createSQL(attributes: CreationAttributes<R>): (
         [string, any[]]
     ) {
         return [
@@ -53,9 +44,7 @@ export default abstract class OneRelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public updateOrCreateSQL(
-        attributes: UpdateOrCreateAttibutes<InstanceType<Related>>
-    ): string {
+    public updateOrCreateSQL(attributes: UpdateOrCreateAttibutes<R>): string {
         return new UpdateOrCreateSQLBuilder(
             this.related as EntityTarget,
             this.mergeAttributes(attributes)
@@ -65,9 +54,7 @@ export default abstract class OneRelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public updateSQL(attributes: UpdateAttributes<InstanceType<Related>>): (
-        string
-    ) {
+    public updateSQL(attributes: UpdateAttributes<R>): string {
         return SQLStringHelper.normalizeSQL(`
             UPDATE ${this.relatedTableAlias}
             ${this.setSQL(attributes)}
@@ -82,21 +69,15 @@ export default abstract class OneRelationHandlerSQLBuilder<
     }
 
     // Protecteds -------------------------------------------------------------
-    protected insertColumnsSQL(
-        attributes: CreationAttributes<InstanceType<Related>>
-    ): string {
+    protected insertColumnsSQL(attributes: CreationAttributes<R>): string {
         return this.attributesKeys(attributes).join(', ')
     }
 
     // ------------------------------------------------------------------------
 
-    protected insertValuesSQL(
-        attributes: CreationAttributes<InstanceType<Related>>
-    ): string {
+    protected insertValuesSQL(attributes: CreationAttributes<R>): string {
         return this.attributesValues(attributes)
             .map(value => PropertySQLHelper.valueSQL(value))
             .join(', ')
     }
-
-
 }

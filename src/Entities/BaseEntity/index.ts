@@ -98,11 +98,11 @@ export default abstract class BaseEntity extends Entity {
     public async update<T extends BaseEntity>(
         this: T,
         attributes: UpdateAttributes<T>
-    ): Promise<T> {
+    ): Promise<ResultSetHeader> {
         return this.getRepository().update(
-            this.fill(attributes),
+            attributes,
             this._wherePK
-        ) as Promise<T>
+        ) as Promise<ResultSetHeader>
     }
 
     // ------------------------------------------------------------------------
@@ -110,9 +110,8 @@ export default abstract class BaseEntity extends Entity {
     /**
      * Delete the register of the current instance in database
      */
-    public async delete<T extends BaseEntity>(this: T): Promise<T> {
+    public async delete<T extends BaseEntity>(this: T): Promise<void> {
         await this.getRepository().delete(this._wherePK)
-        return this
     }
 
     // Protecteds -------------------------------------------------------------
