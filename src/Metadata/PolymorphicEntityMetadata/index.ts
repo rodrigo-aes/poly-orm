@@ -221,11 +221,10 @@ export default class PolymorphicEntityMetadata extends Metadata {
     }
 
     // Privates ---------------------------------------------------------------
-    private buildJSON<T extends PolymorphicEntityTarget = any>(): (
-        PolymorphicEntityMetadataJSON | undefined
-    ) {
+
+    protected buildJSON(): PolymorphicEntityMetadataJSON | undefined {
         if (EntityToJSONProcessMetadata.shouldAdd(this.name)) return {
-            target: this.target as T,
+            target: this.target,
             name: this.name,
             tableName: this.tableName,
             columns: this.columns.toJSON(),

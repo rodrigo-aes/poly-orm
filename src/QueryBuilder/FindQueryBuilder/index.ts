@@ -14,7 +14,8 @@ import OrderQueryBuilder, {
 } from "../OrderQueryBuilder"
 
 // Types
-import type { Target } from "../../types"
+import type { Target, Entity, Constructor } from "../../types"
+
 import type { CaseQueryHandler } from "../types"
 import type { FindQueryOptions } from "./types"
 
@@ -22,7 +23,7 @@ import type { FindQueryOptions } from "./types"
  * Build Find query
  */
 export default class FindQueryBuilder<
-    T extends Target
+    T extends Entity
 > extends FindOneQueryBuilder<T> {
     /** @internal */
     protected override _options: FindQueryOptions<T> = {
@@ -77,7 +78,7 @@ export default class FindQueryBuilder<
     * Convert `this` to `FindQueryOptions` object
     * @returns - A object with find options
     */
-    public override toQueryOptions(): SQLBuilderOptions<InstanceType<T>> {
+    public override toQueryOptions(): SQLBuilderOptions<T> {
         const { select, where, group, order, limit, offset } = this._options
 
         return {
@@ -93,7 +94,7 @@ export default class FindQueryBuilder<
 
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected override toSQLBuilder(): FindSQLBuilder<T> {
+    protected override toSQLBuilder(): FindSQLBuilder<Constructor<T>> {
         return new FindSQLBuilder(
             this.target,
             this.toQueryOptions(),

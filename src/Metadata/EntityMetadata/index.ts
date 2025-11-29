@@ -160,7 +160,7 @@ import { EntityToJSONProcessMetadata } from '../ProcessMetadata'
 import MetadataHandler from '../MetadataHandler'
 
 // Types
-import type { EntityTarget } from '../../types'
+import type { Constructor, EntityTarget } from '../../types'
 import type { PolyORMConnection } from '../ConnectionsMetadata'
 import type { EntityMetadataJSON } from './types'
 
@@ -300,7 +300,7 @@ export default class EntityMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public defineRepository(repository: typeof Repository<any>): void {
+    public defineRepository(repository: Constructor<Repository<any>>): void {
         return MetadataHandler.setRepository(repository, this.target)
     }
 
@@ -324,11 +324,9 @@ export default class EntityMetadata extends Metadata {
     }
 
     // Privates ---------------------------------------------------------------
-    private buildJSON<T extends EntityTarget = any>(): (
-        EntityMetadataJSON | undefined
-    ) {
+    protected buildJSON(): EntityMetadataJSON | undefined {
         if (EntityToJSONProcessMetadata.shouldAdd(this.name)) return {
-            target: this.target as T,
+            target: this.target,
             name: this.name,
             tableName: this.tableName,
             Repository: this.Repository,

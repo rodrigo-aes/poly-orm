@@ -6,6 +6,8 @@ import ConditionalQueryBuilder from "../ConditionalQueryBuilder"
 
 // Types
 import type {
+    Entity,
+    Constructor,
     Target,
     TargetMetadata,
     EntityTarget,
@@ -33,9 +35,9 @@ import PolyORMException from "../../Errors"
 /**
  * Build `JOIN` options
  */
-export default class JoinQueryBuilder<T extends Target> {
+export default class JoinQueryBuilder<T extends Entity> {
     /** @internal */
-    protected metadata: TargetMetadata<T>
+    protected metadata: TargetMetadata<Constructor<T>>
 
     /** @internal */
     private _options: JoinQueryClause<T> = {
@@ -45,7 +47,7 @@ export default class JoinQueryBuilder<T extends Target> {
     /** @internal */
     constructor(
         /** @internal */
-        public target: T,
+        public target: Constructor<T>,
 
         /** @internal */
         public alias?: string,
@@ -64,8 +66,8 @@ export default class JoinQueryBuilder<T extends Target> {
      * @param joinClause - Join query handler
      * @returns {this} - `this`
      */
-    public innerJoin<T extends EntityTarget>(
-        relation: T | string,
+    public innerJoin<T extends Entity>(
+        relation: Constructor<T> | string,
         joinClause?: JoinQueryHandler<T>
     ): this {
         JoinQueryBuilder.build(
@@ -87,8 +89,8 @@ export default class JoinQueryBuilder<T extends Target> {
      * @param joinClause - Join query handler
      * @returns {this} - `this`
      */
-    public leftJoin<T extends EntityTarget>(
-        relation: T | string,
+    public leftJoin<T extends Entity>(
+        relation: Constructor<T> | string,
         joinClause?: JoinQueryHandler<T>
     ): this {
         JoinQueryBuilder.build(
@@ -145,7 +147,7 @@ export default class JoinQueryBuilder<T extends Target> {
     * Convert `this` to `RelationOptions` object
     * @returns - A object with relation options
     */
-    public toQueryOptions(): RelationOptions<InstanceType<T>> {
+    public toQueryOptions(): RelationOptions<T> {
         const { required, select, on } = this._options
 
         return {
@@ -159,7 +161,7 @@ export default class JoinQueryBuilder<T extends Target> {
     // Privates ---------------------------------------------------------------
     /** @internal */
     private relationsToOptions(): (
-        RelationsOptions<InstanceType<T>> | undefined
+        RelationsOptions<T> | undefined
     ) {
         if (!this._options.relations) return
 
@@ -172,17 +174,17 @@ export default class JoinQueryBuilder<T extends Target> {
                         : (value as JoinQueryBuilder<any>).toQueryOptions()
                 ]
             )
-        ) as RelationsOptions<InstanceType<T>>
+        ) as RelationsOptions<T>
     }
 
     // Static Methods =========================================================
     // Publics ----------------------------------------------------------------
     public static build<
-        Parent extends Target = Target,
-        Related extends Target = Target
+        Parent extends Entity = Entity,
+        Related extends Entity = Entity
     >(
         metadata: TargetMetadata<any>,
-        relation: Related | string,
+        relation: Constructor<Related> | string,
         options: JoinQueryOptions<Parent>,
         joinClause?: JoinQueryHandler<Related>,
         alias?: string,
@@ -205,11 +207,11 @@ export default class JoinQueryBuilder<T extends Target> {
 
     // Privates ---------------------------------------------------------------
     private static instantiate<
-        Parent extends Target = Target,
-        Related extends Target = Target
+        Parent extends Entity = Entity,
+        Related extends Entity = Entity
     >(
         metadata: TargetMetadata<any>,
-        relation: Related | string,
+        relation: Constructor<Related> | string,
         options: JoinQueryOptions<Parent>,
         alias?: string,
         required: boolean = true
@@ -229,11 +231,11 @@ export default class JoinQueryBuilder<T extends Target> {
     // ------------------------------------------------------------------------
 
     private static buildJoin<
-        Parent extends Target = Target,
-        Related extends Target = Target
+        Parent extends Entity = Entity,
+        Related extends Entity = Entity
     >(
         metadata: TargetMetadata<any>,
-        relation: Related | string,
+        relation: Constructor<Related> | string,
         alias?: string,
         required: boolean = true
     ): [keyof JoinQueryOptions<Parent>, JoinQueryBuilder<Related>] {
@@ -242,7 +244,7 @@ export default class JoinQueryBuilder<T extends Target> {
         return [
             name as keyof JoinQueryOptions<Parent>,
             new JoinQueryBuilder(
-                relatedTarget as Related,
+                relatedTarget as Constructor<Related>,
                 alias,
                 required
             )
@@ -251,9 +253,9 @@ export default class JoinQueryBuilder<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    private static findRelation<Related extends Target>(
+    private static findRelation<Related extends Entity>(
         metadata: TargetMetadata<any>,
-        relation: Related | string
+        relation: Constructor<Related> | string
     ): RelationMetadata {
         switch (typeof relation) {
             case "string": return (

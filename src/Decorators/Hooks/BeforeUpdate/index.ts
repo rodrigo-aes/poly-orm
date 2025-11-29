@@ -1,18 +1,18 @@
 import { HooksMetadata } from "../../../Metadata"
 
 // Types
-import type { EntityTarget } from "../../../types"
+import type { Entity, EntityTarget } from "../../../types"
 import type {
     UpdateAttributes,
     ConditionalQueryOptions
 } from "../../../SQLBuilders"
 
-export default function BeforeUpdate<Entity extends object>(
-    target: Entity,
+export default function BeforeUpdate<T extends Entity>(
+    target: T,
     propertyName: string,
     hookFn: TypedPropertyDescriptor<(
-        attributes: Entity | UpdateAttributes<Entity>,
-        where?: ConditionalQueryOptions<Entity>
+        attributes: T | UpdateAttributes<T>,
+        where?: ConditionalQueryOptions<T>
     ) => void | Promise<void>>
 ) {
     HooksMetadata.findOrBuild(target.constructor as EntityTarget)

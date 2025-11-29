@@ -5,6 +5,7 @@ import TempMetadata from "../../../TempMetadata"
 // Types
 import type ScopeMetadata from "../ScopeMetadata"
 import type {
+    Target,
     EntityTarget,
     PolymorphicEntityTarget
 } from "../../../../types"
@@ -18,7 +19,7 @@ import type {
 
 export default class ScopeMetadataHandler {
     public static applyScope<
-        T extends EntityTarget | PolymorphicEntityTarget,
+        T extends Target,
         Type extends 'find' | 'findOne' | 'conditional' | 'relations',
         Options extends (
             Type extends 'find'

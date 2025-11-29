@@ -1,9 +1,9 @@
-import type { EntityProperties } from "../../types"
+import type { Entity, EntityProperties } from "../../types"
 
-export type UpdateAttributes<Entity extends object> = (
-    Partial<EntityProperties<Entity>>
+export type UpdateAttributes<T extends Entity> = (
+    Partial<EntityProperties<T>>
 )
 
-export type UpdateAttributesKeys<Entity extends object> = (
-    (keyof UpdateAttributes<Entity>)[]
+export type UpdateAttributesKeys<T extends Entity> = (
+    (keyof UpdateAttributes<T>)[]
 )

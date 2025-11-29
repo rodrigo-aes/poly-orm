@@ -5,14 +5,14 @@ import AndQueryBuilder from "../AndQueryBuilder"
 
 // Types
 import type {
-    Target,
+    Constructor,
+    Entity,
     TargetMetadata,
     EntityProperties,
     EntityPropertiesKeys
 } from "../../types"
 
 import type { ConditionalQueryOptions } from "../../SQLBuilders"
-import type { ConditionalQueryHandler } from "../types"
 import type { ExistsQueryOptions } from "../ExistsQueryBuilder"
 
 import type {
@@ -26,9 +26,9 @@ import PolyORMException from "../../Errors"
 /**
  * Build a `WHERE/ON` conditional options 
  */
-export default class ConditionalQueryBuilder<T extends Target> {
+export default class ConditionalQueryBuilder<T extends Entity> {
     /** @internal */
-    protected metadata: TargetMetadata<T>
+    protected metadata: TargetMetadata<Constructor<T>>
 
     /** @internal */
     private _and!: AndQueryBuilder<T>
@@ -39,7 +39,7 @@ export default class ConditionalQueryBuilder<T extends Target> {
     /** @internal */
     constructor(
         /** @internal */
-        public target: T,
+        public target: Constructor<T>,
 
         /** @internal */
         public alias?: string,
@@ -58,10 +58,10 @@ export default class ConditionalQueryBuilder<T extends Target> {
      * @returns {this} - `this`
      */
     public where<
-        K extends EntityPropertiesKeys<InstanceType<T>>,
+        K extends EntityPropertiesKeys<T>,
         Cond extends (
-            EntityProperties<InstanceType<T>>[K] |
-            CompatibleOperators<EntityProperties<InstanceType<T>>[K]>
+            EntityProperties<T>[K] |
+            CompatibleOperators<EntityProperties<T>[K]>
         )
     >(
         propertie: K | string,
@@ -126,10 +126,10 @@ export default class ConditionalQueryBuilder<T extends Target> {
      * @returns {this} - `this`
      */
     public orWhere<
-        K extends EntityPropertiesKeys<InstanceType<T>>,
+        K extends EntityPropertiesKeys<T>,
         Cond extends (
-            EntityProperties<InstanceType<T>>[K] |
-            CompatibleOperators<EntityProperties<InstanceType<T>>[K]>
+            EntityProperties<T>[K] |
+            CompatibleOperators<EntityProperties<T>[K]>
         )
     >(
         propertie: K | string,
@@ -150,7 +150,7 @@ export default class ConditionalQueryBuilder<T extends Target> {
     * Convert `this` to `ConditionalQueryOptions` object
     * @returns - A object with conditional options
     */
-    public toQueryOptions(): ConditionalQueryOptions<InstanceType<T>> {
+    public toQueryOptions(): ConditionalQueryOptions<T> {
         return this._or?.map(opt => opt.toQueryOptions())
             ?? this._and.toQueryOptions()
     }

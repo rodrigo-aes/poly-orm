@@ -16,7 +16,7 @@ import { ConditionalQueryJoinsHandler } from "../../Handlers"
 import { SQLStringHelper } from "../../Helpers"
 
 // Types
-import type { Target, TargetMetadata } from "../../types"
+import type { Entity, Target, TargetMetadata } from "../../types"
 
 export default class DeleteSQLBuilder<T extends Target> {
     protected metadata: TargetMetadata<T>
@@ -24,9 +24,7 @@ export default class DeleteSQLBuilder<T extends Target> {
     constructor(
         public target: T,
         public where: (
-            ConditionalQueryOptions<InstanceType<T>> |
-            BaseEntity |
-            BasePolymorphicEntity<any>
+            ConditionalQueryOptions<InstanceType<T>> | Entity
         ),
         public alias: string = target.name.toLowerCase()
     ) {
@@ -101,13 +99,12 @@ export default class DeleteSQLBuilder<T extends Target> {
 
     // Privates ---------------------------------------------------------------
     private applyWhereScope(): void {
-        if (!this.isEntity()) this.where = (
-            ScopeMetadataHandler.applyScope(
-                this.target,
-                'conditional',
-                this.where as ConditionalQueryOptions<InstanceType<T>>
-            )
+        if (!this.isEntity()) this.where = ScopeMetadataHandler.applyScope(
+            this.target,
+            'conditional',
+            this.where as ConditionalQueryOptions<InstanceType<T>>
         )
+
     }
 
     // ------------------------------------------------------------------------

@@ -1,10 +1,10 @@
 import type {
+    Entity,
     Constructor,
     ConstructorsOf,
     InstancesOf,
     Primitive,
 
-    Entity,
     Target,
     StaticTarget,
     EntityObject,
@@ -39,12 +39,12 @@ import type {
 } from "./Properties"
 
 export type {
+    Entity,
     Constructor,
     ConstructorsOf,
     InstancesOf,
     Primitive,
 
-    Entity,
     Target,
     StaticTarget,
     EntityObject,

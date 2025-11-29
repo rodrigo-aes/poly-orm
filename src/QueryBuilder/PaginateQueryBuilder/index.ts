@@ -7,16 +7,16 @@ import {
 } from "../../SQLBuilders"
 
 // Types
-import type { Target } from "../../types"
+import type { Entity, Constructor } from "../../types"
 
 /**
  * Build Paginate query
  */
 export default class PaginateQueryBuilder<
-    T extends Target
+    T extends Entity
 > extends FindQueryBuilder<T> {
     constructor(
-        public target: T,
+        public target: Constructor<T>,
         public page: number = 1,
         public perPage: number = 26,
         public alias?: string,
@@ -26,7 +26,7 @@ export default class PaginateQueryBuilder<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public override toQueryOptions(): PaginationQueryOptions<InstanceType<T>> {
+    public override toQueryOptions(): PaginationQueryOptions<T> {
         const { select, where, group, order } = this._options
 
         return {
@@ -41,7 +41,7 @@ export default class PaginateQueryBuilder<
     }
 
     // Protecteds -------------------------------------------------------------
-    protected override toSQLBuilder(): PaginationSQLBuilder<T> {
+    protected override toSQLBuilder(): PaginationSQLBuilder<Constructor<T>> {
         return new PaginationSQLBuilder(
             this.target,
             this.toQueryOptions(),

@@ -13,7 +13,7 @@ import type {
     ResultMapOption
 } from "../Handlers"
 
-import type { CountManyQueryResult } from "../Repositories/Repository"
+import type { CountManyQueryResult } from "../Repositories"
 
 import type {
     FindOneQueryOptions,
@@ -32,6 +32,7 @@ import type {
     TargetMetadata,
     TargetRepository,
     TargetQueryBuilder,
+    Constructor,
 
     EntityJSON,
     EntityObject,
@@ -84,23 +85,9 @@ export default abstract class Entity {
     /**
      * Get entity metadata
      */
-    public getMetadata<T extends EntityT>(this: T) {
-        return this.getTrueMetadata().toJSON()
+    public getMetadata<T extends EntityT>(this: T): any {
+        return (this as T & Entity).getTrueMetadata().toJSON()
     }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Get a instance of entity repository
-     */
-    public abstract getRepository(): TargetRepository<any>
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Get a instance of query builder
-     */
-    public abstract getQueryBuilder(): TargetQueryBuilder
 
     // ------------------------------------------------------------------------
 
@@ -159,8 +146,12 @@ export default abstract class Entity {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    public getTrueMetadata<T extends EntityT>(this: T): TargetMetadata {
-        return MetadataHandler.targetMetadata(this.constructor as Target)
+    public getTrueMetadata<T extends EntityT>(this: T): TargetMetadata<
+        Constructor<T>
+    > {
+        return MetadataHandler.targetMetadata(this.constructor as (
+            Constructor<T>
+        ))
     }
 
     // Privates ---------------------------------------------------------------
@@ -330,7 +321,10 @@ export default abstract class Entity {
         attributes: CreationAttributes<InstanceType<T>>
     ): InstanceType<T> {
         const instance = new this().fill(attributes) as InstanceType<T>
-        instance.getTrueMetadata().computedProperties?.assign(instance)
+        (instance.getTrueMetadata() as TargetMetadata<T>)
+            .computedProperties
+            ?.assign(instance)
+
         ColumnsSnapshots.set(instance, instance.toObject())
 
         return instance

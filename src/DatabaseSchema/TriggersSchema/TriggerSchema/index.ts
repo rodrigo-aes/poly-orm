@@ -36,7 +36,7 @@ export default class TriggerSchema<
     public orientation?: TriggerOrientation
 
     /** @internal */
-    private _action!: string | TriggerActionHandler
+    private _action!: string | TriggerActionHandler<T>
 
     /** @internal */
     constructor(initMap: TriggerSchemaInitMap) {
@@ -106,7 +106,7 @@ export default class TriggerSchema<
      * array
      * @param action - SQL string or trigger action handler
      */
-    public execute(action: string | TriggerActionHandler): void {
+    public execute(action: string | TriggerActionHandler<T>): void {
         this._action = action
     }
 

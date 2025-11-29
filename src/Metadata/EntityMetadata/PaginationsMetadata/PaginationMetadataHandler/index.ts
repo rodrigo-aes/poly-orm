@@ -2,12 +2,13 @@ import { Pagination, type PaginationInitMap } from "../../../../Entities"
 import PaginationMetadata from ".."
 import TempMetadata from "../../../TempMetadata"
 import type {
+    Target,
     EntityTarget,
     PolymorphicEntityTarget
 } from "../../../../types"
 
 export default class PaginationMetadataHandler {
-    public static loadPagination(target: EntityTarget | PolymorphicEntityTarget): (
+    public static loadPagination(target: Target): (
         typeof Pagination
     ) {
         return TempMetadata.getPagination(target)
@@ -17,7 +18,7 @@ export default class PaginationMetadataHandler {
 
     // ------------------------------------------------------------------------
 
-    public static build<T extends EntityTarget | PolymorphicEntityTarget>(
+    public static build<T extends Target>(
         target: T,
         initMap: PaginationInitMap,
         entities: InstanceType<T>[],

@@ -1,11 +1,7 @@
 import BeforeUpdateMetadata from "../BeforeUpdateMetadata"
 
 // Types
-import type {
-    EntityTarget,
-    PolymorphicEntityTarget
-} from "../../../../../types"
-
+import type { Target } from "../../../../../types"
 import type { HookFunction } from "../types"
 
 // Exceptions
@@ -13,7 +9,7 @@ import PolyORMException from "../../../../../Errors"
 
 export default class UpdatedTimestampMetadata extends BeforeUpdateMetadata {
     constructor(
-        public target: EntityTarget | PolymorphicEntityTarget
+        public target: Target
     ) {
         super(target, '')
     }

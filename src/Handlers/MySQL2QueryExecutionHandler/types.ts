@@ -1,4 +1,4 @@
-import type { Target, EntityTarget, PolymorphicEntityTarget } from "../../types"
+import type { Target, EntityTarget } from "../../types"
 import type { ResultSetHeader } from "mysql2"
 
 import {
@@ -33,17 +33,15 @@ export type ResultMapOption = (
     'entity' |
     'json' |
     'raw' |
-    EntityTarget |
-    PolymorphicEntityTarget
+    Target
 )
-
 
 export type ExecOptions = {
     mapTo?: ResultMapOption
 }
 
 export type UnionExecResult<
-    T extends EntityTarget | PolymorphicEntityTarget,
+    T extends Target,
     Builder extends SQLBuilder,
     MapTo extends ResultMapOption
 > = (
@@ -59,7 +57,7 @@ export type UnionExecResult<
     )
 
 export type ExecResult<
-    T extends EntityTarget | PolymorphicEntityTarget,
+    T extends Target,
     Builder extends SQLBuilder,
     MapTo extends ResultMapOption
 > = T extends EntityTarget
@@ -78,19 +76,19 @@ export type ExecResult<
         ? FindOneResult<T, MapTo>
         : Builder extends CreateSQLBuilder<T>
         ? CreateResult<(
-            MapTo extends EntityTarget | PolymorphicEntityTarget
+            MapTo extends Target
             ? MapTo
             : T
         )>
         : Builder extends UpdateSQLBuilder<T>
         ? UpdateResult<(
-            MapTo extends EntityTarget | PolymorphicEntityTarget
+            MapTo extends Target
             ? MapTo
             : T
         )>
         : Builder extends UpdateOrCreateSQLBuilder<T>
         ? UpdateOrCreateResult<(
-            MapTo extends EntityTarget | PolymorphicEntityTarget
+            MapTo extends Target
             ? MapTo
             : T
         )>
@@ -110,7 +108,7 @@ export type FindOneResult<
         ? RawData<T> | null
         : MapTo extends 'raw'
         ? MySQL2RawData[]
-        : MapTo extends EntityTarget | PolymorphicEntityTarget
+        : MapTo extends Target
         ? InstanceType<MapTo>
         : InstanceType<T>
     )
@@ -125,31 +123,26 @@ export type FindResult<
         ? RawData<T>[]
         : MapTo extends 'raw'
         ? MySQL2RawData[]
-        : MapTo extends EntityTarget | PolymorphicEntityTarget
+        : MapTo extends Target
         ? Collection<InstanceType<MapTo>>
         : Collection<InstanceType<T>>
     )
 
-export type PaginateResult<
-    T extends EntityTarget | PolymorphicEntityTarget
-> = Pagination<InstanceType<T>>
+export type PaginateResult<T extends Target> = Pagination<InstanceType<T>>
 
 export type CountResult = { [Key: string]: number }
 
-export type CreateResult<
-    T extends EntityTarget | PolymorphicEntityTarget
-> = InstanceType<T> | Collection<InstanceType<T>>
+export type CreateResult<T extends Target> = (
+    InstanceType<T> |
+    Collection<InstanceType<T>>
+)
 
+export type UpdateResult<T extends Target> = (
+    InstanceType<T> |
+    ResultSetHeader
+)
 
-export type UpdateResult<
-    T extends EntityTarget | PolymorphicEntityTarget
-> = InstanceType<T> | ResultSetHeader
-
-
-export type UpdateOrCreateResult<
-    T extends EntityTarget | PolymorphicEntityTarget
-> = InstanceType<T>
-
+export type UpdateOrCreateResult<T extends Target> = InstanceType<T>
 
 export type DeleteResult = {
     affectedRows: number,

@@ -14,10 +14,11 @@ import { MySQL2QueryExecutionHandler } from "../../Handlers"
 // Types
 import type { ResultSetHeader } from "mysql2"
 import type {
-    EntityTarget,
+    Constructor,
     EntityProperties,
     EntityPropertiesKeys
 } from "../../types"
+import type { BaseEntity } from "../../Entities"
 
 import type {
     OperatorType,
@@ -29,18 +30,18 @@ import type { ConditionalQueryHandler } from "../types"
 /**
  * Build `UPDATE` query
  */
-export default class UpdateQueryBuilder<T extends EntityTarget> {
+export default class UpdateQueryBuilder<T extends BaseEntity> {
     /** @internal */
     private _where?: ConditionalQueryBuilder<T>
 
     /** @internal */
-    private attributes: UpdateAttributes<InstanceType<T>> = {}
+    private attributes: UpdateAttributes<T> = {}
 
     /** @internal */
-    private _sqlBuilder?: UpdateSQLBuilder<T>
+    private _sqlBuilder?: UpdateSQLBuilder<Constructor<T>>
 
     constructor(
-        public target: T,
+        public target: Constructor<T>,
         public alias?: string
     ) { }
 
@@ -56,7 +57,7 @@ export default class UpdateQueryBuilder<T extends EntityTarget> {
 
     // privates ---------------------------------------------------------------
     /** @internal */
-    private get sqlBuilder(): UpdateSQLBuilder<T> {
+    private get sqlBuilder(): UpdateSQLBuilder<Constructor<T>> {
         return this._sqlBuilder ?? this.instantiateSQLBuilder()
     }
 
@@ -67,7 +68,7 @@ export default class UpdateQueryBuilder<T extends EntityTarget> {
      * @param attributes - Attributes data
      * @returns {this} - `this`
      */
-    public set(attributes: UpdateAttributes<InstanceType<T>>): this {
+    public set(attributes: UpdateAttributes<T>): this {
         this.attributes = { ...this.attributes, ...attributes }
         return this
     }
@@ -82,10 +83,10 @@ export default class UpdateQueryBuilder<T extends EntityTarget> {
      * @returns {this} - `this`
      */
     public where<
-        K extends EntityPropertiesKeys<InstanceType<T>>,
+        K extends EntityPropertiesKeys<T>,
         Cond extends (
-            EntityProperties<InstanceType<T>>[K] |
-            CompatibleOperators<EntityProperties<InstanceType<T>>[K]>
+            EntityProperties<T>[K] |
+            CompatibleOperators<EntityProperties<T>[K]>
         )
     >(
         propertie: K | string,
@@ -146,10 +147,10 @@ export default class UpdateQueryBuilder<T extends EntityTarget> {
      * @returns {this} - `this`
      */
     public orWhere<
-        K extends EntityPropertiesKeys<InstanceType<T>>,
+        K extends EntityPropertiesKeys<T>,
         Cond extends (
-            EntityProperties<InstanceType<T>>[K] |
-            CompatibleOperators<EntityProperties<InstanceType<T>>[K]>
+            EntityProperties<T>[K] |
+            CompatibleOperators<EntityProperties<T>[K]>
         )
     >(
         propertie: K | string,
@@ -188,7 +189,7 @@ export default class UpdateQueryBuilder<T extends EntityTarget> {
 
     // Privates ---------------------------------------------------------------
     /** @internal */
-    private instantiateSQLBuilder(): UpdateSQLBuilder<T> {
+    private instantiateSQLBuilder(): UpdateSQLBuilder<Constructor<T>> {
         this._sqlBuilder = new UpdateSQLBuilder(
             this.target,
             this.attributes,

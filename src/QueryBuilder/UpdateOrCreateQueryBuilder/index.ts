@@ -10,22 +10,22 @@ import { MySQL2QueryExecutionHandler } from "../../Handlers"
 
 // Types
 import type {
-    EntityTarget,
-    AsEntityTarget,
+    Constructor,
     EntityPropertiesKeys
 } from "../../types"
+import type { BaseEntity } from "../../Entities"
 
 /**
  * Build a Update or Create query
  */
-export default class UpdateOrCreateQueryBuilder<T extends EntityTarget> {
+export default class UpdateOrCreateQueryBuilder<T extends BaseEntity> {
     /**
      * @internal
      */
-    private sqlBuilder: UpdateOrCreateSQLBuilder<T>
+    private sqlBuilder: UpdateOrCreateSQLBuilder<Constructor<T>>
 
     constructor(
-        public target: T,
+        public target: Constructor<T>,
         public alias?: string
     ) {
         this.sqlBuilder = new UpdateOrCreateSQLBuilder(
@@ -42,7 +42,7 @@ export default class UpdateOrCreateQueryBuilder<T extends EntityTarget> {
      * @param names - Properties names
      * @returns {this} - `this`
      */
-    public properties(...names: EntityPropertiesKeys<InstanceType<T>>[]): (
+    public properties(...names: EntityPropertiesKeys<T>[]): (
         Omit<this, 'data'>
     ) {
         this.sqlBuilder.fields(...names)
@@ -67,7 +67,7 @@ export default class UpdateOrCreateQueryBuilder<T extends EntityTarget> {
      * @param attributes - Attributes data 
      * @returns {this} - `this`
      */
-    public data(attributes: UpdateOrCreateAttibutes<InstanceType<T>>): (
+    public data(attributes: UpdateOrCreateAttibutes<T>): (
         Omit<this, 'fields' | 'values'>
     ) {
         this.sqlBuilder.setData(attributes)
@@ -80,12 +80,10 @@ export default class UpdateOrCreateQueryBuilder<T extends EntityTarget> {
     * Execute defined operation in database
     * @returns - Update or create result
     */
-    public exec(): Promise<InstanceType<T>> {
+    public exec(): Promise<T> {
         return new MySQL2QueryExecutionHandler(
             this.target,
-            this.sqlBuilder as unknown as UpdateOrCreateSQLBuilder<
-                AsEntityTarget<T>
-            >,
+            this.sqlBuilder,
             'entity'
         )
             .exec()

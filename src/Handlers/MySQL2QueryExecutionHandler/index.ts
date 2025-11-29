@@ -1,4 +1,3 @@
-import { EntityMetadata, PolymorphicEntityMetadata } from "../../Metadata"
 import { BaseEntity, type PaginationInitMap } from "../../Entities"
 
 // Childs
@@ -32,9 +31,11 @@ import EntityBuilder from "../EntityBuilder"
 import type { ResultSetHeader } from "mysql2"
 import type { PolyORMConnection } from "../../Metadata"
 import type {
+    Target,
+    TargetMetadata,
     EntityTarget,
     PolymorphicEntityTarget,
-    AsEntityTarget
+    AsEntityTarget,
 } from "../../types"
 import type {
     SQLBuilder,
@@ -51,11 +52,11 @@ import type {
 } from "./types"
 
 export default class MySQL2QueryExecutionHandler<
-    T extends EntityTarget | PolymorphicEntityTarget,
+    T extends Target,
     Builder extends SQLBuilder,
     MapTo extends ResultMapOption
 > {
-    protected metadata: EntityMetadata | PolymorphicEntityMetadata
+    protected metadata: TargetMetadata<T>
 
     private pagination?: PaginationInitMap
 
@@ -90,7 +91,6 @@ export default class MySQL2QueryExecutionHandler<
                     Promise<ExecResult<T, Builder, MapTo>>
                 )
             )
-
 
             // ----------------------------------------------------------------
 
@@ -465,8 +465,8 @@ export default class MySQL2QueryExecutionHandler<
     // Publics ----------------------------------------------------------------
     public static relation<T extends EntityTarget | PolymorphicEntityTarget>(
         related: T
-    ): RelationQueryExecutionHandler<T> {
-        return new RelationQueryExecutionHandler(related)
+    ): RelationQueryExecutionHandler<InstanceType<T>> {
+        return new RelationQueryExecutionHandler(related as any)
     }
 }
 

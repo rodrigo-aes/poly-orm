@@ -16,7 +16,12 @@ import ConditionalQueryBuilder from "../ConditionalQueryBuilder"
 import QueryBuilderHandler from "../QueryBuilderHandler"
 
 // Types
-import type { Target, TargetMetadata, EntityRelationsKeys } from "../../types"
+import type {
+    Entity,
+    TargetMetadata,
+    EntityRelationsKeys,
+    Constructor
+} from "../../types"
 import type { ConditionalQueryHandler } from "../types"
 import type {
     ExistsQueryOptions,
@@ -25,15 +30,15 @@ import type {
 } from "./types"
 
 /** @internal */
-export default class ExistsQueryBuilder<T extends Target> {
-    protected metadata: TargetMetadata<T>
+export default class ExistsQueryBuilder<T extends Entity> {
+    protected metadata: TargetMetadata<Constructor<T>>
     private options!: (
         string |
-        SQLBuilderQueryOptions<InstanceType<T>>[typeof Exists]
+        SQLBuilderQueryOptions<T>[typeof Exists]
     )
 
     constructor(
-        public target: T,
+        public target: Constructor<T>,
         public alias: string = target.name.toLowerCase()
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
@@ -57,7 +62,7 @@ export default class ExistsQueryBuilder<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    public toQueryOptions(): SQLBuilderQueryOptions<InstanceType<T>> {
+    public toQueryOptions(): SQLBuilderQueryOptions<T> {
         return { [Exists]: this.options }
     }
 
@@ -65,7 +70,7 @@ export default class ExistsQueryBuilder<T extends Target> {
 
     /** @internal */
     public toNestedOptions(): Exclude<
-        SQLBuilderQueryOptions<InstanceType<T>>[typeof Exists], string
+        SQLBuilderQueryOptions<T>[typeof Exists], string
     > {
         return this.options as any
     }
@@ -79,7 +84,7 @@ export default class ExistsQueryBuilder<T extends Target> {
 
         for (const [relation, { relations, where }] of
             Object.entries(options) as [
-                EntityRelationsKeys<InstanceType<T>>,
+                EntityRelationsKeys<T>,
                 EntityExistsQueryOption<any>
             ][]
         ) {
@@ -102,10 +107,10 @@ export default class ExistsQueryBuilder<T extends Target> {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    private handleConditional<T extends Target>(
-        target: T,
+    private handleConditional<T extends Entity>(
+        target: Constructor<T>,
         handler: ConditionalQueryHandler<T>
-    ): ConditionalQueryOptions<InstanceType<T>> {
+    ): ConditionalQueryOptions<T> {
         return QueryBuilderHandler
             .handle(new ConditionalQueryBuilder(target, this.alias), handler)
             .toQueryOptions()
@@ -114,11 +119,11 @@ export default class ExistsQueryBuilder<T extends Target> {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    private handleExists<T extends Target>(
-        target: T,
+    private handleExists<T extends Entity>(
+        target: Constructor<T>,
         options: EntityExistsQueryOptions<T>
     ): Exclude<
-        SQLBuilderQueryOptions<InstanceType<T>>[typeof Exists],
+        SQLBuilderQueryOptions<T>[typeof Exists],
         string
     > {
         return new ExistsQueryBuilder(target, this.alias)

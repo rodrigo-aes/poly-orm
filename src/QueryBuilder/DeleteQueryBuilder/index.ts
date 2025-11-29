@@ -11,8 +11,9 @@ import {
 } from "../../Handlers"
 
 // Types
+import type { BaseEntity } from "../../Entities"
 import type {
-    EntityTarget,
+    Constructor,
     EntityProperties,
     EntityPropertiesKeys
 } from "../../types"
@@ -25,15 +26,15 @@ import type { ExistsQueryOptions } from "../ExistsQueryBuilder"
 /**
  * Build a `DELETE` query
  */
-export default class DeleteQueryBuilder<T extends EntityTarget> {
+export default class DeleteQueryBuilder<T extends BaseEntity> {
     /** @internal */
-    private _sqlBuilder?: DeleteSQLBuilder<T>
+    private _sqlBuilder?: DeleteSQLBuilder<Constructor<T>>
 
     /** @internal */
     private _where?: ConditionalQueryBuilder<T>
 
     constructor(
-        public target: T,
+        public target: Constructor<T>,
         public alias?: string
     ) { }
 
@@ -51,7 +52,7 @@ export default class DeleteQueryBuilder<T extends EntityTarget> {
 
     // Privates ---------------------------------------------------------------
     /** @internal */
-    private get sqlBuilder(): DeleteSQLBuilder<T> {
+    private get sqlBuilder(): DeleteSQLBuilder<Constructor<T>> {
         return this._sqlBuilder ?? this.instantiateSQLBuilder()
     }
 
@@ -65,10 +66,10 @@ export default class DeleteQueryBuilder<T extends EntityTarget> {
      * @returns {this} - `this`
      */
     public where<
-        K extends EntityPropertiesKeys<InstanceType<T>>,
+        K extends EntityPropertiesKeys<Constructor<T>>,
         Cond extends (
-            EntityProperties<InstanceType<T>>[K] |
-            CompatibleOperators<EntityProperties<InstanceType<T>>[K]>
+            EntityProperties<Constructor<T>>[K] |
+            CompatibleOperators<EntityProperties<Constructor<T>>[K]>
         )
     >(
         propertie: K | string,
@@ -127,10 +128,10 @@ export default class DeleteQueryBuilder<T extends EntityTarget> {
      * @returns {this} - `this`
      */
     public orWhere<
-        K extends EntityPropertiesKeys<InstanceType<T>>,
+        K extends EntityPropertiesKeys<Constructor<T>>,
         Cond extends (
-            EntityProperties<InstanceType<T>>[K] |
-            CompatibleOperators<EntityProperties<InstanceType<T>>[K]>
+            EntityProperties<Constructor<T>>[K] |
+            CompatibleOperators<EntityProperties<Constructor<T>>[K]>
         )
     >(
         propertie: K | string,
@@ -169,7 +170,7 @@ export default class DeleteQueryBuilder<T extends EntityTarget> {
 
     // Privates ---------------------------------------------------------------
     /** @internal */
-    private instantiateSQLBuilder(): DeleteSQLBuilder<T> {
+    private instantiateSQLBuilder(): DeleteSQLBuilder<Constructor<T>> {
         this._sqlBuilder = new DeleteSQLBuilder(
             this.target,
             this._where?.toQueryOptions() ?? {},

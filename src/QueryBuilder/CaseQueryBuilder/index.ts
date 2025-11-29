@@ -4,7 +4,7 @@ import { MetadataHandler } from "../../Metadata"
 import ConditionalQueryBuilder from "../ConditionalQueryBuilder"
 
 // Types
-import type { Target, TargetMetadata } from "../../types"
+import type { Constructor, Entity, TargetMetadata } from "../../types"
 import type { CaseQueryOptions, ElseQueryOption } from "../../SQLBuilders"
 import type { CaseQueryTuple } from "./types"
 import type { ConditionalQueryHandler } from "../types"
@@ -12,9 +12,9 @@ import type { ConditionalQueryHandler } from "../types"
 /**
  * Build a `CASE` conditional options
  */
-export default class CaseQueryBuilder<T extends Target> {
+export default class CaseQueryBuilder<T extends Entity> {
     /** @internal */
-    protected metadata: TargetMetadata<T>
+    protected metadata: TargetMetadata<Constructor<T>>
 
     /** @internal */
     private _whens!: CaseQueryTuple<T>[]
@@ -28,7 +28,7 @@ export default class CaseQueryBuilder<T extends Target> {
     /** @internal */
     constructor(
         /** @internal */
-        public target: T,
+        public target: Constructor<T>,
 
         /** @internal */
         public alias?: string
@@ -88,14 +88,13 @@ export default class CaseQueryBuilder<T extends Target> {
      * Convert `this` to `CaseQueryOptions` object
      * @returns - A object with case options
      */
-    public toQueryOptions(): CaseQueryOptions<InstanceType<T>> {
+    public toQueryOptions(): CaseQueryOptions<T> {
         return [
             ...this._whens.map(([when, then]) => [
                 when.toQueryOptions(),
                 then
             ]),
             this._else
-        ] as CaseQueryOptions<InstanceType<T>>
-
+        ] as CaseQueryOptions<T>
     }
 }

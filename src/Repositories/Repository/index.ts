@@ -3,21 +3,10 @@ import { BaseEntity, type Pagination } from "../../Entities"
 
 // SQL Builders
 import {
-    FindByPkSQLBuilder,
-    FindOneSQLBuilder,
-    FindSQLBuilder,
-    PaginationSQLBuilder,
-    CountSQLBuilder,
     CreateSQLBuilder,
     UpdateSQLBuilder,
     UpdateOrCreateSQLBuilder,
     DeleteSQLBuilder,
-
-    type FindOneQueryOptions,
-    type FindQueryOptions,
-    type PaginationQueryOptions,
-    type CountQueryOption,
-    type CountQueryOptions,
     type CreationAttributes,
     type UpdateAttributes,
     type UpdateOrCreateAttibutes,
@@ -28,21 +17,19 @@ import {
 import {
     MySQL2QueryExecutionHandler,
 
-    type FindOneResult,
-    type FindResult,
     type ResultMapOption,
     type DeleteResult,
 } from "../../Handlers"
 
 // Types 
 import type { Constructor } from "../../types"
-import type { UpdateQueryResult, CountManyQueryResult } from "../types"
+import type { UpdateQueryResult } from "../types"
 
 export default class Repository<T extends BaseEntity> extends BaseRepository<
     T
 > {
     constructor(
-        /** @intenral */
+        /** @internal */
         protected target: Constructor<T>
     ) {
         super(target)
@@ -161,12 +148,4 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
         )
             .exec() as Promise<DeleteResult>
     }
-}
-
-export {
-    type FindOneResult,
-    type FindResult,
-    type CountManyQueryResult,
-    type ResultMapOption,
-    type DeleteResult,
 }

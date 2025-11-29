@@ -13,7 +13,6 @@ import { Old } from "../../../Triggers"
 import { SQLStringHelper, PropertySQLHelper } from "../../../Helpers"
 
 // Types
-import type { Constructor } from "../../../types"
 import type { BaseEntity } from "../../../Entities"
 import type {
     TriggerTiming,
@@ -29,7 +28,7 @@ import type {
 
 export default abstract class TriggerSQLBuilder<
     T extends BaseEntity
-> extends TriggerActionBuilder<Constructor<T>> {
+> extends TriggerActionBuilder<T> {
     /** @internal */
     public abstract timing?: TriggerTiming
 

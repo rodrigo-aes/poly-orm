@@ -12,7 +12,6 @@ import {
     PolymorphicBelongsToMetadata,
 
     type RelationMetadataType,
-    type HookType,
 } from "../../Metadata"
 
 // Query Builder
@@ -74,7 +73,7 @@ export default abstract class BaseEntity extends Entity {
     // ------------------------------------------------------------------------
 
     public getQueryBuilder<T extends BaseEntity>(this: T): EntityQueryBuilder<
-        Constructor<T>
+        T
     > {
         return new EntityQueryBuilder(this.constructor as Constructor<T>)
     }
@@ -131,7 +130,7 @@ export default abstract class BaseEntity extends Entity {
         this: T,
         name: string,
         related: Related
-    ): HasOne<T, Related> {
+    ): HasOne<T, any> {
         const metadata = this.getRelationMetadata(name)
         this.verifyRelationMetadata(metadata, HasOneMetadata)
 
@@ -381,9 +380,9 @@ export default abstract class BaseEntity extends Entity {
     // ------------------------------------------------------------------------
 
     public static getQueryBuilder<T extends EntityTarget>(this: T): (
-        EntityQueryBuilder<T>
+        EntityQueryBuilder<InstanceType<T>>
     ) {
-        return new EntityQueryBuilder(this)
+        return new EntityQueryBuilder(this as any)
     }
 
     // ------------------------------------------------------------------------

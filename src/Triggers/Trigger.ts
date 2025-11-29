@@ -15,7 +15,7 @@ import type {
 
 export default abstract class Trigger<
     T extends BaseEntity = BaseEntity
-> extends TriggerActionBuilder<Constructor<T>> {
+> extends TriggerActionBuilder<T> {
     /** @internal */
     protected metadata: EntityMetadata
 

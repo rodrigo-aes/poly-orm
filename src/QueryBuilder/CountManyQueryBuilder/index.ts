@@ -16,7 +16,8 @@ import {
 
 // Types
 import type {
-    Target,
+    Entity,
+    Constructor,
     EntityProperties,
     EntityPropertiesKeys
 } from "../../types"
@@ -35,14 +36,14 @@ import PolyORMException from "../../Errors"
 /**
  * Build many `COUNT`s options
  */
-export default class CountManyQueryBuilder<T extends Target> {
+export default class CountManyQueryBuilder<T extends Entity> {
     /** @internal */
     protected _options: CountQueryBuilder<T>[] = []
 
     /** @internal */
     protected _count?: CountQueryBuilder<T>
 
-    constructor(public target: T, public alias?: string) { }
+    constructor(public target: Constructor<T>, public alias?: string) { }
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
@@ -68,10 +69,10 @@ export default class CountManyQueryBuilder<T extends Target> {
      * @returns {this} - `this`
      */
     public where<
-        K extends EntityPropertiesKeys<InstanceType<T>>,
+        K extends EntityPropertiesKeys<T>,
         Cond extends (
-            EntityProperties<InstanceType<T>>[K] |
-            CompatibleOperators<EntityProperties<InstanceType<T>>[K]>
+            EntityProperties<T>[K] |
+            CompatibleOperators<EntityProperties<T>[K]>
         )
     >(
         propertie: K,
@@ -125,10 +126,10 @@ export default class CountManyQueryBuilder<T extends Target> {
      * @returns {this} - `this`
      */
     public orWhere<
-        K extends EntityPropertiesKeys<InstanceType<T>>,
+        K extends EntityPropertiesKeys<T>,
         Cond extends (
-            EntityProperties<InstanceType<T>>[K] |
-            CompatibleOperators<EntityProperties<InstanceType<T>>[K]>
+            EntityProperties<T>[K] |
+            CompatibleOperators<EntityProperties<T>[K]>
         )
     >(
         propertie: K,
@@ -201,7 +202,7 @@ export default class CountManyQueryBuilder<T extends Target> {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    public toSQLBuilder(): CountSQLBuilder<T> {
+    public toSQLBuilder(): CountSQLBuilder<Constructor<T>> {
         return CountSQLBuilder.countManyBuilder(
             this.target,
             this.toQueryOptions(),
@@ -215,7 +216,7 @@ export default class CountManyQueryBuilder<T extends Target> {
     * Convert `this` to `CountQueryOptions` object
     * @returns - A object with count options
     */
-    public toQueryOptions(): CountQueryOptions<InstanceType<T>> {
+    public toQueryOptions(): CountQueryOptions<T> {
         return Object.fromEntries(
             this._options.map(count => {
                 if (!count._as) PolyORMException.QueryBuilder.throw(
@@ -230,7 +231,7 @@ export default class CountManyQueryBuilder<T extends Target> {
     // Protecteds -------------------------------------------------------------
     /** @internal */
     protected handleCurrentCount(): void {
-        this._count = this._count = new CountQueryBuilder(
+        this._count ??= new CountQueryBuilder(
             this.target,
             this.alias
         )

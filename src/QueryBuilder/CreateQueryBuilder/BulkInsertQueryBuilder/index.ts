@@ -4,17 +4,14 @@ import CreateQueryBuilder from "../CreateQueryBuilder"
 import { MySQL2QueryExecutionHandler } from "../../../Handlers"
 
 // Types
-import type { EntityTarget, AsEntityTarget } from "../../../types"
-import type {
-    CreateSQLBuilder,
-    CreationAttributes
-} from "../../../SQLBuilders"
+import type { BaseEntity } from "../../../Entities"
+import type { CreationAttributes } from "../../../SQLBuilders"
 
 /**
  * Build a `BULK INSERT` query
  */
 export default class BulkInsertQueryBuilder<
-    T extends EntityTarget
+    T extends BaseEntity
 > extends CreateQueryBuilder<T> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
@@ -30,9 +27,9 @@ export default class BulkInsertQueryBuilder<
 
     // ------------------------------------------------------------------------
 
-    public data(attributes: CreationAttributes<InstanceType<T>>[]): (
-        Omit<this, "fields" | "values">
-    ) {
+    public data(attributes: CreationAttributes<T>[]): Omit<
+        this, "fields" | "values"
+    > {
         this.sqlBuilder.setData(attributes)
         return this
     }
@@ -43,7 +40,7 @@ export default class BulkInsertQueryBuilder<
     * Execute defined operation in database
     * @returns - Create many result
     */
-    public async exec(): Promise<InstanceType<T>[]> {
+    public async exec(): Promise<T[]> {
         this.sqlBuilder.bulk = true
 
         return new MySQL2QueryExecutionHandler(
@@ -51,6 +48,6 @@ export default class BulkInsertQueryBuilder<
             this.sqlBuilder,
             'entity'
         )
-            .exec() as Promise<InstanceType<T>[]>
+            .exec() as Promise<T[]>
     }
 }

@@ -2,7 +2,8 @@ import QueryBuilder from "./QueryBuilder"
 import EntityQueryBuilder from "./EntityQueryBuilder"
 
 // Types
-import type { Target, EntityTarget } from "../types"
+import type { Entity, Constructor } from "../types"
+import type { BaseEntity } from "../Entities"
 
 import type FindOneQueryBuilder from "./FindOneQueryBuilder"
 import type FindQueryBuilder from "./FindQueryBuilder"
@@ -27,9 +28,10 @@ export default class ConnectionQueryBuilder {
      * @param alias - Entity query alias
      * @returns {FindOneQueryBuilder<T>} - FindOneQueryBuilder
      */
-    public findOneFrom<T extends Target>(target: T, alias?: string): (
-        FindOneQueryBuilder<T>
-    ) {
+    public findOneFrom<T extends Entity>(
+        target: Constructor<T>,
+        alias?: string
+    ): FindOneQueryBuilder<T> {
         return new QueryBuilder(target, alias).findOne()
     }
 
@@ -41,9 +43,10 @@ export default class ConnectionQueryBuilder {
      * @param alias - Entity query alias
      * @returns {FindQueryBuilder<T>} - FindQueryBuilder
      */
-    public findFrom<T extends Target>(target: T, alias?: string): (
-        FindQueryBuilder<T>
-    ) {
+    public findFrom<T extends Entity>(
+        target: Constructor<T>,
+        alias?: string
+    ): FindQueryBuilder<T> {
         return new QueryBuilder(target, alias).find()
     }
 
@@ -57,11 +60,11 @@ export default class ConnectionQueryBuilder {
      * @param alias - Entity query alias
      * @returns {PaginateQueryBuilder<T>} - PaginateQueryBuilder
      */
-    public paginateFrom<T extends Target>(
-        target: T,
+    public paginateFrom<T extends Entity>(
+        target: Constructor<T>,
         page: number = 1,
         perPage: number = 26,
-        alias: string
+        alias?: string
     ): PaginateQueryBuilder<T> {
         return new QueryBuilder(target, alias).paginate(
             page, perPage
@@ -76,9 +79,10 @@ export default class ConnectionQueryBuilder {
      * @param alias - Entity query alias
      * @returns {CountQueryBuilder<T>} - CountQueryBuilder
      */
-    public countFrom<T extends Target>(target: T, alias?: string): (
-        CountQueryBuilder<T>
-    ) {
+    public countFrom<T extends Entity>(
+        target: Constructor<T>,
+        alias?: string
+    ): CountQueryBuilder<T> {
         return new QueryBuilder(target, alias).count()
     }
 
@@ -90,9 +94,10 @@ export default class ConnectionQueryBuilder {
      * @param alias - Entity query alias
      * @returns {CountManyQueryBuilder<T>} - CountManyQueryBuilder
      */
-    public countManyFrom<T extends Target>(target: T, alias?: string): (
-        CountManyQueryBuilder<T>
-    ) {
+    public countManyFrom<T extends Entity>(
+        target: Constructor<T>,
+        alias?: string
+    ): CountManyQueryBuilder<T> {
         return new QueryBuilder(target, alias).countMany()
     }
 
@@ -104,9 +109,10 @@ export default class ConnectionQueryBuilder {
      * @param alias - Entity query alias
      * @returns {InsertQueryBuilder<T>} - InsertQueryBuilder
      */
-    public insertInto<T extends EntityTarget>(target: T, alias?: string): (
-        InsertQueryBuilder<T>
-    ) {
+    public insertInto<T extends BaseEntity>(
+        target: Constructor<T>,
+        alias?: string
+    ): InsertQueryBuilder<T> {
         return new EntityQueryBuilder(target, alias).insert()
     }
 
@@ -118,9 +124,10 @@ export default class ConnectionQueryBuilder {
      * @param alias - Entity query alias
      * @returns {BulkInsertQueryBuilder<T>} - BulkInsertQueryBuilder
      */
-    public bulkInsertInto<T extends EntityTarget>(target: T, alias?: string): (
-        BulkInsertQueryBuilder<T>
-    ) {
+    public bulkInsertInto<T extends BaseEntity>(
+        target: Constructor<T>,
+        alias?: string
+    ): BulkInsertQueryBuilder<T> {
         return new EntityQueryBuilder(target, alias).bulkInsert()
     }
 
@@ -132,9 +139,10 @@ export default class ConnectionQueryBuilder {
      * @param alias - Entity query alias
      * @returns {UpdateQueryBuilder<T>} - UpdateQueryBuilder
      */
-    public updateOn<T extends EntityTarget>(target: T, alias?: string): (
-        UpdateQueryBuilder<T>
-    ) {
+    public updateOn<T extends BaseEntity>(
+        target: Constructor<T>,
+        alias?: string
+    ): UpdateQueryBuilder<T> {
         return new EntityQueryBuilder(target, alias).update()
     }
 
@@ -146,8 +154,8 @@ export default class ConnectionQueryBuilder {
      * @param alias - Entity query alias
      * @returns {UpdateOrCreateQueryBuilder<T>} - UpdateOrCreateQueryBuilder
      */
-    public updateOrCreateOn<T extends EntityTarget>(
-        target: T,
+    public updateOrCreateOn<T extends BaseEntity>(
+        target: Constructor<T>,
         alias?: string
     ): UpdateOrCreateQueryBuilder<T> {
         return new EntityQueryBuilder(target, alias).updateOrCreate()
@@ -161,9 +169,10 @@ export default class ConnectionQueryBuilder {
      * @param alias - Entity query alias
      * @returns {DeleteQueryBuilder<T>} - DeleteQueryBuilder
      */
-    public deleteFrom<T extends EntityTarget>(target: T, alias?: string): (
-        DeleteQueryBuilder<T>
-    ) {
+    public deleteFrom<T extends BaseEntity>(
+        target: Constructor<T>,
+        alias?: string
+    ): DeleteQueryBuilder<T> {
         return new EntityQueryBuilder(target, alias).delete()
     }
 }

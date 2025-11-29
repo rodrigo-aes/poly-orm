@@ -15,16 +15,16 @@ import CaseQueryBuilder from "../CaseQueryBuilder"
 import CountQueryBuilder from "../CountQueryBuilder"
 
 // Types
-import type { Target, TargetMetadata } from "../../types"
+import type { Constructor, Entity, TargetMetadata } from "../../types"
 import type { CountQueryHandler, CaseQueryHandler } from "../types"
 import type { SelectPropertyType, SelectPropertiesOptions } from "./types"
 
 /**
  * Build `SELECT` options
  */
-export default class SelectQueryBuilder<T extends Target> {
+export default class SelectQueryBuilder<T extends Entity> {
     /** @internal */
-    protected metadata: TargetMetadata<T>
+    protected metadata: TargetMetadata<Constructor<T>>
 
     /** @internal */
     private _properties: SelectPropertyType<T>[] = []
@@ -35,7 +35,7 @@ export default class SelectQueryBuilder<T extends Target> {
     /** @internal */
     constructor(
         /** @internal */
-        public target: T,
+        public target: Constructor<T>,
 
         /** @internal */
         public alias?: string
@@ -87,7 +87,7 @@ export default class SelectQueryBuilder<T extends Target> {
     * Convert `this` to `SelectOptions` object
     * @returns - A object with select options
     */
-    public toQueryOptions(): SelectOptions<InstanceType<T>> {
+    public toQueryOptions(): SelectOptions<T> {
         return {
             properties: this.propertiesToOptions(),
             count: this.countToOptions()
@@ -96,12 +96,12 @@ export default class SelectQueryBuilder<T extends Target> {
 
     // Privates ---------------------------------------------------------------
     /** @interal */
-    private propertiesToOptions(): SelectPropertyOptions<InstanceType<T>>[] {
+    private propertiesToOptions(): SelectPropertyOptions<T>[] {
         return this._properties.map(
             prop => {
                 switch (typeof prop) {
                     case "string": return prop as (
-                        SelectPropertyKey<InstanceType<T>>
+                        SelectPropertyKey<T>
                     )
 
                     case "object": return {
@@ -118,7 +118,7 @@ export default class SelectQueryBuilder<T extends Target> {
     // ------------------------------------------------------------------------
 
     /** @interal */
-    private countToOptions(): CountQueryOptions<InstanceType<T>> {
+    private countToOptions(): CountQueryOptions<T> {
         return Object.fromEntries(
             this._count.map(
                 count => [count._as!, count.toQueryOptions()]
@@ -130,8 +130,8 @@ export default class SelectQueryBuilder<T extends Target> {
 
     /** @interal */
     private handleProperty(
-        property: SelectPropertyKey<InstanceType<T>> | CaseQueryHandler<T>
-    ): SelectPropertyKey<InstanceType<T>> | CaseQueryBuilder<T> {
+        property: SelectPropertyKey<T> | CaseQueryHandler<T>
+    ): SelectPropertyKey<T> | CaseQueryBuilder<T> {
         switch (typeof property) {
             case "string": return property
             case "function":

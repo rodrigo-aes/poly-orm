@@ -1,4 +1,5 @@
-import type { EntityTarget } from "../types"
+import type { Constructor } from "../types"
+import type { BaseEntity, Entity } from "../Entities"
 import type { Old, New } from './Symbols'
 import type {
     CreationAttributesOptions,
@@ -28,44 +29,44 @@ export type TriggerActionOptions<Options extends (
         )
     }
 
-export type SetAction<T extends object> = {
+export type SetAction<T extends BaseEntity> = {
     type: 'SET'
     attributes: TriggerActionOptions<
         UpdateAttributes<T>
     >
 }
 
-export type InsertIntoTableAction<T extends EntityTarget = any> = {
+export type InsertIntoTableAction<T extends BaseEntity = BaseEntity> = {
     type: 'INSERT INTO'
-    target: T,
+    target: Constructor<T>,
     attributes: TriggerActionOptions<
-        CreationAttributesOptions<InstanceType<T>>
+        CreationAttributesOptions<T>
     >
 }
 
-export type UpdateTableAction<T extends EntityTarget = any> = {
+export type UpdateTableAction<T extends BaseEntity = BaseEntity> = {
     type: 'UPDATE TABLE'
-    target: T
+    target: Constructor<T>
     attributes: TriggerActionOptions<
-        UpdateAttributes<InstanceType<T>>
+        UpdateAttributes<T>
     >,
     where?: TriggerActionOptions<
-        ConditionalQueryOptions<InstanceType<T>>
+        ConditionalQueryOptions<T>
     >
 }
 
-export type DeleteFromAction<T extends EntityTarget = any> = {
+export type DeleteFromAction<T extends BaseEntity = BaseEntity> = {
     type: 'DELETE FROM'
-    target: T
+    target: Constructor<T>
     where: TriggerActionOptions<
-        ConditionalQueryOptions<InstanceType<T>>
+        ConditionalQueryOptions<T>
     >
 }
 
-export type TriggerAction<T extends object> = (
+export type TriggerAction<T extends BaseEntity> = (
     string |
     SetAction<T> |
-    InsertIntoTableAction |
-    UpdateTableAction |
-    DeleteFromAction
+    InsertIntoTableAction<BaseEntity> |
+    UpdateTableAction<BaseEntity> |
+    DeleteFromAction<BaseEntity>
 )

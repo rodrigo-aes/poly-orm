@@ -4,7 +4,7 @@ import { TriggerSchema } from "../../../../DatabaseSchema"
 import type { PolyORMConnection } from "../../../../Metadata"
 import type { ActionType } from "../../../../DatabaseSchema"
 
-export default class TriggerMigrator extends TriggerSchema {
+export default class TriggerMigrator extends TriggerSchema<any> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public async create(connection: PolyORMConnection): Promise<void> {

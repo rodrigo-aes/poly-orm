@@ -17,12 +17,18 @@ import {
 } from "../SQLBuilders"
 
 // Handlers
-import { MySQL2QueryExecutionHandler, type ResultMapOption } from "../Handlers"
+import {
+    MySQL2QueryExecutionHandler,
+    type ResultMapOption,
+    type FindOneResult,
+    type FindResult,
+} from "../Handlers"
 
 // Types
 import type { Collection, Pagination } from "../Entities"
 
 import type {
+    Constructor,
     Entity,
     Target,
     TargetMetadata
@@ -32,11 +38,11 @@ import type { CountManyQueryResult } from "./types"
 
 export default abstract class BaseRepository<T extends Entity> {
     /** @internal */
-    protected metadata: TargetMetadata
+    protected metadata: TargetMetadata<Constructor<T>>
 
     constructor(
         /** @internal */
-        protected target: Target
+        protected target: Constructor<T>
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
     }
@@ -70,13 +76,13 @@ export default abstract class BaseRepository<T extends Entity> {
     * @default 'entity'
     * @returns - A entity instance or `null`
     */
-    public findOne(
+    public findOne<M extends ResultMapOption = 'entity'>(
         options?: FindOneQueryOptions<T>,
-        mapTo: ResultMapOption = 'entity'
-    ): Promise<T | null> {
+        mapTo: M = 'entity' as M
+    ): Promise<FindOneResult<Constructor<T>, M>> {
         return new MySQL2QueryExecutionHandler(
             this.target,
-            new FindOneSQLBuilder(this.target, options as any),
+            new FindOneSQLBuilder(this.target, options),
             mapTo
         )
             .exec()
@@ -91,16 +97,16 @@ export default abstract class BaseRepository<T extends Entity> {
      * @default 'entity'
      * @returns - A entity instance collection
      */
-    public find(
+    public find<M extends ResultMapOption = 'entity'>(
         options?: FindQueryOptions<T>,
-        mapTo: ResultMapOption = 'entity'
-    ): Promise<Collection<T>> {
+        mapTo: M = 'entity' as M
+    ): Promise<FindResult<Constructor<T>, M>> {
         return new MySQL2QueryExecutionHandler(
             this.target,
-            new FindSQLBuilder(this.target, options as any),
+            new FindSQLBuilder(this.target, options),
             mapTo
         )
-            .exec()
+            .exec() as Promise<FindResult<Constructor<T>, M>>
     }
 
     // ------------------------------------------------------------------------
@@ -117,10 +123,10 @@ export default abstract class BaseRepository<T extends Entity> {
     > {
         return new MySQL2QueryExecutionHandler(
             this.target,
-            new PaginationSQLBuilder(this.target, options as any),
+            new PaginationSQLBuilder(this.target, options),
             'entity'
         )
-            .exec()
+            .exec() as Promise<Pagination<T>>
     }
 
     // ------------------------------------------------------------------------
@@ -158,6 +164,6 @@ export default abstract class BaseRepository<T extends Entity> {
             CountSQLBuilder.countManyBuilder(this.target, options),
             'json'
         )
-            .exec()
+            .exec() as Promise<CountManyQueryResult<T, Opts>>
     }
 }

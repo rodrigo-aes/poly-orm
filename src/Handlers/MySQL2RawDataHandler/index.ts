@@ -9,15 +9,17 @@ import {
 
 // Base Entity
 import {
-    Entity,
     BaseEntity,
     BasePolymorphicEntity,
     Collection,
+
+    type Pagination,
     type PaginationInitMap
 } from "../../Entities"
 
 // Types
 import type {
+    Entity,
     Target,
     TargetMetadata,
     PolymorphicEntityTarget,
@@ -63,7 +65,11 @@ export default class MySQL2RawDataHandler<T extends Target> {
     public parseEntity<Entity extends Target = T>(
         mapToEntity?: Entity,
         pagination?: PaginationInitMap
-    ): InstanceType<Entity> | Collection<InstanceType<Entity>> {
+    ): (
+            InstanceType<Entity> |
+            Collection<InstanceType<Entity>> |
+            Pagination<InstanceType<Entity>>
+        ) {
         const reduced = this.reduceMySQL2RawData(
             this.mySQL2RawData,
             this.metadata,
@@ -88,7 +94,7 @@ export default class MySQL2RawDataHandler<T extends Target> {
                 mapToEntity ?? this.target,
                 pagination!,
                 reduced
-            ) as Collection<InstanceType<Entity>>
+            ) as Pagination<InstanceType<Entity>>
         }
     }
 
@@ -234,8 +240,10 @@ export default class MySQL2RawDataHandler<T extends Target> {
         key: string
     ): MySQL2RawData[] {
         return raw
-            .map(item => Object.fromEntries(Object.entries(item)
-                .filter(([path]) => path.startsWith(`${key}_`))
+            .map(item => Object.fromEntries(
+                Object
+                    .entries(item)
+                    .filter(([path]) => path.startsWith(`${key}_`))
             ) as MySQL2RawData)
             .filter(item => !this.allNull(item))
     }

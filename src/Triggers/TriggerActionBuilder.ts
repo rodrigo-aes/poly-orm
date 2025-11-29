@@ -2,7 +2,8 @@
 import { Old, New } from "./Symbols"
 
 // Types
-import type { EntityTarget } from "../types"
+import type { Constructor } from "../types"
+import type { BaseEntity } from "../Entities"
 
 import type {
     TriggerActionOptions,
@@ -18,7 +19,7 @@ import type {
     ConditionalQueryOptions
 } from "../SQLBuilders"
 
-export default abstract class TriggerActionBuilder<T extends EntityTarget> {
+export default abstract class TriggerActionBuilder<T extends BaseEntity> {
     // Instance Methods =======================================================
     // Protecteds -------------------------------------------------------------
     /**
@@ -43,10 +44,10 @@ export default abstract class TriggerActionBuilder<T extends EntityTarget> {
      * @param attributes - Attributes to insert on table
      * @returns {InsertIntoTableAction<T>} - Insert table action
      */
-    protected insertInto<T extends EntityTarget = any>(
-        target: T,
+    protected insertInto<T extends BaseEntity>(
+        target: Constructor<T>,
         attributes: TriggerActionOptions<
-            CreationAttributesOptions<InstanceType<T>>
+            CreationAttributesOptions<T>
         >
     ): InsertIntoTableAction<T> {
         return {
@@ -67,13 +68,13 @@ export default abstract class TriggerActionBuilder<T extends EntityTarget> {
      * @param where - Where conditional options to match register in table
      * @returns {InsertIntoTableAction<T>} - Update table action
      */
-    protected updateTable<T extends EntityTarget = any>(
-        target: T,
+    protected updateTable<T extends BaseEntity>(
+        target: Constructor<T>,
         attributes: TriggerActionOptions<
-            UpdateAttributes<InstanceType<T>>
+            UpdateAttributes<T>
         >,
         where?: TriggerActionOptions<
-            ConditionalQueryOptions<InstanceType<T>>
+            ConditionalQueryOptions<T>
         >
     ): UpdateTableAction<T> {
 
@@ -93,10 +94,10 @@ export default abstract class TriggerActionBuilder<T extends EntityTarget> {
      * @param where - Where conditional options to match register in table
      * @returns {DeleteFromAction<T>} - Delete from action
      */
-    protected deleteFrom<T extends EntityTarget = any>(
-        target: T,
+    protected deleteFrom<T extends BaseEntity>(
+        target: Constructor<T>,
         where: TriggerActionOptions<
-            ConditionalQueryOptions<InstanceType<T>>
+            ConditionalQueryOptions<T>
         >
     ): DeleteFromAction<T> {
         return {

@@ -7,7 +7,7 @@ import {
 
 // Types
 import type { ResultSetHeader } from "mysql2"
-import type { EntityTarget, PolymorphicEntityTarget } from "../../types"
+import type { Entity, Target, Constructor } from "../../types"
 import type { OneRelationMetadataType } from "../../Metadata"
 import type { OneRelationHandlerSQLBuilder } from "../../SQLBuilders"
 import type { UpdateAttributes } from "../../SQLBuilders"
@@ -16,8 +16,8 @@ import type { UpdateAttributes } from "../../SQLBuilders"
  * One to one relation handler
  */
 export default abstract class OneRelation<
-    Target extends object,
-    Related extends EntityTarget | PolymorphicEntityTarget
+    T extends Entity,
+    R extends Entity
 > {
     /** @internal */
     constructor(
@@ -25,10 +25,10 @@ export default abstract class OneRelation<
         protected metadata: OneRelationMetadataType,
 
         /** @internal */
-        protected target: Target,
+        protected target: T,
 
         /** @internal */
-        protected related: Related
+        protected related: Extract<Constructor<R>, Target>
     ) { }
 
     // Getters ================================================================
@@ -40,7 +40,7 @@ export default abstract class OneRelation<
 
     /** @internal */
     protected get queryExecutionHandler(): (
-        RelationQueryExecutionHandler<Related>
+        RelationQueryExecutionHandler<R>
     ) {
         return MySQL2QueryExecutionHandler.relation(this.related)
     }
@@ -51,7 +51,7 @@ export default abstract class OneRelation<
      * Load related entity
      * @returns - Related entity intance
      */
-    public load(): Promise<InstanceType<Related> | null> {
+    public load(): Promise<InstanceType<R> | null> {
         return this.queryExecutionHandler.executeFindOne(
             this.sqlBuilder.loadSQL()
         )
@@ -64,7 +64,7 @@ export default abstract class OneRelation<
      * @param attributes - Update attributes data
      * @returns - Result header containing details of operation
      */
-    public update(attributes: UpdateAttributes<InstanceType<Related>>): (
+    public update(attributes: UpdateAttributes<InstanceType<R>>): (
         Promise<ResultSetHeader>
     ) {
         return this.queryExecutionHandler.executeUpdate(

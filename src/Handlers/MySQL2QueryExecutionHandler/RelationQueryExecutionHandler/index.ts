@@ -1,10 +1,5 @@
 // Handlers
-import {
-    MetadataHandler,
-
-    type EntityMetadata,
-    type PolymorphicEntityMetadata
-} from "../../../Metadata"
+import { MetadataHandler } from "../../../Metadata"
 
 import MySQL2RawDataHandler, {
     type DataFillMethod
@@ -14,11 +9,14 @@ import EntityBuilder from "../../EntityBuilder"
 
 // Types
 import type { ResultSetHeader } from "mysql2"
-import type { PolyORMConnection } from "../../../Metadata"
 import type {
+    Entity,
+    Target,
+    TargetMetadata,
+    Constructor,
     EntityTarget,
-    PolymorphicEntityTarget
 } from "../../../types"
+import type { BaseEntity, BasePolymorphicEntity } from "../../../Entities"
 
 import type { Collection } from "../../../Entities"
 
@@ -31,20 +29,20 @@ import type { MySQL2RawData } from "../../MySQL2RawDataHandler"
 import type { DeleteResult } from "../types"
 
 export default class RelationQueryExecutionHandler<
-    T extends EntityTarget | PolymorphicEntityTarget
+    T extends BaseEntity | BasePolymorphicEntity<any>
 > {
-    protected metadata: EntityMetadata | PolymorphicEntityMetadata
+    protected metadata: TargetMetadata<Constructor<T>>
 
-    constructor(public target: T) {
+    constructor(public target: Constructor<T>) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
     }
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public async executeFindOne(sql: string): Promise<InstanceType<T> | null> {
+    public async executeFindOne(sql: string): Promise<T | null> {
         return this
             .rawDataHandler('One', await this.metadata.connection.query(sql))
-            .parseEntity() as InstanceType<T> | null
+            .parseEntity() as T | null
     }
 
     // ------------------------------------------------------------------------
@@ -52,15 +50,15 @@ export default class RelationQueryExecutionHandler<
     public async executeFind(sql: string) {
         return this
             .rawDataHandler('Many', await this.metadata.connection.query(sql))
-            .parseEntity() as Collection<InstanceType<T>>
+            .parseEntity() as Collection<T>
     }
 
     // ------------------------------------------------------------------------
 
     public async executeCreate(
         sql: [string, any[]],
-        attributes: CreationAttributes<InstanceType<T>>
-    ): Promise<InstanceType<T>> {
+        attributes: CreationAttributes<T>
+    ): Promise<T> {
         const resultHeader: ResultSetHeader = await this.metadata.connection
             .query(...sql) as any
 
@@ -68,17 +66,15 @@ export default class RelationQueryExecutionHandler<
             attributes,
             resultHeader.insertId
         )
-            .build() as (
-                InstanceType<T>
-            )
+            .build() as T
     }
 
     // ------------------------------------------------------------------------
 
     public async executeCreateMany(
         sql: [string, any[][]],
-        attributes: CreationAttributes<InstanceType<T>>[]
-    ): Promise<Collection<InstanceType<T>>> {
+        attributes: CreationAttributes<T>[]
+    ): Promise<Collection<T>> {
         const resultHeader: ResultSetHeader = await this.metadata.connection
             .query(...sql) as any
 
@@ -86,21 +82,19 @@ export default class RelationQueryExecutionHandler<
             attributes,
             resultHeader.insertId
         )
-            .build() as (
-                Collection<InstanceType<T>>
-            )
+            .build() as Collection<T>
     }
 
     // ------------------------------------------------------------------------
 
     public async executeUpdateOrCreate(
         sql: string,
-    ): Promise<InstanceType<T>> {
+    ): Promise<T> {
         const [mySQL2RawData] = await this.metadata.connection.query(sql)
 
         return this
             .rawDataHandler('One', mySQL2RawData)
-            .parseEntity(mySQL2RawData) as InstanceType<T>
+            .parseEntity(mySQL2RawData) as T
     }
 
     // ------------------------------------------------------------------------
@@ -129,11 +123,9 @@ export default class RelationQueryExecutionHandler<
     private rawDataHandler(
         fillMethod: DataFillMethod,
         rawData: MySQL2RawData
-    ): (
-            MySQL2RawDataHandler<T>
-        ) {
+    ): MySQL2RawDataHandler<Target> {
         return new MySQL2RawDataHandler(
-            this.target,
+            this.target as Target,
             fillMethod,
             rawData
         )
@@ -142,13 +134,13 @@ export default class RelationQueryExecutionHandler<
     // ------------------------------------------------------------------------
 
     private entityBuilder(
-        attributes: CreationAttributesOptions<InstanceType<T>>,
+        attributes: CreationAttributesOptions<T>,
         primary: any | undefined
-    ): EntityBuilder<Extract<T, EntityTarget>> {
+    ): EntityBuilder<EntityTarget> {
         return new EntityBuilder(
             this.target as EntityTarget,
             attributes,
             primary
-        ) as EntityBuilder<Extract<T, EntityTarget>>
+        )
     }
 }

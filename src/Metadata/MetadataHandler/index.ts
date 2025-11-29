@@ -62,16 +62,14 @@ export default class MetadataHandler {
     ) {
         switch (true) {
             case target.prototype instanceof BaseEntity: return (
-                EntityMetadata.find(target as EntityTarget)
+                EntityMetadata.find(target)
                 ?? TempMetadata.getMetadata(target)
             ) as TargetMetadata<T>
 
             // ----------------------------------------------------------------
 
             case target.prototype instanceof BasePolymorphicEntity: return (
-                PolymorphicEntityMetadata.find(
-                    target as PolymorphicEntityTarget
-                )
+                PolymorphicEntityMetadata.find(target)
                 ?? TempMetadata.getMetadata(target)
             ) as TargetMetadata<T>
 
@@ -133,7 +131,9 @@ export default class MetadataHandler {
 
     // ------------------------------------------------------------------------
 
-    public static setRepository<T extends Target>(
+    public static setRepository<
+        T extends EntityTarget | PolymorphicEntityTarget
+    >(
         repository: Constructor<TargetRepository<InstanceType<T>>>,
         target: T
     ): void {

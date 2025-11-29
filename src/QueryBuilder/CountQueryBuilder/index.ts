@@ -16,6 +16,8 @@ import { MySQL2QueryExecutionHandler } from "../../Handlers"
 
 // Types
 import type {
+    Entity,
+    Constructor,
     Target,
     EntityProperties,
     EntityPropertiesKeys
@@ -37,7 +39,7 @@ type CountMethods = 'count'
 /**
  * Build a `COUNT` option
  */
-export default class CountQueryBuilder<T extends Target> {
+export default class CountQueryBuilder<T extends Entity> {
     /** @internal */
     public _as?: string
 
@@ -52,7 +54,7 @@ export default class CountQueryBuilder<T extends Target> {
     public type!: 'prop' | 'where' | 'case'
 
     constructor(
-        public target: T,
+        public target: Constructor<T>,
         public alias?: string
     ) { }
 
@@ -79,10 +81,10 @@ export default class CountQueryBuilder<T extends Target> {
      * @returns {this} - `this`
      */
     public where<
-        K extends EntityPropertiesKeys<InstanceType<T>>,
+        K extends EntityPropertiesKeys<T>,
         Cond extends (
-            EntityProperties<InstanceType<T>>[K] |
-            CompatibleOperators<EntityProperties<InstanceType<T>>[K]>
+            EntityProperties<T>[K] |
+            CompatibleOperators<EntityProperties<T>[K]>
         )
     >(
         propertie: K,
@@ -142,10 +144,10 @@ export default class CountQueryBuilder<T extends Target> {
      * @returns {this} - `this`
      */
     public orWhere<
-        K extends EntityPropertiesKeys<InstanceType<T>>,
+        K extends EntityPropertiesKeys<T>,
         Cond extends (
-            EntityProperties<InstanceType<T>>[K] |
-            CompatibleOperators<EntityProperties<InstanceType<T>>[K]>
+            EntityProperties<T>[K] |
+            CompatibleOperators<EntityProperties<T>[K]>
         )
     >(
         propertie: K,
@@ -223,7 +225,7 @@ export default class CountQueryBuilder<T extends Target> {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    public toSQLBuilder(): CountSQLBuilder<T> {
+    public toSQLBuilder(): CountSQLBuilder<Constructor<T>> {
         return CountSQLBuilder.countBuilder(
             this.target,
             this.toQueryOptions(),
@@ -237,7 +239,7 @@ export default class CountQueryBuilder<T extends Target> {
     * Convert `this` to `CountQueryOption` object
     * @returns - A object with count option
     */
-    public toQueryOptions(): CountQueryOption<InstanceType<T>> | string {
+    public toQueryOptions(): CountQueryOption<T> | string {
         switch (this.type) {
             case "prop": return this._conditional as string
 

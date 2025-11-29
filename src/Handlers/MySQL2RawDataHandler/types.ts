@@ -15,7 +15,7 @@ export type RawData<T extends Target> = (
 )
 
 export type MappedDataType<
-    T extends EntityTarget | PolymorphicEntityTarget,
+    T extends Target,
     M extends 'json' | 'entity'
 > = M extends 'json'
     ? RawData<T>

@@ -1,4 +1,3 @@
-import type { Target } from "../../types"
 import type { PartialQueryBuilder, QueryHandler } from "../types"
 
 export default class QueryBuilderHandler {

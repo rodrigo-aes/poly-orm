@@ -15,8 +15,7 @@ import {
     PolymorphicBelongsToMetadata,
 
     type EntityMetadata,
-    type RelationMetadataType,
-    type HookType
+    type RelationMetadataType
 } from "../../Metadata"
 
 // Childs
@@ -57,8 +56,19 @@ import type {
     EntityTarget,
     LocalOrInternalPolymorphicEntityTarget,
     Constructor,
-    StaticEntityTarget,
 } from "../../types"
+
+import type { ResultSetHeader } from "mysql2"
+import type { DeleteResult } from "../../Handlers"
+
+import type {
+    CreationAttributes,
+    UpdateAttributes,
+    UpdateOrCreateAttibutes,
+    ConditionalQueryOptions,
+} from "../../SQLBuilders"
+
+import type { PolymorphicRepository } from "../../Repositories"
 
 import type {
     Source,
@@ -68,15 +78,6 @@ import type {
     EntityNames,
     EntitiesMap
 } from "./types"
-import type { ResultSetHeader } from "mysql2"
-import type { DeleteResult } from "../../Handlers"
-import type {
-    CreationAttributes,
-    UpdateAttributes,
-    UpdateOrCreateAttibutes,
-    ConditionalQueryOptions,
-} from "../../SQLBuilders"
-import type { PolymorphicRepository } from "../../Repositories"
 
 // Exceptions
 import PolyORMException from "../../Errors"
@@ -86,7 +87,6 @@ import PolyORMException from "../../Errors"
  * @example
 * class Authenticable extends BasePolymorphicEntity<[User, Admin]> {}
 */
-
 export default abstract class BasePolymorphicEntity<
     Targets extends BaseEntity[]
 > extends Entity {
@@ -136,7 +136,7 @@ export default abstract class BasePolymorphicEntity<
     // ------------------------------------------------------------------------
 
     public getQueryBuilder<T extends BasePolymorphicEntity<any>>(this: T): (
-        PolymorphicEntityQueryBuilder<Constructor<T>>
+        PolymorphicEntityQueryBuilder<T>
     ) {
         return new PolymorphicEntityQueryBuilder(
             this.constructor as Constructor<T>
@@ -499,8 +499,8 @@ export default abstract class BasePolymorphicEntity<
 
     public static getQueryBuilder<T extends PolymorphicEntityTarget>(
         this: T
-    ): PolymorphicEntityQueryBuilder<T> {
-        return new PolymorphicEntityQueryBuilder(this)
+    ): PolymorphicEntityQueryBuilder<InstanceType<T>> {
+        return new PolymorphicEntityQueryBuilder(this as any)
     }
 
     // ------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-import type { Target } from "../types"
+import type { Entity } from "../types"
 
 import type SelectQueryBuilder from "./SelectQueryBuilder"
 import type CountQueryBuilder from "./CountQueryBuilder"
@@ -9,37 +9,37 @@ import type JoinQueryBuilder from "./JoinQueryBuilder"
 
 import type PaginateQueryBuilderType from "./PaginateQueryBuilder"
 
-export type SelectQueryHandler<T extends Target> = (
+export type SelectQueryHandler<T extends Entity> = (
     (qb: SelectQueryBuilder<T>) => void
 )
 
-export type CountQueryHandler<T extends Target> = (
+export type CountQueryHandler<T extends Entity> = (
     (qb: CountQueryBuilder<T>) => void
 )
 
-export type AndQueryHandler<T extends Target> = (
+export type AndQueryHandler<T extends Entity> = (
     (qb: AndQueryBuilder<T>) => void
 )
 
-export type CaseQueryHandler<T extends Target> = (
+export type CaseQueryHandler<T extends Entity> = (
     (qb: CaseQueryBuilder<T>) => void
 )
 
-export type ConditionalQueryHandler<T extends Target> = (
+export type ConditionalQueryHandler<T extends Entity> = (
     (qb: ConditionalQueryBuilder<T>) => void
 )
 
-export type JoinQueryHandler<T extends Target> = (
+export type JoinQueryHandler<T extends Entity> = (
     (qb: JoinQueryBuilder<T>) => void
 )
 
-export type PaginateQueryBuilder<T extends Target> = Omit<
+export type PaginateQueryBuilder<T extends Entity> = Omit<
     PaginateQueryBuilderType<T>, (
         'limit' |
         'offset'
     )>
 
-export type PartialQueryBuilder<T extends Target> = (
+export type PartialQueryBuilder<T extends Entity> = (
     SelectQueryBuilder<T> |
     CountQueryBuilder<T> |
     AndQueryBuilder<T> |
@@ -48,7 +48,7 @@ export type PartialQueryBuilder<T extends Target> = (
     JoinQueryBuilder<T>
 )
 export type QueryHandler<
-    T extends Target,
+    T extends Entity,
     QB extends PartialQueryBuilder<T>
 > = QB extends SelectQueryBuilder<T>
     ? SelectQueryHandler<T>

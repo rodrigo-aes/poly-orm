@@ -10,18 +10,16 @@ import UpdateOrCreateQueryBuilder from "../UpdateOrCreateQueryBuilder"
 import DeleteQueryBuilder from "../DeleteQueryBuilder"
 
 // Types
-import type { EntityTarget, TargetMetadata } from "../../types"
+import type { BaseEntity } from "../../Entities"
+import type { Constructor } from "../../types"
 
 /**
  * Entity query builder
  */
 export default class EntityQueryBuilder<
-    T extends EntityTarget
+    T extends BaseEntity
 > extends QueryBuilder<T> {
-    /** @internal */
-    declare protected metadata: TargetMetadata<T>
-
-    constructor(public target: T, alias?: string) {
+    constructor(public target: Constructor<T>, alias?: string) {
         super(target, alias)
     }
 

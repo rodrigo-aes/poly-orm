@@ -8,17 +8,17 @@ import CountQueryBuilder from "./CountQueryBuilder"
 import CountManyQueryBuilder from "./CountManyQueryBuilder"
 
 // Types
-import type { Target, TargetMetadata } from "../types"
+import type { Entity, TargetMetadata, Constructor } from "../types"
 
-export default class QueryBuilder<T extends Target> {
+export default class QueryBuilder<T extends Entity> {
     /** @internal */
-    protected metadata: TargetMetadata<T>
+    protected metadata: TargetMetadata<Constructor<T>>
 
     /** @internal */
     protected alias?: string
 
     constructor(
-        public target: T,
+        public target: Constructor<T>,
         alias?: string
     ) {
         this.alias = alias ?? this.target.name.toLowerCase()

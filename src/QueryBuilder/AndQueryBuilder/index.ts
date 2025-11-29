@@ -11,7 +11,8 @@ import ExistsQueryBuilder, {
 
 // Types
 import type {
-    Target,
+    Constructor,
+    Entity,
     TargetMetadata,
     EntityProperties,
     EntityPropertiesKeys
@@ -27,12 +28,12 @@ import type {
 /**
  * Build a `AND` conditional options
  */
-export default class AndQueryBuilder<T extends Target> {
+export default class AndQueryBuilder<T extends Entity> {
     /** @internal */
-    protected metadata: TargetMetadata<T>
+    protected metadata: TargetMetadata<Constructor<T>>
 
     /** @internal */
-    private _options: AndQueryOptions<InstanceType<T>> = {}
+    private _options: AndQueryOptions<T> = {}
 
     /** @internal */
     private exists?: ExistsQueryBuilder<T>
@@ -40,7 +41,7 @@ export default class AndQueryBuilder<T extends Target> {
     /** @internal */
     constructor(
         /** @internal */
-        public target: T,
+        public target: Constructor<T>,
 
         /** @internal */
         public alias?: string
@@ -51,7 +52,7 @@ export default class AndQueryBuilder<T extends Target> {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     /** @internal */
-    public get options(): AndQueryOptions<InstanceType<T>> {
+    public get options(): AndQueryOptions<T> {
         return {
             ...this._options,
             ...this.exists?.toQueryOptions()
@@ -68,10 +69,10 @@ export default class AndQueryBuilder<T extends Target> {
      * @returns {this} - `this`
      */
     public where<
-        K extends EntityPropertiesKeys<InstanceType<T>>,
+        K extends EntityPropertiesKeys<T>,
         Cond extends (
-            EntityProperties<InstanceType<T>>[K] |
-            CompatibleOperators<EntityProperties<InstanceType<T>>[K]>
+            EntityProperties<T>[K] |
+            CompatibleOperators<EntityProperties<T>[K]>
         )
     >(
         propertie: K | string,
@@ -86,7 +87,7 @@ export default class AndQueryBuilder<T extends Target> {
                     [
                         OperatorQueryBuilder[conditional as (
                             CompatibleOperators<
-                                EntityProperties<InstanceType<T>>[K]
+                                EntityProperties<T>[K]
                             >
                         )]
                     ]: value
@@ -125,12 +126,12 @@ export default class AndQueryBuilder<T extends Target> {
      * @returns {this} - `this`
      */
     public andOr<
-        K extends EntityPropertiesKeys<InstanceType<T>>,
+        K extends EntityPropertiesKeys<T>,
         Cond extends (
-            EntityProperties<InstanceType<T>>[K] |
+            EntityProperties<T>[K] |
             [
-                CompatibleOperators<EntityProperties<InstanceType<T>>[K]>,
-                EntityProperties<InstanceType<T>>[K]
+                CompatibleOperators<EntityProperties<T>[K]>,
+                EntityProperties<T>[K]
             ]
         )[]
     >(
@@ -167,7 +168,7 @@ export default class AndQueryBuilder<T extends Target> {
      * Convert `this` to `AndQueryOptions` object
      * @returns - A object with and options
      */
-    public toQueryOptions(): AndQueryOptions<InstanceType<T>> {
+    public toQueryOptions(): AndQueryOptions<T> {
         return this.options
     }
 }

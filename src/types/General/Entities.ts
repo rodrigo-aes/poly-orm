@@ -13,30 +13,21 @@ import type {
     PolymorphicEntityQueryBuilder
 } from "../../QueryBuilder"
 
-import type { Constructor, InstancesOf } from "."
+import type {
+    Constructor,
+    InstancesOf
+} from "."
 import type { EntityProperties, EntityRelations } from "../.."
 
-// Bases ======================================================================
-export type Entity<T extends 'Concrete' | 'Generic' = 'Concrete'> = (
-    T extends 'Concrete'
-    ? BaseEntity | BasePolymorphicEntity<any>
-    : T extends 'Generic'
-    ? EntityClass
-    : never
+// Bases =============================================================================================================
+export type Entity = BaseEntity | BasePolymorphicEntity<any>
+export type Target = (
+    Constructor<Entity> |
+    EntityTarget |
+    PolymorphicEntityTarget
 )
 
-export type Target<T extends 'Concrete' | 'Generic' = 'Concrete'> = (
-    T extends 'Concrete'
-    ? EntityTarget | PolymorphicEntityTarget
-    : T extends 'Generic'
-    ? Constructor<EntityClass>
-    : never
-)
-
-export type StaticTarget<T extends Target<'Generic' | 'Concrete'> = Target<
-    'Generic' | 'Concrete'
->> = T & typeof EntityClass
-
+export type StaticTarget<T extends Target = Target> = T & typeof EntityClass
 
 export type EntityObject<T extends Entity> = (
     EntityProperties<T> &
@@ -79,10 +70,10 @@ export type TargetRepository<T extends Entity = Entity> = (
     : never
 )
 
-export type TargetQueryBuilder<T extends Target = Target> = (
-    T extends EntityTarget
+export type TargetQueryBuilder<T extends Entity = Entity> = (
+    T extends BaseEntity
     ? EntityQueryBuilder<T>
-    : T extends PolymorphicEntityTarget
+    : T extends BasePolymorphicEntity<any>
     ? PolymorphicEntityQueryBuilder<T>
     : never
 )

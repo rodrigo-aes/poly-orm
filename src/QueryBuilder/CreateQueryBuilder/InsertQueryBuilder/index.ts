@@ -4,21 +4,14 @@ import CreateQueryBuilder from "../CreateQueryBuilder"
 import { MySQL2QueryExecutionHandler } from "../../../Handlers"
 
 // Types
-import type {
-    EntityTarget,
-    AsEntityTarget
-} from "../../../types"
-
-import type {
-    CreateSQLBuilder,
-    CreationAttributes
-} from "../../../SQLBuilders"
+import type { BaseEntity } from "../../../Entities"
+import type { CreationAttributes } from "../../../SQLBuilders"
 
 /**
  * Build `INSERT` query
  */
 export default class InsertQueryBuilder<
-    T extends EntityTarget
+    T extends BaseEntity
 > extends CreateQueryBuilder<T> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
@@ -29,7 +22,7 @@ export default class InsertQueryBuilder<
 
     // ------------------------------------------------------------------------
 
-    public data(attributes: CreationAttributes<InstanceType<T>>): (
+    public data(attributes: CreationAttributes<T>): (
         Omit<this, 'fields' | 'values'>
     ) {
         this.sqlBuilder.setData(attributes)
@@ -42,7 +35,7 @@ export default class InsertQueryBuilder<
     * Execute defined operation in database
     * @returns - Create result
     */
-    public async exec(): Promise<InstanceType<T>> {
+    public async exec(): Promise<T> {
         this.sqlBuilder.bulk = false
 
         return new MySQL2QueryExecutionHandler(
@@ -50,6 +43,6 @@ export default class InsertQueryBuilder<
             this.sqlBuilder,
             'entity'
         )
-            .exec() as Promise<InstanceType<T>>
+            .exec() as Promise<T>
     }
 }

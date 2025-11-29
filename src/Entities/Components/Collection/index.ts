@@ -1,14 +1,10 @@
 import { ComputedPropertiesMetadata } from "../../../Metadata"
 
 // Types
-import type { CollectionTarget, EntityProperties } from "../../../types"
-import type BaseEntity from "../../BaseEntity"
-import type BasePolymorphicEntity from "../../BasePolymorphicEntity"
+import type { Entity, CollectionTarget, EntityProperties } from "../../../types"
 import type { UpdateAttributes } from "../../../SQLBuilders"
 
-export default class Collection<T extends (
-    BaseEntity | BasePolymorphicEntity<any>
-)> extends Array<T> {
+export default class Collection<T extends Entity> extends Array<T> {
     public static readonly alias: string = this.name
 
     constructor(...entities: T[]) {

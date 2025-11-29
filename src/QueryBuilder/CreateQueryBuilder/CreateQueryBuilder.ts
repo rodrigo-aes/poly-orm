@@ -8,20 +8,24 @@ import {
 } from "../../SQLBuilders"
 
 // Types
-import type { EntityTarget } from "../../types"
+import type { BaseEntity } from "../../Entities"
+import type { Constructor, EntityTarget } from "../../types"
 
-export default abstract class CreateQueryBuilder<T extends EntityTarget> {
+export default abstract class CreateQueryBuilder<T extends BaseEntity> {
     /** @internal */
     protected metadata: EntityMetadata
 
     /** @internal */
-    protected sqlBuilder: CreateSQLBuilder<T>
+    protected sqlBuilder: CreateSQLBuilder<Constructor<T>>
 
     constructor(
-        public target: T,
+        public target: Constructor<T>,
         public alias?: string,
     ) {
-        this.metadata = MetadataHandler.targetMetadata(this.target)
+        this.metadata = MetadataHandler.targetMetadata(
+            this.target as EntityTarget
+        )
+
         this.sqlBuilder = new CreateSQLBuilder(
             this.target,
             undefined,
@@ -36,7 +40,7 @@ export default abstract class CreateQueryBuilder<T extends EntityTarget> {
      * @param names - Properties names
      * @returns {this} - `this`
      */
-    public properties(...names: CreationAttibutesKey<InstanceType<T>>[]): (
+    public properties(...names: CreationAttibutesKey<T>[]): (
         Omit<this, 'data'>
     ) {
         this.sqlBuilder.fields(...names)
@@ -57,9 +61,9 @@ export default abstract class CreateQueryBuilder<T extends EntityTarget> {
      * Entity properties and values object data to insert on table
      * @param attributes - Attributes data 
      */
-    public abstract data(attributes: (
-        CreationAttributesOptions<InstanceType<T>>
-    )): Omit<this, 'fields' | 'values'>
+    public abstract data(attributes: CreationAttributesOptions<T>): Omit<
+        this, 'fields' | 'values'
+    >
 
     // ------------------------------------------------------------------------
 
@@ -76,7 +80,7 @@ export default abstract class CreateQueryBuilder<T extends EntityTarget> {
     * Convert `this` to `CreationAttributesOptions` object
     * @returns - A object with creations attributes options
     */
-    public toQueryOptions(): CreationAttributesOptions<InstanceType<T>> {
+    public toQueryOptions(): CreationAttributesOptions<T> {
         return this.sqlBuilder.mapAttributes()
     }
 }

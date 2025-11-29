@@ -12,15 +12,15 @@ import { Case } from "../../SQLBuilders"
 import QueryBuilderHandler from "../QueryBuilderHandler"
 
 // Types
-import type { Target } from "../../types"
+import type { Entity, Constructor } from "../../types"
 import type { OrderQueryOptions } from "./types"
 
 /** @internal */
-export default class OrderQueryBuilder<T extends Target> {
-    private _options: SQLBuilderQueryOptions<InstanceType<T>> = []
+export default class OrderQueryBuilder<T extends Entity> {
+    private _options: SQLBuilderQueryOptions<T> = []
 
     constructor(
-        public target: T,
+        public target: Constructor<T>,
         public alias?: string
     ) { }
 
@@ -47,7 +47,7 @@ export default class OrderQueryBuilder<T extends Target> {
 
     // -----------------------------------------------------------------------
 
-    public toQueryOptions(): SQLBuilderQueryOptions<InstanceType<T>> {
+    public toQueryOptions(): SQLBuilderQueryOptions<T> {
         return this._options
     }
 }

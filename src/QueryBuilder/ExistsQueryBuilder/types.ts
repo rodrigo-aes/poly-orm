@@ -8,20 +8,20 @@ import type {
 
 import type { ConditionalQueryHandler } from '../types'
 
-export type EntityExistsQueryOptions<T extends Target> = Partial<{
-    [K in EntityRelationsKeys<InstanceType<T>>]: (
+export type EntityExistsQueryOptions<T extends Entity> = Partial<{
+    [K in EntityRelationsKeys<T>]: (
         boolean |
         EntityExistsQueryOption<
-            Extract<EntityRelations<InstanceType<T>>[K], Entity>
+            Extract<EntityRelations<T>[K], Entity>
         >
     )
 }>
 
 export type EntityExistsQueryOption<T extends Entity> = {
-    relations?: EntityExistsQueryOptions<Extract<Constructor<T>, Target>>
-    where?: ConditionalQueryHandler<Extract<Constructor<T>, Target>>
+    relations?: EntityExistsQueryOptions<T>
+    where?: ConditionalQueryHandler<T>
 }
 
-export type ExistsQueryOptions<T extends Target> = (
+export type ExistsQueryOptions<T extends Entity> = (
     string | EntityExistsQueryOptions<T>
 )

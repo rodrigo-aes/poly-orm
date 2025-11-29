@@ -187,9 +187,9 @@ export default class HooksMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public async callBeforeUpdate<Entity extends object>(
-        attributes: Entity | UpdateAttributes<Entity>,
-        where?: ConditionalQueryOptions<Entity>
+    public async callBeforeUpdate<T extends Entity>(
+        attributes: T | UpdateAttributes<T>,
+        where?: ConditionalQueryOptions<T>
     ) {
         if (this.toCall.has('before-update'))
             for (const hook of this.beforeUpdate) await hook.call(
@@ -207,9 +207,9 @@ export default class HooksMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public async callBeforeBulkUpdate<Entity extends object>(
-        attributes: UpdateAttributes<Entity>,
-        where?: ConditionalQueryOptions<Entity>
+    public async callBeforeBulkUpdate<T extends Entity>(
+        attributes: UpdateAttributes<T>,
+        where?: ConditionalQueryOptions<T>
     ) {
         if (this.toCall.has('before-bulk-update'))
             for (const hook of this.beforeBulkUpdate) await hook.call(
@@ -220,8 +220,8 @@ export default class HooksMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public async callAfterBulkUpdate<Entity extends object>(
-        where: ConditionalQueryOptions<Entity> | undefined,
+    public async callAfterBulkUpdate<T extends Entity>(
+        where: ConditionalQueryOptions<T> | undefined,
         result: ResultSetHeader
     ) {
         if (this.toCall.has('after-bulk-update'))
