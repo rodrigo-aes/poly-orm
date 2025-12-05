@@ -1,4 +1,5 @@
 import HasManyRelation from "../ManyRelation/HasManyRelation"
+import { Collection } from "../../Entities"
 
 // SQL Builders
 import {
@@ -9,11 +10,13 @@ import {
 // Types
 import type { Entity, Constructor } from "../../types"
 import type { BelongsToManyMetadata } from "../../Metadata"
+import type { BelongsToMany } from "./types"
 
 /** HasMany relation handler */
-export default class BelongsToMany<
+export class BelongsToManyHandler<
     T extends Entity,
-    R extends Entity
+    R extends Entity,
+    C extends Collection<R> = Collection<R>
 > extends HasManyRelation<T, R> {
     /** @internal */
     constructor(
@@ -24,9 +27,17 @@ export default class BelongsToMany<
         protected target: T,
 
         /** @internal */
-        protected related: Constructor<R>
+        protected related: Constructor<R>,
+
+        /** @internal */
+        protected collection: Constructor<C> = Collection as (
+            Constructor<C> & typeof Collection
+        ),
+
+        /** @internal */
+        protected instances: C = new collection
     ) {
-        super(metadata, target, related)
+        super(metadata, target, related, collection, instances)
     }
 
     // Getters ================================================================
@@ -102,4 +113,31 @@ export default class BelongsToMany<
         return this.queryExecutionHandler
             .executeVoidOperation(this.sqlBuilder.syncSQL(relateds))
     }
+}
+
+// ----------------------------------------------------------------------------
+
+export default function BelongsToMany<
+    T extends Entity,
+    C extends Collection<T> = Collection<T>
+>(
+    metadata: BelongsToManyMetadata,
+    target: Entity,
+    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
+    collection: Constructor<C> = Collection as (
+        Constructor<C> & typeof Collection
+    ),
+    instances: C = new collection
+): BelongsToMany<T, C> {
+    return new BelongsToManyHandler(
+        metadata,
+        target,
+        related,
+        collection,
+        instances
+    ) as BelongsToMany<T, C>
+}
+
+export type {
+    BelongsToMany
 }

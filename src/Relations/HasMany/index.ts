@@ -1,4 +1,5 @@
 import HasManyRelation from "../ManyRelation/HasManyRelation"
+import { Collection } from "../../Entities"
 
 // SQL Builders
 import { HasManyHandlerSQLBuilder } from "../../SQLBuilders"
@@ -6,12 +7,14 @@ import { HasManyHandlerSQLBuilder } from "../../SQLBuilders"
 // Types
 import type { Entity, Constructor } from "../../types"
 import type { HasManyMetadata } from "../../Metadata"
+import type { HasMany } from "./types"
 
 /** HasMany relation handler */
-export default class HasMany<
+export class HasManyHandler<
     T extends Entity,
-    R extends Entity
-> extends HasManyRelation<T, R> {
+    R extends Entity,
+    C extends Collection<R> = Collection<R>
+> extends HasManyRelation<T, R, C> {
     /** @internal */
     constructor(
         /** @internal */
@@ -21,9 +24,17 @@ export default class HasMany<
         protected target: T,
 
         /** @internal */
-        protected related: Constructor<R>
+        protected related: Constructor<R>,
+
+        /** @internal */
+        protected collection: Constructor<C> = Collection as (
+            Constructor<C> & typeof Collection
+        ),
+
+        /** @internal */
+        protected instances: C = new collection
     ) {
-        super(metadata, target, related)
+        super(metadata, target, related, collection, instances)
     }
 
     // Getters ================================================================
@@ -36,4 +47,31 @@ export default class HasMany<
             this.related
         )
     }
+}
+
+// ----------------------------------------------------------------------------
+
+export default function HasMany<
+    T extends Entity,
+    C extends Collection<T> = Collection<T>
+>(
+    metadata: HasManyMetadata,
+    target: Entity,
+    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
+    collection: Constructor<C> = Collection as (
+        Constructor<C> & typeof Collection
+    ),
+    instances: C = new collection
+): HasMany<T, C> {
+    return new HasManyHandler(
+        metadata,
+        target,
+        related,
+        collection,
+        instances
+    ) as HasMany<T, C>
+}
+
+export type {
+    HasMany
 }

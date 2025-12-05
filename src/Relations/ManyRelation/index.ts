@@ -21,7 +21,8 @@ import type {
 /** Many relation handler */
 export default abstract class ManyRelation<
     T extends Entity,
-    R extends Entity
+    R extends Entity,
+    C extends Collection<R> = Collection<R>
 > {
     /** @internal */
     private _relatedMetadata?: TargetMetadata<Constructor<R>>
@@ -38,10 +39,12 @@ export default abstract class ManyRelation<
         protected related: Constructor<R>,
 
         /** @internal */
-        protected collection: typeof Collection = Collection,
+        protected collection: Constructor<C> = Collection as (
+            Constructor<C> & typeof Collection
+        ),
 
         /** @internal */
-        protected instances: Collection<R> = new collection
+        protected instances: C = new collection
     ) {
         return new Proxy(this, {
             get: (target, prop, receiver) => {
@@ -105,7 +108,7 @@ export default abstract class ManyRelation<
     public async load(where?: ConditionalQueryOptions<R>): Promise<this> {
         this.instances = await this.queryExecutionHandler.executeFind(
             this.sqlBuilder.loadSQL(where)
-        )
+        ) as C // Implement this: (Parse entity collection) 
 
         return this
     }

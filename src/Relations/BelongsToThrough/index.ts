@@ -3,18 +3,13 @@ import OneRelation from "../OneRelation"
 // SQL Builders
 import { BelongsToThroughHandlerSQLBuilder } from "../../SQLBuilders"
 
-// Handlers
-import {
-    MySQL2QueryExecutionHandler,
-    type RelationQueryExecutionHandler
-} from "../../Handlers"
-
 // Types
 import type { Entity, Constructor } from "../../types"
 import type { BelongsToThroughMetadata } from "../../Metadata"
+import type { BelongsToThrough } from "./types"
 
 /** BelongsToThrough relation handler */
-export default class BelongsToThrough<
+export class BelongsToThroughHandler<
     T extends Entity,
     R extends Entity
 > extends OneRelation<T, R> {
@@ -27,9 +22,12 @@ export default class BelongsToThrough<
         protected target: T,
 
         /** @internal */
-        protected related: Constructor<R>
+        protected related: Constructor<R>,
+
+        /** @internal */
+        protected instance?: R | null
     ) {
-        super(metadata, target, related)
+        super(metadata, target, related, instance)
     }
 
     // Getters ================================================================
@@ -42,4 +40,24 @@ export default class BelongsToThrough<
             this.related
         )
     }
+}
+
+// ----------------------------------------------------------------------------
+
+export default function BelongsToThrough<T extends Entity>(
+    metadata: BelongsToThroughMetadata,
+    target: Entity,
+    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
+    instance?: T | null
+): BelongsToThrough<T> {
+    return new BelongsToThroughHandler(
+        metadata,
+        target,
+        related,
+        instance
+    ) as BelongsToThrough<T>
+}
+
+export type {
+    BelongsToThrough
 }

@@ -2,7 +2,7 @@ import ManyRelation from ".."
 import { Collection } from "../../../Entities"
 
 // Types
-import type { Constructor, Entity, EntityTarget } from "../../../types"
+import type { Constructor, Entity } from "../../../types"
 import type {
     HasManyMetadata,
     PolymorphicHasManyMetadata,
@@ -17,8 +17,9 @@ import type {
 /** Has many relation handler */
 export default abstract class HasManyRelation<
     T extends Entity,
-    R extends Entity
-> extends ManyRelation<T, R> {
+    R extends Entity,
+    C extends Collection<R> = Collection<R>
+> extends ManyRelation<T, R, C> {
     /** @internal */
     constructor(
         /** @internal */
@@ -35,10 +36,12 @@ export default abstract class HasManyRelation<
         protected related: Constructor<R>,
 
         /** @internal */
-        protected collection: typeof Collection = Collection,
+        protected collection: Constructor<C> = Collection as (
+            Constructor<C> & typeof Collection
+        ),
 
         /** @internal */
-        protected instances: Collection<R> = new collection
+        protected instances: C = new collection
     ) {
         super(metadata, target, related, collection, instances)
     }

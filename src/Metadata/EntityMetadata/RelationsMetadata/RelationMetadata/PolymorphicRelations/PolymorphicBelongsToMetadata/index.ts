@@ -1,11 +1,10 @@
-import PolymorphicEntityMetadata from "../../../../../PolymorphicEntityMetadata"
+import PolymorphicEntityMetadata
+    from "../../../../../PolymorphicEntityMetadata"
 import RelationMetadata from "../../RelationMetadata"
 
 // Handlers
 import MetadataHandler from "../../../../../MetadataHandler"
-import {
-    InternalPolymorphicEntities
-} from "../../../../../../Entities"
+import { InternalPolymorphicEntities } from "../../../../../../Entities"
 
 // Helpers
 import GeneralHelper from "../../../../../../Helpers/GeneralHelper"

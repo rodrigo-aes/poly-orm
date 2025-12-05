@@ -1,4 +1,21 @@
-import { MetadataHandler, TempMetadata, type HookType } from "../Metadata"
+import {
+    MetadataHandler,
+    TempMetadata,
+
+    HasOneMetadata,
+    HasManyMetadata,
+    BelongsToMetadata,
+    HasOneThroughMetadata,
+    HasManyThroughMetadata,
+    BelongsToThroughMetadata,
+    BelongsToManyMetadata,
+    PolymorphicHasOneMetadata,
+    PolymorphicHasManyMetadata,
+    PolymorphicBelongsToMetadata,
+
+    type RelationMetadataType,
+    type HookType
+} from "../Metadata"
 import {
     ColumnsSnapshots,
 
@@ -7,6 +24,8 @@ import {
 } from "./Components"
 
 // Types
+import type BasePolymorphicEntity from "./BasePolymorphicEntity"
+import type BaseEntity from "./BaseEntity"
 import type {
     FindOneResult,
     FindResult,
@@ -25,6 +44,30 @@ import type {
     CreationAttributes
 } from "../SQLBuilders"
 
+import {
+    HasOneHandler,
+    HasManyHandler,
+    BelongsToHandler,
+    HasOneThroughHandler,
+    HasManyThroughHandler,
+    BelongsToThroughHandler,
+    BelongsToManyHandler,
+    PolymorphicHasOneHandler,
+    PolymorphicHasManyHandler,
+    PolymorphicBelongsToHandler,
+
+    type HasOne,
+    type HasMany,
+    type BelongsTo,
+    type HasOneThrough,
+    type HasManyThrough,
+    type BelongsToThrough,
+    type BelongsToMany,
+    type PolymorphicHasOne,
+    type PolymorphicHasMany,
+    type PolymorphicBelongsTo
+} from "../Relations"
+
 import type {
     Entity as EntityT,
     Target,
@@ -41,6 +84,7 @@ import type {
 
 // Exceptions
 import PolyORMException from "../Errors"
+
 
 export default abstract class Entity {
     public static readonly INHERIT_HOOKS: boolean = true
@@ -86,7 +130,7 @@ export default abstract class Entity {
      * Get entity metadata
      */
     public getMetadata<T extends EntityT>(this: T): any {
-        return (this as T & Entity).getTrueMetadata().toJSON()
+        return this.getTrueMetadata().toJSON()
     }
 
     // ------------------------------------------------------------------------
@@ -154,7 +198,164 @@ export default abstract class Entity {
         ))
     }
 
+    // Protecteds -------------------------------------------------------------
+    protected hasOne<T extends EntityT = EntityT>(name: string): HasOne<T> {
+        return HasOneHandler<T>(
+            this.verifyRelationMetadata(
+                (this as any).getRelationMetadata(name), HasOneMetadata
+            ),
+            this as any
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected hasMany<T extends EntityT = EntityT>(name: string): HasMany<T> {
+        return HasManyHandler<T>(
+            this.verifyRelationMetadata(
+                (this as any).getRelationMetadata(name), HasManyMetadata
+            ),
+            this as any
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected belongsTo<T extends EntityT = EntityT>(name: string): BelongsTo<
+        T
+    > {
+        return BelongsToHandler<T>(
+            this.verifyRelationMetadata(
+                (this as any).getRelationMetadata(name), BelongsToMetadata
+            ),
+            this as any
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected hasOneThrough<T extends EntityT = EntityT>(
+        name: string
+    ): HasOneThrough<T> {
+        return HasOneThroughHandler<T>(
+            this.verifyRelationMetadata(
+                (this as any).getRelationMetadata(name), HasOneThroughMetadata
+            ),
+            this as any
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected hasManyThrough<T extends EntityT = EntityT>(
+        name: string
+    ): HasManyThrough<T> {
+        return HasManyThroughHandler<T>(
+            this.verifyRelationMetadata(
+                (this as any).getRelationMetadata(name), HasManyThroughMetadata
+            ),
+            this as any
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected belongsToThrough<T extends EntityT = EntityT>(
+        name: string
+    ): BelongsToThrough<T> {
+        return BelongsToThroughHandler<T>(
+            this.verifyRelationMetadata(
+                (this as any).getRelationMetadata(name),
+                BelongsToThroughMetadata
+            ),
+            this as any
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected belongsToMany<T extends EntityT = EntityT>(
+        name: string
+    ): BelongsToMany<T> {
+        return BelongsToManyHandler<T>(
+            this.verifyRelationMetadata(
+                (this as any).getRelationMetadata(name),
+                BelongsToManyMetadata
+            ),
+            this as any
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected polymorphicHasOne<T extends EntityT = EntityT>(
+        name: string
+    ): PolymorphicHasOne<T> {
+        return PolymorphicHasOneHandler<T>(
+            this.verifyRelationMetadata(
+                (this as any).getRelationMetadata(name),
+                PolymorphicHasOneMetadata
+            ),
+            this as any
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected polymorphicHasMany<T extends EntityT = EntityT>(
+        name: string
+    ): PolymorphicHasMany<T> {
+        return PolymorphicHasManyHandler<T>(
+            this.verifyRelationMetadata(
+                (this as any).getRelationMetadata(name),
+                PolymorphicHasManyMetadata
+            ),
+            this as any
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected polymorphicBelongsTo<
+        T extends BasePolymorphicEntity<any> | BaseEntity[]
+    >(name: string): PolymorphicBelongsTo<T> {
+        return PolymorphicBelongsToHandler<T>(
+            this.verifyRelationMetadata(
+                (this as any).getRelationMetadata(name),
+                PolymorphicBelongsToMetadata
+            ),
+            this as any
+        )
+    }
+
     // Privates ---------------------------------------------------------------
+    /** @internal */
+    private getRelationMetadata<T extends EntityT>(
+        this: T,
+        name: string
+    ): RelationMetadataType {
+        return this.getTrueMetadata().relations.findOrThrow(name)
+    }
+
+    // ------------------------------------------------------------------------
+
+    /** @internal */
+    private verifyRelationMetadata<T extends RelationMetadataType>(
+        metadata: RelationMetadataType,
+        shouldBe: Constructor<T>
+    ): T {
+        if (!(metadata instanceof shouldBe)) PolyORMException.Metadata.throw(
+            'INVALID_RELATION',
+            metadata.type,
+            metadata.name,
+            shouldBe.name.replace('Metadata', '')
+        )
+
+        return metadata as T
+    }
+
+    // ------------------------------------------------------------------------
+
     /** @internal */
     private columnsEntries<T extends EntityT>(
         this: T,

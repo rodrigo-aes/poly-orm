@@ -9,7 +9,7 @@ import { PropertySQLHelper } from "../../../Helpers"
 
 // Types
 import type { RelationMetadataType, } from "../../../Metadata"
-import type { Constructor, Entity, TargetMetadata } from "../../../types"
+import type { Constructor, Entity, EntityTarget, TargetMetadata } from "../../../types"
 import type { CreationAttributes } from "../../CreateSQLBuilder"
 import type { UpdateOrCreateAttibutes } from "../../UpdateOrCreateSQLBuilder"
 import type { UpdateAttributes } from "../../UpdateSQLBuilder"

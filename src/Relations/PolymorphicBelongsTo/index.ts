@@ -3,21 +3,23 @@ import OneRelation from "../OneRelation"
 // SQL Builders
 import { PolymorphicBelongsToHandlerSQLBuilder } from "../../SQLBuilders"
 
-// Handlers
-import {
-    MySQL2QueryExecutionHandler,
-    type RelationQueryExecutionHandler
-} from "../../Handlers"
-
 // Types
 import type { Entity, Constructor } from "../../types"
-import type { BasePolymorphicEntity } from "../../Entities"
+import type {
+    BasePolymorphicEntity,
+    BaseEntity,
+    Source,
+    ResolveSource
+} from "../../Entities"
 import type { PolymorphicBelongsToMetadata } from "../../Metadata"
+import type { UpdateAttributes } from "../../SQLBuilders"
+import type { ResultSetHeader } from "mysql2"
+import type { PolymorphicBelongsToRelated, PolymorphicBelongsTo } from "./types"
 
-export default class PolymorphicBelongsTo<
+export class PolymorphicBelongsToHandler<
     T extends Entity,
-    R extends BasePolymorphicEntity<any>
-> extends OneRelation<T, R> {
+    R extends BasePolymorphicEntity<any> | BaseEntity[]
+> extends OneRelation<T, PolymorphicBelongsToRelated<R>> {
     /** @internal */
     constructor(
         /** @internal */
@@ -27,18 +29,72 @@ export default class PolymorphicBelongsTo<
         protected target: T,
 
         /** @internal */
-        protected related: Constructor<R>
+        protected related: Constructor<PolymorphicBelongsToRelated<R>> = (
+            metadata.relatedTarget as Constructor<
+                PolymorphicBelongsToRelated<R>
+            >
+        ),
+
+        protected instance?: PolymorphicBelongsToRelated<R> | null
     ) {
-        super(metadata, target, related)
+        super(metadata, target, related, instance)
     }
 
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected get sqlBuilder(): PolymorphicBelongsToHandlerSQLBuilder<T, R> {
+    protected get sqlBuilder(): PolymorphicBelongsToHandlerSQLBuilder<
+        T, PolymorphicBelongsToRelated<R>
+    > {
         return new PolymorphicBelongsToHandlerSQLBuilder(
             this.metadata,
             this.target
         )
     }
+
+    // Instance Methods =======================================================
+    // Publics ----------------------------------------------------------------
+    public async load<T extends Source<R> = Source<R>>(): Promise<
+        ResolveSource<R, T> | null
+    > {
+        return this.instance = await this.queryExecutionHandler.executeFindOne(
+            this.sqlBuilder.loadSQL()
+        ) as any
+    }
+
+    // ------------------------------------------------------------------------
+
+    public update<T extends Source<R> = Source<R>>(
+        attributes: UpdateAttributes<ResolveSource<R, T>>,
+    ): Promise<ResultSetHeader> {
+        return this.queryExecutionHandler.executeUpdate(
+            this.sqlBuilder.updateSQL(attributes as any)
+        )
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+export default function PolymorphicBelongsTo<
+    T extends BasePolymorphicEntity<any> | BaseEntity[]
+>(
+    metadata: PolymorphicBelongsToMetadata,
+    target: Entity,
+    related: Constructor<PolymorphicBelongsToRelated<T>> = (
+        metadata.relatedTarget as Constructor<
+            PolymorphicBelongsToRelated<T>
+        >
+    ),
+    instance?: PolymorphicBelongsToRelated<T> | null
+): PolymorphicBelongsTo<T> {
+    return new PolymorphicBelongsToHandler(
+        metadata,
+        target,
+        related,
+        instance
+    ) as PolymorphicBelongsTo<T>
+}
+
+export type {
+    PolymorphicBelongsTo
 }

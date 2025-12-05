@@ -52,9 +52,9 @@ export default class OnSQLBuilder<
     // ------------------------------------------------------------------------
 
     private get parentPrimary(): string {
-        return (
-            `${this.parentAlias}.${this.parentMetadata.columns.primary.name}`
-        )
+        return `${this.parentAlias}.${(
+            this.parentMetadata.columns.primary.name
+        )}`
     }
 
     // ------------------------------------------------------------------------
@@ -176,9 +176,7 @@ export default class OnSQLBuilder<
             JT,
             parentFKname,
             relatedFKName,
-        } = this.relation as (
-            BelongsToManyMetadata
-        )
+        } = this.relation as BelongsToManyMetadata
 
         return `EXISTS(
             SELECT 1 FROM ${relatedTable} ${this.alias} WHERE EXISTS(

@@ -76,7 +76,7 @@ import {
 
 // Relations
 import type {
-    HasOne as HasOneHandler,
+    HasOneHandler as HasOneHandler,
     HasMany as HasManyHandler,
     BelongsTo as BelongsToHandler,
     HasOneThrough as HasOneThroughHandler,

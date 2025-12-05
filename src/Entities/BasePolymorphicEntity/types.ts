@@ -7,39 +7,53 @@ export type SourceEntities<T extends BasePolymorphicEntity<any>> =
     ? U
     : never
 
-export type SourceEntity<T extends BaseEntity[]> =
-    Constructor<T[number]> extends infer U
+export type SourceEntity<T extends BasePolymorphicEntity<any> | BaseEntity[]> =
+    Constructor<
+        T extends BasePolymorphicEntity<any>
+        ? SourceEntities<T>[number]
+        : T extends BaseEntity[]
+        ? T[number]
+        : never
+    > extends infer U
     ? U extends EntityTarget
     ? InstanceType<U>
     : never
     : never
 
-export type EntityNames<T extends BaseEntity[]> = T[number]['name']
+export type EntityNames<
+    T extends BasePolymorphicEntity<any> | BaseEntity[]
+> = T extends BasePolymorphicEntity<any>
+    ? SourceEntities<T>[number]['name']
+    : T extends BaseEntity[]
+    ? T[number]['name']
+    : never
 
-export type EntitiesMap<T extends BaseEntity[]> = {
-    [K in EntityNames<T>]: Constructor<Extract<T[number], { name: K }>>
-}
+export type EntitiesMap<
+    T extends BasePolymorphicEntity<any> | BaseEntity[]
+> = {
+        [K in EntityNames<T>]: Constructor<Extract<
+            T extends BasePolymorphicEntity<any>
+            ? SourceEntities<T>[number]
+            : T extends BaseEntity[]
+            ? T[number]
+            : never,
+            { name: K }
+        >>
+    }
 
-export type Source<T extends BasePolymorphicEntity<any>> = (
-    SourceEntity<SourceEntities<T>> |
-    Constructor<SourceEntity<SourceEntities<T>>> |
-    EntityNames<SourceEntities<T>>
+export type Source<T extends BasePolymorphicEntity<any> | BaseEntity[]> = (
+    SourceEntity<T> |
+    Constructor<SourceEntity<T>> |
+    EntityNames<T>
 )
 
 export type ResolveSource<
-    T extends BasePolymorphicEntity<any>,
+    T extends BasePolymorphicEntity<any> | BaseEntity[],
     S extends Source<T>
-> = (
-        S extends EntityNames<SourceEntities<T>>
-        ? InstanceType<EntitiesMap<SourceEntities<T>>[S]>
-        : S extends SourceEntity<SourceEntities<T>>
-        ? S
-        : S extends Constructor<SourceEntity<SourceEntities<T>>>
-        ? InstanceType<S>
-        : never
-    )
-
-
-import { Foo, Bar } from "../../TestTools/Entities"
-
-type T = ResolveSource<BasePolymorphicEntity<[Foo, Bar]>, 'Foo'>;
+> = S extends EntityNames<T>
+    ? InstanceType<EntitiesMap<T>[S]>
+    : S extends SourceEntity<T>
+    ? S
+    : S extends Constructor<SourceEntity<T>>
+    ? InstanceType<S>
+    : never

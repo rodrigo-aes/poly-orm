@@ -1,8 +1,5 @@
 import OneRelationHandlerSQLBuilder from "../OneRelationHandlerSQLBuilder"
-import {
-    PolymorphicEntityMetadata,
-    type EntityMetadata
-} from "../../../Metadata"
+import { PolymorphicEntityMetadata, EntityMetadata } from "../../../Metadata"
 
 
 // SQL Builders
@@ -13,17 +10,15 @@ import { InternalPolymorphicEntities } from "../../../Entities"
 import { SQLStringHelper, PropertySQLHelper } from "../../../Helpers"
 
 // Types
+import type { PolymorphicBelongsToMetadata } from "../../../Metadata"
 import type {
-    PolymorphicBelongsToMetadata,
-} from "../../../Metadata"
-
-import type { Entity, Constructor } from "../../../types"
+    Entity,
+    Constructor,
+    EntityProperties,
+    OptionalNullable
+} from "../../../types"
 import type { BasePolymorphicEntity } from "../../../Entities"
-
-import { CreationAttributes } from "../../CreateSQLBuilder"
-import { OptionalNullable } from "../../../types/Properties"
-import { EntityProperties } from "../../../types"
-
+import type { CreationAttributes } from "../../CreateSQLBuilder"
 import type { UpdateAttributes } from "../../UpdateSQLBuilder"
 
 // Exceptions
@@ -85,7 +80,7 @@ export default class PolymorphicBelongsToHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     private get sourceMetadata(): EntityMetadata {
-        return this._sourceMetadata = this._sourceMetadata ?? (
+        return this._sourceMetadata ??= (
             this.metadata.relatedMetadata instanceof PolymorphicEntityMetadata
                 ? this.metadata.relatedMetadata.sourcesMetadata[(
                     this.sourceType
@@ -143,7 +138,7 @@ export default class PolymorphicBelongsToHandlerSQLBuilder<
         string
     ) {
         return SQLStringHelper.normalizeSQL(`
-            UPDATE ${this.sourceTable} ${this.sourceAlias} 
+            UPDATE ${this.sourceTable} ${this.sourceAlias}
             ${this.setSQL(attributes)}
             ${this.sourceWhereSQL}
         `)

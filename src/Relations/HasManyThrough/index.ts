@@ -1,4 +1,5 @@
 import ManyRelation from "../ManyRelation"
+import { Collection } from "../../Entities"
 
 // SQL Builders
 import { HasManyThroughHandlerSQLBuilder } from "../../SQLBuilders"
@@ -6,12 +7,14 @@ import { HasManyThroughHandlerSQLBuilder } from "../../SQLBuilders"
 // Types
 import type { Entity, Constructor } from "../../types"
 import type { HasManyThroughMetadata } from "../../Metadata"
+import type { HasManyThrough } from "./types"
 
 /** HasMany relation handler */
-export default class HasManyThrough<
+export class HasManyThroughHandler<
     T extends Entity,
-    R extends Entity
-> extends ManyRelation<T, R> {
+    R extends Entity,
+    C extends Collection<R> = Collection<R>
+> extends ManyRelation<T, R, C> {
     /** @internal */
     constructor(
         /** @internal */
@@ -21,9 +24,17 @@ export default class HasManyThrough<
         protected target: T,
 
         /** @internal */
-        protected related: Constructor<R>
+        protected related: Constructor<R>,
+
+        /** @internal */
+        protected collection: Constructor<C> = Collection as (
+            Constructor<C> & typeof Collection
+        ),
+
+        /** @internal */
+        protected instances: C = new collection
     ) {
-        super(metadata, target, related)
+        super(metadata, target, related, collection, instances)
     }
 
     // Getters ================================================================
@@ -36,4 +47,31 @@ export default class HasManyThrough<
             this.related
         )
     }
+}
+
+// ----------------------------------------------------------------------------
+
+export default function HasManyThrough<
+    T extends Entity,
+    C extends Collection<T> = Collection<T>
+>(
+    metadata: HasManyThroughMetadata,
+    target: Entity,
+    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
+    collection: Constructor<C> = Collection as (
+        Constructor<C> & typeof Collection
+    ),
+    instances: C = new collection
+): HasManyThrough<T, C> {
+    return new HasManyThroughHandler(
+        metadata,
+        target,
+        related,
+        collection,
+        instances
+    ) as HasManyThrough<T, C>
+}
+
+export type {
+    HasManyThrough
 }

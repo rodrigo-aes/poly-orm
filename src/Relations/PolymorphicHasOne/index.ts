@@ -6,8 +6,9 @@ import { PolymorphicHasOneHandlerSQLBuilder } from "../../SQLBuilders"
 // Types
 import type { Entity, Constructor, Target } from "../../types"
 import type { PolymorphicHasOneMetadata } from "../../Metadata"
+import type { PolymorphicHasOne } from "./types"
 
-export default class PolymorphicHasOne<
+export class PolymorphicHasOneHandler<
     T extends Entity,
     R extends Entity
 > extends HasOneRelation<T, R> {
@@ -20,9 +21,12 @@ export default class PolymorphicHasOne<
         protected target: T,
 
         /** @internal */
-        protected related: Constructor<R>
+        protected related: Constructor<R>,
+
+        /** @internal */
+        protected instance?: R | null
     ) {
-        super(metadata, target, related)
+        super(metadata, target, related, instance)
     }
 
     // Getters ================================================================
@@ -35,4 +39,24 @@ export default class PolymorphicHasOne<
             this.related
         )
     }
+}
+
+// ----------------------------------------------------------------------------
+
+export default function PolymorphicHasOne<T extends Entity>(
+    metadata: PolymorphicHasOneMetadata,
+    target: Entity,
+    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
+    instance?: T | null
+): PolymorphicHasOne<T> {
+    return new PolymorphicHasOneHandler(
+        metadata,
+        target,
+        related,
+        instance
+    ) as PolymorphicHasOne<T>
+}
+
+export type {
+    PolymorphicHasOne
 }
