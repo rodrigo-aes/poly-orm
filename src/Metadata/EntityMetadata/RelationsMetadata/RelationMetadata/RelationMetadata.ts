@@ -3,6 +3,8 @@ import type { Target, Constructor } from "../../../../types"
 import type { RelationType } from "./types"
 
 export default abstract class RelationMetadata {
+    public abstract readonly fillMethod: string
+
     constructor(public target: Target, public name: string) { }
 
     // Getters ================================================================

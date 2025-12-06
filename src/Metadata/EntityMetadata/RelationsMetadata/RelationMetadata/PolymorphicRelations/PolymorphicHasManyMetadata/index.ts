@@ -2,7 +2,12 @@ import EntityMetadata from "../../../.."
 import RelationMetadata from "../../RelationMetadata"
 
 // Types
-import type { Target, EntityTarget } from "../../../../../../types"
+import type {
+    Target,
+    EntityTarget,
+    Constructor
+} from "../../../../../../types"
+import type { Collection } from "../../../../../../Entities"
 import type { ColumnMetadata } from "../../../.."
 import type { ConditionalQueryOptions } from '../../../../../../SQLBuilders'
 import type {
@@ -12,12 +17,15 @@ import type {
 import type { PolymorphicHasManyMetadataJSON } from "./types"
 
 export default class PolymorphicHasManyMetadata extends RelationMetadata {
+    public readonly fillMethod = 'Many'
+
     public related!: PolymorphicChildRelatedGetter
 
     public FKName: string
     public TKName?: string
 
     public scope?: ConditionalQueryOptions<any>
+    public collection?: Constructor<Collection<any>>
 
     constructor(target: Target, options: PolymorphicChildOptions) {
         const { name, typeKey, foreignKey, ...opts } = options
@@ -70,7 +78,8 @@ export default class PolymorphicHasManyMetadata extends RelationMetadata {
             related: this.relatedMetadata.toJSON(),
             foreignKey: this.foreignKey.toJSON(),
             typeColumn: this.typeColumn?.toJSON(),
-            scope: this.scope
+            scope: this.scope,
+            collection: this.collection
         }
     }
 }

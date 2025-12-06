@@ -2,7 +2,8 @@ import EntityMetadata from "../../.."
 import RelationMetadata from "../RelationMetadata"
 
 // Types
-import type { Target, EntityTarget } from "../../../../../types"
+import type { Target, EntityTarget, Constructor } from "../../../../../types"
+import type { Collection } from "../../../../../Entities"
 import type { ColumnMetadata } from "../../../ColumnsMetadata"
 import type { ConditionalQueryOptions } from '../../../../../SQLBuilders'
 import type {
@@ -12,8 +13,11 @@ import type {
 } from "./types"
 
 export default class HasManyMetadata extends RelationMetadata {
+    public readonly fillMethod = 'Many'
+
     public related!: HasManyRelatedGetter
     public scope?: ConditionalQueryOptions<any>
+    public collection?: Constructor<Collection<any>>
     public FKName: string
 
     constructor(target: Target, options: HasManyOptions) {
@@ -51,7 +55,8 @@ export default class HasManyMetadata extends RelationMetadata {
             type: this.type,
             related: this.relatedMetadata.toJSON(),
             foreignKey: this.foreignKey.toJSON(),
-            scope: this.scope
+            scope: this.scope,
+            collection: this.collection
         }
     }
 }

@@ -2,7 +2,8 @@ import EntityMetadata from "../../.."
 import RelationMetadata from "../RelationMetadata"
 
 // Types
-import type { Target, EntityTarget } from "../../../../../types"
+import type { Target, EntityTarget, Constructor } from "../../../../../types"
+import type { Collection } from "../../../../../Entities"
 import type { ColumnMetadata } from "../../../ColumnsMetadata"
 import type { ConditionalQueryOptions } from '../../../../../SQLBuilders'
 import type {
@@ -13,6 +14,8 @@ import type {
 } from "./types"
 
 export default class HasManyThroughMetadata extends RelationMetadata {
+    public readonly fillMethod = 'Many'
+
     public related!: HasManyThroughRelatedGetter
     public through!: HasManyThroughGetter
 
@@ -20,6 +23,7 @@ export default class HasManyThroughMetadata extends RelationMetadata {
     private _throughFKName: string
 
     public scope?: ConditionalQueryOptions<any>
+    public collection?: Constructor<Collection<any>>
 
     constructor(target: Target, options: HasManyThroughOptions) {
         const { name, foreignKey, throughForeignKey, ...opts } = options
@@ -103,7 +107,8 @@ export default class HasManyThroughMetadata extends RelationMetadata {
             through: this.throughMetadata.toJSON(),
             relatedForeignKey: this.relatedForeignKey.toJSON(),
             throughForeignKey: this.throughForeignKey.toJSON(),
-            scope: this.scope
+            scope: this.scope,
+            collection: this.collection
         }
     }
 }

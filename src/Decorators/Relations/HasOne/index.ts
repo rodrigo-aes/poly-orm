@@ -12,10 +12,14 @@ export default function HasOne(
         target: Entity,
         name: string
     ) {
-        if (typeof foreignKey === 'string') foreignKey = { foreignKey }
-
         RelationsMetadata.findOrBuild(target.constructor as EntityTarget)
-            .addHasOne({ name, related, ...foreignKey })
+            .addHasOne({
+                name, related, ...(
+                    typeof foreignKey === 'string'
+                        ? { foreignKey }
+                        : foreignKey
+                )
+            })
     }
 }
 

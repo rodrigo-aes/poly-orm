@@ -2,7 +2,8 @@ import RelationMetadata from "../RelationMetadata"
 import EntityMetadata from "../../.."
 
 // Types
-import type { EntityTarget } from "../../../../../types"
+import type { EntityTarget, Constructor } from "../../../../../types"
+import type { Collection } from "../../../../../Entities"
 import type {
     JoinTableMetadata,
     JoinColumnMetadata
@@ -16,11 +17,14 @@ import type {
 } from "./types"
 
 export default class BelongsToManyMetadata extends RelationMetadata {
+    public readonly fillMethod = 'Many'
+
     public related!: BelongsToManyRelatedGetter
     public joinTableMetadata: JoinTableMetadata
     public onDelete?: ForeignKeyActionListener
     public onUpdate?: ForeignKeyActionListener
     public scope?: ConditionalQueryOptions<any>
+    public collection?: Constructor<Collection<any>>
 
     constructor(public target: EntityTarget, options: BelongsToManyOptions) {
         const { name, joinTable, ...opts } = options
@@ -101,7 +105,8 @@ export default class BelongsToManyMetadata extends RelationMetadata {
             joinTable: this.joinTableMetadata.toJSON(),
             onDelete: this.onDelete,
             onUpdate: this.onDelete,
-            scope: this.scope
+            scope: this.scope,
+            collection: this.collection
         }
     }
 

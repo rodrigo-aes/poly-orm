@@ -12,6 +12,8 @@ import type {
 import type { PolymorphicHasOneMetadataJSON } from "./types"
 
 export default class PolymorphicHasOneMetadata extends RelationMetadata {
+    public readonly fillMethod = 'One'
+
     public related!: PolymorphicChildRelatedGetter
 
     public FKName: string

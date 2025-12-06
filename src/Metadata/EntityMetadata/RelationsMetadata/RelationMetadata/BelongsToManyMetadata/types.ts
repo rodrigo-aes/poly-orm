@@ -1,5 +1,6 @@
 import type { RelationOptions, RelationMetadataJSON } from "../types"
-import type { EntityTarget } from "../../../../../types"
+import type { EntityTarget, Constructor } from "../../../../../types"
+import type { Collection } from "../../../../../Entities"
 import type { ForeignKeyActionListener } from "../../../ColumnsMetadata"
 import type { EntityMetadataJSON } from "../../../types"
 import type { JoinTableMetadataJSON } from "../../../JoinTablesMetadata"
@@ -13,6 +14,7 @@ export interface BelongsToManyOptions extends RelationOptions {
     onDelete?: ForeignKeyActionListener
     onUpdate?: ForeignKeyActionListener
     scope?: ConditionalQueryOptions<any>
+    collection?: Constructor<Collection<any>>
 }
 
 export interface BelongsToManyMetadataJSON extends RelationMetadataJSON {
@@ -21,4 +23,5 @@ export interface BelongsToManyMetadataJSON extends RelationMetadataJSON {
     onDelete?: ForeignKeyActionListener
     onUpdate?: ForeignKeyActionListener
     scope?: ConditionalQueryOptions<any>
+    collection?: Constructor<Collection<any>>
 }

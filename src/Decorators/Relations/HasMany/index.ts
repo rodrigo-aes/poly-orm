@@ -8,14 +8,15 @@ export default function HasMany(
     related: HasManyRelatedGetter,
     foreignKey: HasManyOptions
 ) {
-    return function <Entity extends object>(
-        target: Entity,
-        name: string
-    ) {
-        if (typeof foreignKey === 'string') foreignKey = { foreignKey }
-
+    return function <Entity extends object>(target: Entity, name: string) {
         RelationsMetadata.findOrBuild(target.constructor as EntityTarget)
-            .addHasMany({ name, related, ...foreignKey })
+            .addHasMany({
+                name, related, ...(
+                    typeof foreignKey === 'string'
+                        ? { foreignKey }
+                        : foreignKey
+                )
+            })
     }
 }
 

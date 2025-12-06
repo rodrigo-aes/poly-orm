@@ -12,6 +12,8 @@ import type {
 } from "./types"
 
 export default class HasOneMetadata extends RelationMetadata {
+    public readonly fillMethod = 'One'
+
     public related!: HasOneRelatedGetter
     public scope?: ConditionalQueryOptions<any>
     public FKName: string

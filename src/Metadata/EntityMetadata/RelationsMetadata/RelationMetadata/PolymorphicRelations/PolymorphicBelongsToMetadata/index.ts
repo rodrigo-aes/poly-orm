@@ -25,6 +25,8 @@ import type {
 import type { PolymorphicBelongsToMetadataJSON } from "./types"
 
 export default class PolymorphicBelongsToMetadata extends RelationMetadata {
+    public readonly fillMethod = 'One'
+
     private _relatedMetadata?: PolymorphicEntityMetadata | RelatedEntitiesMap
     private _relatedTarget?: PolymorphicEntityTarget
     private _relatedTable?: string

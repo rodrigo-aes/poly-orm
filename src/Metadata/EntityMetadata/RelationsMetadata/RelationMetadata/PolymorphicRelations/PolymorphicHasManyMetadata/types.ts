@@ -1,3 +1,5 @@
+import type { Constructor } from "../../../../../../types"
+import type { Collection } from "../../../../../../Entities"
 import type { RelationMetadataJSON } from "../../types"
 import type { EntityMetadataJSON } from "../../../../types"
 import type { ColumnMetadataJSON } from "../../../../ColumnsMetadata"
@@ -8,4 +10,5 @@ export interface PolymorphicHasManyMetadataJSON extends RelationMetadataJSON {
     foreignKey: ColumnMetadataJSON
     typeColumn?: ColumnMetadataJSON
     scope?: ConditionalQueryOptions<any>
+    collection?: Constructor<Collection<any>>
 }

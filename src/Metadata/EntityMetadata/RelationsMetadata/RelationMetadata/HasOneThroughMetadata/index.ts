@@ -13,6 +13,8 @@ import type {
 } from "./types"
 
 export default class HasOneThroughMetadata extends RelationMetadata {
+    public readonly fillMethod = 'One'
+
     public related!: HasOneThroughRelatedGetter
     public through!: HasOneThroughGetter
 

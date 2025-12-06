@@ -12,10 +12,14 @@ export default function BelongsTo(
         target: Entity,
         name: string
     ) {
-        if (typeof foreignKey === 'string') foreignKey = { foreignKey }
-
         RelationsMetadata.findOrBuild(target.constructor as EntityTarget)
-            .addBelongsTo({ name, related, ...foreignKey })
+            .addBelongsTo({
+                name, related, ...(
+                    typeof foreignKey === 'string'
+                        ? { foreignKey }
+                        : foreignKey
+                )
+            })
     }
 }
 
