@@ -1,7 +1,12 @@
 import { ComputedPropertiesMetadata } from "../../../Metadata"
 
 // Types
-import type { Entity, CollectionTarget, EntityProperties } from "../../../types"
+import type {
+    Entity,
+    CollectionTarget,
+    EntityProperties,
+    EntityJSON
+} from "../../../types"
 import type { UpdateAttributes } from "../../../SQLBuilders"
 
 export default class Collection<T extends Entity> extends Array<T> {
@@ -37,9 +42,7 @@ export default class Collection<T extends Entity> extends Array<T> {
      * @returns - A object with included properties and without hidden
      * properties
      */
-    public toJSON<This extends Collection<T>>(this: This): (
-        { [K: string]: any, data: T[] } | T[]
-    ) {
+    public toJSON(this: Collection<T>) {
         return this.hasComputedProperties()
             ? this.hide({
                 ...this.computedPropertiesJSON(),

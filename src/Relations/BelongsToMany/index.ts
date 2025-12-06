@@ -123,11 +123,11 @@ export default function BelongsToMany<
 >(
     metadata: BelongsToManyMetadata,
     target: Entity,
-    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
     collection: Constructor<C> = Collection as (
         Constructor<C> & typeof Collection
     ),
-    instances: C = new collection
+    instances: C = new collection,
+    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
 ): BelongsToMany<T, C> {
     return new BelongsToManyHandler(
         metadata,

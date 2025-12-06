@@ -18,8 +18,8 @@ import {
 } from "../Metadata"
 import {
     ColumnsSnapshots,
+    Collection,
 
-    type Collection,
     type Pagination,
 } from "./Components"
 
@@ -210,12 +210,21 @@ export default abstract class Entity {
 
     // ------------------------------------------------------------------------
 
-    protected hasMany<T extends EntityT = EntityT>(name: string): HasMany<T> {
-        return HasManyHandler<T>(
+    protected hasMany<
+        T extends EntityT = EntityT,
+        C extends Collection<T> = Collection<T>
+    >(
+        name: string,
+        collection: Constructor<C> = Collection as (
+            Constructor<C> & typeof Collection
+        )
+    ): HasMany<T, C> {
+        return HasManyHandler<T, C>(
             this.verifyRelationMetadata(
                 (this as any).getRelationMetadata(name), HasManyMetadata
             ),
-            this as any
+            this as any,
+            collection
         )
     }
 
@@ -247,14 +256,21 @@ export default abstract class Entity {
 
     // ------------------------------------------------------------------------
 
-    protected hasManyThrough<T extends EntityT = EntityT>(
-        name: string
-    ): HasManyThrough<T> {
-        return HasManyThroughHandler<T>(
+    protected hasManyThrough<
+        T extends EntityT = EntityT,
+        C extends Collection<T> = Collection<T>
+    >(
+        name: string,
+        collection: Constructor<C> = Collection as (
+            Constructor<C> & typeof Collection
+        )
+    ): HasManyThrough<T, C> {
+        return HasManyThroughHandler<T, C>(
             this.verifyRelationMetadata(
                 (this as any).getRelationMetadata(name), HasManyThroughMetadata
             ),
-            this as any
+            this as any,
+            collection
         )
     }
 
@@ -274,15 +290,22 @@ export default abstract class Entity {
 
     // ------------------------------------------------------------------------
 
-    protected belongsToMany<T extends EntityT = EntityT>(
-        name: string
-    ): BelongsToMany<T> {
-        return BelongsToManyHandler<T>(
+    protected belongsToMany<
+        T extends EntityT = EntityT,
+        C extends Collection<T> = Collection<T>
+    >(
+        name: string,
+        collection: Constructor<C> = Collection as (
+            Constructor<C> & typeof Collection
+        )
+    ): BelongsToMany<T, C> {
+        return BelongsToManyHandler<T, C>(
             this.verifyRelationMetadata(
                 (this as any).getRelationMetadata(name),
                 BelongsToManyMetadata
             ),
-            this as any
+            this as any,
+            collection
         )
     }
 
@@ -302,15 +325,22 @@ export default abstract class Entity {
 
     // ------------------------------------------------------------------------
 
-    protected polymorphicHasMany<T extends EntityT = EntityT>(
-        name: string
-    ): PolymorphicHasMany<T> {
-        return PolymorphicHasManyHandler<T>(
+    protected polymorphicHasMany<
+        T extends EntityT = EntityT,
+        C extends Collection<T> = Collection<T>
+    >(
+        name: string,
+        collection: Constructor<C> = Collection as (
+            Constructor<C> & typeof Collection
+        )
+    ): PolymorphicHasMany<T, C> {
+        return PolymorphicHasManyHandler<T, C>(
             this.verifyRelationMetadata(
                 (this as any).getRelationMetadata(name),
                 PolymorphicHasManyMetadata
             ),
-            this as any
+            this as any,
+            collection
         )
     }
 
@@ -522,6 +552,7 @@ export default abstract class Entity {
         attributes: CreationAttributes<InstanceType<T>>
     ): InstanceType<T> {
         const instance = new this().fill(attributes) as InstanceType<T>
+
         (instance.getTrueMetadata() as TargetMetadata<T>)
             .computedProperties
             ?.assign(instance)

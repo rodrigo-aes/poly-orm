@@ -8,7 +8,7 @@ import {
 
 // Types
 import type { ResultSetHeader } from "mysql2"
-import type { Entity, Constructor } from "../../types"
+import type { Entity, Constructor, EntityJSON } from "../../types"
 import type { OneRelationMetadataType } from "../../Metadata"
 import type { OneRelationHandlerSQLBuilder } from "../../SQLBuilders"
 import type { UpdateAttributes } from "../../SQLBuilders"
@@ -102,5 +102,11 @@ export default abstract class OneRelation<T extends Entity, R extends Entity> {
         return this.queryExecutionHandler.executeDelete(
             this.sqlBuilder.deleteSQL()
         )
+    }
+
+    // ------------------------------------------------------------------------
+
+    public toJSON(): EntityJSON<R, R['hidden']> | null {
+        return (this.instance as R | undefined)?.toJSON() ?? null
     }
 }

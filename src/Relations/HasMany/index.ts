@@ -57,11 +57,11 @@ export default function HasMany<
 >(
     metadata: HasManyMetadata,
     target: Entity,
-    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
     collection: Constructor<C> = Collection as (
         Constructor<C> & typeof Collection
     ),
-    instances: C = new collection
+    instances: C = new collection,
+    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
 ): HasMany<T, C> {
     return new HasManyHandler(
         metadata,

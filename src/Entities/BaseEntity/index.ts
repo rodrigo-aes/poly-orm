@@ -8,7 +8,7 @@ import type { ResultSetHeader } from "mysql2"
 import type {
     EntityTarget,
     Constructor,
-    StaticEntityTarget,
+    StaticEntityTarget
 } from "../../types"
 
 import type { DeleteResult } from "../../Handlers"
@@ -17,7 +17,7 @@ import type {
     CreationAttributes,
     UpdateAttributes,
     UpdateOrCreateAttibutes,
-    ConditionalQueryOptions,
+    ConditionalQueryOptions
 } from "../../SQLBuilders"
 
 import type { Repository } from "../../Repositories"

@@ -10,7 +10,12 @@ import {
 
 // Types
 import type { ResultSetHeader } from "mysql2"
-import type { Constructor, Entity, TargetMetadata } from "../../types"
+import type {
+    Constructor,
+    Entity,
+    TargetMetadata,
+    EntityJSON
+} from "../../types"
 import type { ManyRelationMetadatatype } from "../../Metadata"
 import type { ManyRelationHandlerSQLBuilder } from "../../SQLBuilders"
 import type {
@@ -162,5 +167,11 @@ export default abstract class ManyRelation<
         return this.queryExecutionHandler.executeDelete(
             this.sqlBuilder.deleteSQL(where)
         )
+    }
+
+    // ------------------------------------------------------------------------
+
+    public toJSON(): EntityJSON<R, R['hidden']>[] {
+        return this.instances.toJSON()
     }
 }
