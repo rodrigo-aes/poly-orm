@@ -66,10 +66,10 @@ export default class DeleteQueryBuilder<T extends BaseEntity> {
      * @returns {this} - `this`
      */
     public where<
-        K extends EntityPropertiesKeys<Constructor<T>>,
+        K extends EntityPropertiesKeys<T>,
         Cond extends (
-            EntityProperties<Constructor<T>>[K] |
-            CompatibleOperators<EntityProperties<Constructor<T>>[K]>
+            EntityProperties<T>[K] |
+            CompatibleOperators<EntityProperties<T>[K]>
         )
     >(
         propertie: K | string,
@@ -128,10 +128,10 @@ export default class DeleteQueryBuilder<T extends BaseEntity> {
      * @returns {this} - `this`
      */
     public orWhere<
-        K extends EntityPropertiesKeys<Constructor<T>>,
+        K extends EntityPropertiesKeys<T>,
         Cond extends (
-            EntityProperties<Constructor<T>>[K] |
-            CompatibleOperators<EntityProperties<Constructor<T>>[K]>
+            EntityProperties<T>[K] |
+            CompatibleOperators<EntityProperties<T>[K]>
         )
     >(
         propertie: K | string,

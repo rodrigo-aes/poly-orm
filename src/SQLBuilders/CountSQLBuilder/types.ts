@@ -1,5 +1,6 @@
+import type { Entity } from "../../types"
 import type { CountQueryOption } from "./CountSQL"
 
-export type CountQueryOptions<Entity extends object> = {
-    [k: string]: CountQueryOption<Entity>
+export type CountQueryOptions<T extends Entity> = {
+    [k: string]: CountQueryOption<T>
 }

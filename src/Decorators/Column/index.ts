@@ -1,14 +1,14 @@
 import 'reflect-metadata'
 
 import { ColumnsMetadata, type DataType } from '../../Metadata'
-import type { EntityTarget } from '../../types'
+import type { Entity, EntityTarget } from '../../types'
 
-export default function Column<Entity extends object>(dataType: DataType) {
+export default function Column<T extends Entity>(dataType: DataType) {
     return function (
-        target: Entity,
+        target: T,
         name: string
     ) {
         ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)
             .registerColumn(name, dataType)
     }
-}   
+}

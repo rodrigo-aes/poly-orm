@@ -1,9 +1,13 @@
 // Types
 import type { Target, Constructor } from "../../../../types"
+import { Collection } from "../../../../Entities"
 import type { RelationType } from "./types"
 
-export default abstract class RelationMetadata {
-    public abstract readonly fillMethod: string
+export default abstract class RelationMetadata<T extends 'One' | 'Many' = any> {
+    public abstract readonly fillMethod: T
+    public collection?: T extends 'Many'
+        ? Constructor<Collection<any>>
+        : never
 
     constructor(public target: Target, public name: string) { }
 

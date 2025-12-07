@@ -7,7 +7,7 @@ import type {
     EntityTarget,
     Constructor
 } from "../../../../../../types"
-import type { Collection } from "../../../../../../Entities"
+import { Collection } from "../../../../../../Entities"
 import type { ColumnMetadata } from "../../../.."
 import type { ConditionalQueryOptions } from '../../../../../../SQLBuilders'
 import type {
@@ -25,7 +25,7 @@ export default class PolymorphicHasManyMetadata extends RelationMetadata {
     public TKName?: string
 
     public scope?: ConditionalQueryOptions<any>
-    public collection?: Constructor<Collection<any>>
+    public collection?: Constructor<Collection<any>> = Collection
 
     constructor(target: Target, options: PolymorphicChildOptions) {
         const { name, typeKey, foreignKey, ...opts } = options

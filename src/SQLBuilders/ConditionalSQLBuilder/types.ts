@@ -1,9 +1,10 @@
+import type { Entity } from "../../types"
 import type { AndQueryOptions } from "./AndSQLBuilder"
 import type { OrQueryOptions } from "./OrSQLBuilder"
 
-export type ConditionalQueryOptions<Entity extends object> = (
-    AndQueryOptions<Entity> |
-    OrQueryOptions<Entity>
+export type ConditionalQueryOptions<T extends Entity> = (
+    AndQueryOptions<T> |
+    OrQueryOptions<T>
 )
 
 export type {

@@ -1,15 +1,16 @@
+import type { Entity } from "../../../types"
 import type {
     ConditionalQueryOptions,
     Case,
     CaseQueryOptions
 } from "../../ConditionalSQLBuilder"
 
-export type CountCaseOptions<Entity extends object> = {
-    [Case]: CaseQueryOptions<Entity>
+export type CountCaseOptions<T extends Entity> = {
+    [Case]: CaseQueryOptions<T>
 }
 
-export type CountQueryOption<Entity extends object> = (
+export type CountQueryOption<T extends Entity> = (
     string |
-    ConditionalQueryOptions<Entity> |
-    CountCaseOptions<Entity>
+    ConditionalQueryOptions<T> |
+    CountCaseOptions<T>
 )

@@ -1,9 +1,9 @@
 import EntityMetadata from "../../.."
 import RelationMetadata from "../RelationMetadata"
+import { Collection } from "../../../../../Entities"
 
 // Types
 import type { Target, EntityTarget, Constructor } from "../../../../../types"
-import type { Collection } from "../../../../../Entities"
 import type { ColumnMetadata } from "../../../ColumnsMetadata"
 import type { ConditionalQueryOptions } from '../../../../../SQLBuilders'
 import type {
@@ -23,7 +23,7 @@ export default class HasManyThroughMetadata extends RelationMetadata {
     private _throughFKName: string
 
     public scope?: ConditionalQueryOptions<any>
-    public collection?: Constructor<Collection<any>>
+    public collection?: Constructor<Collection<any>> = Collection
 
     constructor(target: Target, options: HasManyThroughOptions) {
         const { name, foreignKey, throughForeignKey, ...opts } = options

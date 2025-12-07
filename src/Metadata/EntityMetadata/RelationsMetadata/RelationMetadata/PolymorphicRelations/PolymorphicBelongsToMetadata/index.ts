@@ -31,6 +31,7 @@ export default class PolymorphicBelongsToMetadata extends RelationMetadata {
     private _relatedTarget?: PolymorphicEntityTarget
     private _relatedTable?: string
     private _relatedTargetName?: string
+    private _shouldMapToSource?: boolean
 
     public related!: PolymorphicParentRelatedGetter
     public scope?: ConditionalQueryOptions<any>
@@ -50,7 +51,7 @@ export default class PolymorphicBelongsToMetadata extends RelationMetadata {
         this.TKName = typeKey
         Object.assign(this, opts)
 
-        this.handleRegisterPolymorphicParent()
+        this.registerPolymorphicParent()
     }
 
     // Getters ================================================================
@@ -108,6 +109,12 @@ export default class PolymorphicBelongsToMetadata extends RelationMetadata {
             .findOrThrow(this.TKName)
     }
 
+    // ------------------------------------------------------------------------
+
+    public get shouldMapToSource(): boolean {
+        return this._shouldMapToSource ??= Array.isArray(this.related())
+    }
+
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public toJSON(): PolymorphicBelongsToMetadataJSON {
@@ -136,7 +143,7 @@ export default class PolymorphicBelongsToMetadata extends RelationMetadata {
 
     // ------------------------------------------------------------------------
 
-    private handleRegisterPolymorphicParent(): void {
+    private registerPolymorphicParent(): void {
         const related = this.related()
         if (Array.isArray(related)) new PolymorphicEntityMetadata(
             undefined,

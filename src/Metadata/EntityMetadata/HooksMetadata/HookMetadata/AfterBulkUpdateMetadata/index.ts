@@ -1,6 +1,7 @@
 import HookMetadata from "../HookMetadata"
 
 import type { ResultSetHeader } from "mysql2"
+import type { Entity } from "../../../../../types"
 import type { ConditionalQueryOptions } from "../../../../../SQLBuilders"
 
 export default class AfterBulkUpdateMetadata extends HookMetadata {
@@ -12,8 +13,8 @@ export default class AfterBulkUpdateMetadata extends HookMetadata {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public call<Entity extends object>(
-        where: ConditionalQueryOptions<Entity> | undefined,
+    public call<T extends Entity>(
+        where: ConditionalQueryOptions<T> | undefined,
         result: ResultSetHeader
     ) {
         return this.hookFn(where, result)

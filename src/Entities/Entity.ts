@@ -117,10 +117,10 @@ export default abstract class Entity {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    protected get _wherePK(): ConditionalQueryOptions<this> {
+    protected get _wherePK(): ConditionalQueryOptions<EntityT> {
         const pk = this._pk
         return { [pk]: this[pk as keyof this] } as ConditionalQueryOptions<
-            this
+            EntityT
         >
     }
 

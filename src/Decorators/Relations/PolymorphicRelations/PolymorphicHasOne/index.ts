@@ -1,7 +1,7 @@
 import { RelationsMetadata } from "../../../../Metadata"
 
 // Types
-import type { EntityTarget } from "../../../../types"
+import type { Entity, EntityTarget } from "../../../../types"
 import type { PolymorphicChildRelatedGetter } from "../../../../Metadata"
 import type { PolymorphicHasOneOptions } from "./types"
 
@@ -9,8 +9,8 @@ export default function PolymorphicHasOne(
     related: PolymorphicChildRelatedGetter,
     options: PolymorphicHasOneOptions
 ) {
-    return function <Entity extends object>(
-        target: Entity,
+    return function <T extends Entity>(
+        target: T,
         name: string
     ) {
         RelationsMetadata.findOrBuild(target.constructor as EntityTarget)

@@ -1,5 +1,5 @@
 import HookMetadata from "../HookMetadata"
-
+import type { Entity } from "../../../../../types"
 import type { DeleteResult } from "../../../../../Handlers"
 
 export default class AfterDeleteMetadata extends HookMetadata {
@@ -11,7 +11,7 @@ export default class AfterDeleteMetadata extends HookMetadata {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public call<Entity extends object>(entity: Entity, result: DeleteResult) {
+    public call<T extends Entity>(entity: T, result: DeleteResult) {
         return this.hookFn(entity, result)
     }
 }

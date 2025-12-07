@@ -1,6 +1,6 @@
 import { ColumnsMetadata } from "../../Metadata"
 
-import type { EntityTarget } from "../../types"
+import type { Entity, EntityTarget } from "../../types"
 import type {
     PolymorphicForeignIdRelatedGetter,
     PolymorphicForeignIdOptions
@@ -10,8 +10,8 @@ export default function PolymorphicForeignId(
     referenced: PolymorphicForeignIdRelatedGetter,
     options?: PolymorphicForeignIdOptions
 ) {
-    return function <Entity extends object>(
-        target: Entity,
+    return function <T extends Entity>(
+        target: T,
         name: string
     ) {
         ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)

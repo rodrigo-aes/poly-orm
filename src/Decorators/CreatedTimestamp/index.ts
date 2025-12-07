@@ -1,10 +1,10 @@
 import 'reflect-metadata'
 
 import { ColumnsMetadata } from '../../Metadata'
-import type { EntityTarget } from "../../types"
+import type { Entity, EntityTarget } from "../../types"
 
-export default function CreatedTimestamp<Entity extends object>(
-    target: Entity,
+export default function CreatedTimestamp<T extends Entity>(
+    target: T,
     name: string
 ) {
     ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)

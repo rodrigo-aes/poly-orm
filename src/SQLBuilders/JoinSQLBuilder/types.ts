@@ -1,20 +1,20 @@
-import type { EntityRelationsKeys } from "../../types"
+import type { Entity, EntityRelationsKeys } from "../../types"
 import type { SelectOptions } from "../SelectSQLBuilder"
 import type { ConditionalQueryOptions } from "../ConditionalSQLBuilder"
 import type SelectSQLBuilder from "../SelectSQLBuilder"
 import type OnSQLBuilder from "../ConditionalSQLBuilder/OnSQLBuilder"
 
-export type RelationOptions<Entity extends object> = {
+export type RelationOptions<T extends Entity> = {
     required?: boolean
-    select?: SelectOptions<Entity>,
-    on?: ConditionalQueryOptions<Entity>,
-    relations?: RelationsOptions<Entity>
+    select?: SelectOptions<T>,
+    on?: ConditionalQueryOptions<T>,
+    relations?: RelationsOptions<T>
 }
 
-export type RelationsOptions<Entity extends object> = Partial<{
-    [K in EntityRelationsKeys<Entity>]: (
+export type RelationsOptions<T extends Entity> = Partial<{
+    [K in EntityRelationsKeys<T>]: (
         boolean |
-        RelationOptions<Extract<Entity[K], object>>
+        RelationOptions<Extract<T[K], Entity>>
     )
 }>
 
@@ -25,6 +25,6 @@ export type EntityRelationMap = {
     relations?: EntityRelationMap
 }
 
-export type EntityRelationsMap<Entity extends object> = {
-    [K in EntityRelationsKeys<Entity>]: EntityRelationMap
+export type EntityRelationsMap<T extends Entity> = {
+    [K in EntityRelationsKeys<T>]: EntityRelationMap
 }

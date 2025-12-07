@@ -1,9 +1,9 @@
 import EntityMetadata from "../../.."
 import RelationMetadata from "../RelationMetadata"
+import { Collection } from "../../../../../Entities"
 
 // Types
 import type { Target, EntityTarget, Constructor } from "../../../../../types"
-import type { Collection } from "../../../../../Entities"
 import type { ColumnMetadata } from "../../../ColumnsMetadata"
 import type { ConditionalQueryOptions } from '../../../../../SQLBuilders'
 import type {
@@ -17,7 +17,7 @@ export default class HasManyMetadata extends RelationMetadata {
 
     public related!: HasManyRelatedGetter
     public scope?: ConditionalQueryOptions<any>
-    public collection?: Constructor<Collection<any>>
+    public collection?: Constructor<Collection<any>> = Collection
     public FKName: string
 
     constructor(target: Target, options: HasManyOptions) {

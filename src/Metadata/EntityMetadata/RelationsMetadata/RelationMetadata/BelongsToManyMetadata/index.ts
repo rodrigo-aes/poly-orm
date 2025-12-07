@@ -1,9 +1,9 @@
 import RelationMetadata from "../RelationMetadata"
 import EntityMetadata from "../../.."
+import { Collection } from "../../../../../Entities"
 
 // Types
 import type { EntityTarget, Constructor } from "../../../../../types"
-import type { Collection } from "../../../../../Entities"
 import type {
     JoinTableMetadata,
     JoinColumnMetadata
@@ -24,7 +24,7 @@ export default class BelongsToManyMetadata extends RelationMetadata {
     public onDelete?: ForeignKeyActionListener
     public onUpdate?: ForeignKeyActionListener
     public scope?: ConditionalQueryOptions<any>
-    public collection?: Constructor<Collection<any>>
+    public collection?: Constructor<Collection<any>> = Collection
 
     constructor(public target: EntityTarget, options: BelongsToManyOptions) {
         const { name, joinTable, ...opts } = options

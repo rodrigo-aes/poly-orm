@@ -1,11 +1,11 @@
-import type { EntityPropertiesKeys } from "../../../types"
+import type { Entity, EntityPropertiesKeys } from "../../../types"
 import type { CompatibleOperators } from "../Operator"
 import type { ExistsQueryOptions } from "../ExistsSQLBuilder"
 
-export type PropAndQueryOptions<Entity extends object> = Partial<{
-    [K in EntityPropertiesKeys<Entity>]: (
-        Entity[K] |
-        Partial<CompatibleOperators<Entity[K]>>
+export type PropAndQueryOptions<T extends Entity> = Partial<{
+    [K in EntityPropertiesKeys<T>]: (
+        T[K] |
+        Partial<CompatibleOperators<T[K]>>
     )
 }>
 
@@ -13,8 +13,8 @@ export type RelationAndQueryOptions = {
     [k: string]: any | Partial<CompatibleOperators<any>>
 }
 
-export type AndQueryOptions<Entity extends object> = (
-    PropAndQueryOptions<Entity> &
+export type AndQueryOptions<T extends Entity> = (
+    PropAndQueryOptions<T> &
     RelationAndQueryOptions &
-    Partial<ExistsQueryOptions<Entity>>
+    Partial<ExistsQueryOptions<T>>
 )

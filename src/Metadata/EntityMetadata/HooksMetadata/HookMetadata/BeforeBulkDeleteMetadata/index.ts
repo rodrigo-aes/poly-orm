@@ -1,6 +1,7 @@
 import HookMetadata from "../HookMetadata"
 
 // Types
+import type { Entity } from "../../../../../types"
 import type { ConditionalQueryOptions } from "../../../../../SQLBuilders"
 
 export default class BeforeBulkDeleteMetadata extends HookMetadata {
@@ -12,8 +13,8 @@ export default class BeforeBulkDeleteMetadata extends HookMetadata {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public call<Entity extends object>(
-        where: ConditionalQueryOptions<Entity>
+    public call<T extends Entity>(
+        where: ConditionalQueryOptions<T>
     ) {
         return this.hookFn(where)
     }

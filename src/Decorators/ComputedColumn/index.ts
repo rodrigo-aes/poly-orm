@@ -8,18 +8,18 @@ import {
 } from '../../Metadata'
 
 // Types
-import type { EntityTarget } from '../../types'
+import type { Entity, EntityTarget } from '../../types'
 
-export default function ComputedColumn<Entity extends object>(
+export default function ComputedColumn<T extends Entity>(
     dataType: DataType,
     as: string,
     type: ComputedType = 'STORED'
 ) {
     return function (
-        target: Entity,
+        target: T,
         name: string
     ) {
         ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)
             .registerColumn(name, DataType.COMPUTED(dataType, as, type))
     }
-}   
+}

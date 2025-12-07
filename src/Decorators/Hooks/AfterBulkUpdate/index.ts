@@ -1,15 +1,15 @@
 import { HooksMetadata } from "../../../Metadata"
 
 // Types
-import type { EntityTarget } from "../../../types"
+import type { Entity, EntityTarget } from "../../../types"
 import type { ResultSetHeader } from "mysql2"
 import type { ConditionalQueryOptions } from "../../../SQLBuilders"
 
-export default function AfterBulkUpdate<Entity extends object>(
-    target: Entity,
+export default function AfterBulkUpdate<T extends Entity>(
+    target: T,
     propertyName: string,
     hookFn: TypedPropertyDescriptor<(
-        where: ConditionalQueryOptions<Entity> | undefined,
+        where: ConditionalQueryOptions<T> | undefined,
         result: ResultSetHeader
     ) => void | Promise<void>>
 ) {

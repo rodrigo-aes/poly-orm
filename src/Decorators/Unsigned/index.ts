@@ -1,11 +1,11 @@
 import { ColumnsMetadata } from "../../Metadata"
-import type { EntityTarget } from "../../types"
+import type { Entity, EntityTarget } from "../../types"
 
-export default function Unsigned<Entity extends object>(
+export default function Unsigned<T extends Entity>(
     unsigned: boolean = true
 ) {
     return function (
-        target: Entity,
+        target: T,
         name: string
     ) {
         ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)

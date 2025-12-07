@@ -5,7 +5,7 @@ import {
 } from "../../../Metadata"
 
 // Types
-import type { EntityTarget } from "../../../types"
+import type { Entity, EntityTarget } from "../../../types"
 import type { BelongsToThroughOptions } from "./types"
 
 export default function BelongsToThrough(
@@ -13,8 +13,8 @@ export default function BelongsToThrough(
     through: BelongsToThroughGetter,
     options: BelongsToThroughOptions
 ) {
-    return function <Entity extends object>(
-        target: Entity,
+    return function <T extends Entity>(
+        target: T,
         name: string
     ) {
         RelationsMetadata.findOrBuild(target.constructor as EntityTarget)

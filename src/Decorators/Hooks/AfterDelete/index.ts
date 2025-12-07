@@ -1,14 +1,14 @@
 import { HooksMetadata } from "../../../Metadata"
 
 // Types
-import type { EntityTarget } from "../../../types"
+import type { Entity, EntityTarget } from "../../../types"
 import type { DeleteResult } from "../../../Handlers"
 
-export default function AfterDelete<Entity extends object>(
-    target: Entity,
+export default function AfterDelete<T extends Entity>(
+    target: T,
     propertyName: string,
     hookFn: TypedPropertyDescriptor<(
-        entity: Entity,
+        entity: T,
         result: DeleteResult
     ) => void | Promise<void>>
 ) {

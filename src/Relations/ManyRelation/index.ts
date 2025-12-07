@@ -49,8 +49,12 @@ export default abstract class ManyRelation<
         ),
 
         /** @internal */
-        protected instances: C = new collection
+        protected instances: R[] | C = new collection
     ) {
+        if (!(instances instanceof collection)) instances = new collection(
+            instances
+        )
+
         return new Proxy(this, {
             get: (target, prop, receiver) => {
                 const [t, value] = target.instances && prop in target.instances
@@ -172,6 +176,6 @@ export default abstract class ManyRelation<
     // ------------------------------------------------------------------------
 
     public toJSON(): EntityJSON<R, R['hidden']>[] {
-        return this.instances.toJSON()
+        return (this.instances as C).toJSON()
     }
 }

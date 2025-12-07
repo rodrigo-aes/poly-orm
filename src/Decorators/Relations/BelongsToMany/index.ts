@@ -4,15 +4,15 @@ import {
 } from "../../../Metadata"
 
 // Types
-import type { EntityTarget } from "../../../types"
+import type { Entity, EntityTarget } from "../../../types"
 import type { BelongsToManyOptions } from "./types"
 
 export default function BelongsToMany(
     related: BelongsToManyRelatedGetter,
     options?: BelongsToManyOptions
 ) {
-    return function <Entity extends object>(
-        target: Entity,
+    return function <T extends Entity>(
+        target: T,
         name: string
     ) {
         RelationsMetadata.findOrBuild(target.constructor as EntityTarget)

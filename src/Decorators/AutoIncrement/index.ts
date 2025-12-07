@@ -1,11 +1,11 @@
 import { ColumnsMetadata } from "../../Metadata"
-import type { EntityTarget } from "../../types"
+import type { Entity, EntityTarget } from "../../types"
 
-export default function AutoIncrement<Entity extends object>(
+export default function AutoIncrement<T extends Entity>(
     autoIncrement: boolean = true
 ) {
     return function (
-        target: Entity,
+        target: T,
         name: string
     ) {
         ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)

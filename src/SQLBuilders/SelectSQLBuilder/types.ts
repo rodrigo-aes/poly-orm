@@ -1,26 +1,26 @@
-import type { EntityPropertiesKeys } from "../../types"
+import type { Entity, EntityPropertiesKeys } from "../../types"
 import type {
     Case,
     CaseQueryOptions
 } from "../ConditionalSQLBuilder"
 import type { CountQueryOptions } from "../CountSQLBuilder"
 
-export type SelectColumnsOption<Entity extends object> = (
+export type SelectColumnsOption<T extends Entity> = (
     '*' |
-    EntityPropertiesKeys<Entity>
+    EntityPropertiesKeys<T>
 )
 
-export type SelectCaseOption<Entity extends object> = {
-    [Case]: CaseQueryOptions<Entity>,
+export type SelectCaseOption<T extends Entity> = {
+    [Case]: CaseQueryOptions<T>,
     as: string
 }
 
-export type SelectPropertyOptions<Entity extends object> = (
-    SelectColumnsOption<Entity> |
-    SelectCaseOption<Entity>
+export type SelectPropertyOptions<T extends Entity> = (
+    SelectColumnsOption<T> |
+    SelectCaseOption<T>
 )
 
-export type SelectOptions<Entity extends object> = {
-    properties?: SelectPropertyOptions<Entity>[],
-    count?: CountQueryOptions<Entity>
+export type SelectOptions<T extends Entity> = {
+    properties?: SelectPropertyOptions<T>[],
+    count?: CountQueryOptions<T>
 }

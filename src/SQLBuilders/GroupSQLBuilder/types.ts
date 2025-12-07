@@ -1,12 +1,12 @@
-import type { EntityPropertiesKeys } from "../../types"
+import type { Entity, EntityPropertiesKeys } from "../../types"
 
-export type EntityGroupQueryOptions<Entity extends object> = (
-    EntityPropertiesKeys<Entity>
+export type EntityGroupQueryOptions<T extends Entity> = (
+    EntityPropertiesKeys<T>
 )[]
 
 export type RelationsGroupQueryOptions = string[]
 
-export type GroupQueryOptions<Entity extends object> = (
-    EntityGroupQueryOptions<Entity> &
+export type GroupQueryOptions<T extends Entity> = (
+    EntityGroupQueryOptions<T> &
     RelationsGroupQueryOptions
 )

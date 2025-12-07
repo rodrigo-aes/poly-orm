@@ -31,10 +31,10 @@ import EntityBuilder from "../EntityBuilder"
 import type { ResultSetHeader } from "mysql2"
 import type { PolyORMConnection } from "../../Metadata"
 import type {
+    Entity,
     Target,
     TargetMetadata,
     EntityTarget,
-    PolymorphicEntityTarget,
     AsEntityTarget,
 } from "../../types"
 import type {
@@ -310,7 +310,7 @@ export default class MySQL2QueryExecutionHandler<
                 )
 
                 switch (this.mapTo) {
-                    case 'entity': return handler.parseEntity(
+                    case 'entity': return handler.entity(
                         undefined,
                         this.pagination
                     ) as ExecResult<T, Builder, MapTo>
@@ -427,7 +427,7 @@ export default class MySQL2QueryExecutionHandler<
                 .where instanceof BaseEntity
 
                 ? this.metadata.hooks?.callBeforeDelete(
-                    (this.sqlBuilder as DeleteSQLBuilder<T>).where
+                    (this.sqlBuilder as DeleteSQLBuilder<T>).where as Entity
                 )
 
                 : this.metadata.hooks?.callBeforeBulkDelete(
@@ -448,8 +448,7 @@ export default class MySQL2QueryExecutionHandler<
                 .where instanceof BaseEntity
 
                 ? this.metadata.hooks?.callAfterDelete(
-                    (this.sqlBuilder as DeleteSQLBuilder<T>)
-                        .where,
+                    (this.sqlBuilder as DeleteSQLBuilder<T>).where as Entity,
                     result,
                 )
 

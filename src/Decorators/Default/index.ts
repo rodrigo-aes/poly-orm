@@ -1,9 +1,9 @@
 import { ColumnsMetadata } from "../../Metadata"
-import type { EntityTarget } from "../../types"
+import type { Entity, EntityTarget } from "../../types"
 
-export default function Default<Entity extends object>(value: any) {
+export default function Default<T extends Entity>(value: any) {
     return function (
-        target: Entity,
+        target: T,
         name: string
     ) {
         ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)

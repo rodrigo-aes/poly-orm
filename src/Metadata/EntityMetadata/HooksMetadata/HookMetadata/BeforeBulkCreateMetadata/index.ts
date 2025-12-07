@@ -1,6 +1,7 @@
 import HookMetadata from "../HookMetadata"
 
 // Types
+import type { Entity } from "../../../../../types"
 import type { CreationAttributes } from "../../../../../SQLBuilders"
 
 export default class BeforeBulkCreateMetadata extends HookMetadata {
@@ -12,8 +13,8 @@ export default class BeforeBulkCreateMetadata extends HookMetadata {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public call<Entity extends object>(
-        attributes: CreationAttributes<Entity>[]
+    public call<T extends Entity>(
+        attributes: CreationAttributes<T>[]
     ) {
         return this.hookFn(attributes)
     }

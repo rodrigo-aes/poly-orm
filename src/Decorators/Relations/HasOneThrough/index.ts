@@ -5,7 +5,7 @@ import {
 } from "../../../Metadata"
 
 // Types
-import type { EntityTarget } from "../../../types"
+import type { Entity, EntityTarget } from "../../../types"
 import type { HasOneThroughOptions } from "./types"
 
 export default function HasOneThrough(
@@ -13,8 +13,8 @@ export default function HasOneThrough(
     through: HasOneThroughGetter,
     options: HasOneThroughOptions
 ) {
-    return function <Entity extends object>(
-        target: Entity,
+    return function <T extends Entity>(
+        target: T,
         name: string
     ) {
         RelationsMetadata.findOrBuild(target.constructor as EntityTarget)

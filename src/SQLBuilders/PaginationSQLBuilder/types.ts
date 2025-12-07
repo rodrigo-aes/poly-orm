@@ -1,8 +1,9 @@
-import { FindQueryOptions } from "../FindSQLBuilder"
+import type { Entity } from "../../types"
+import type { FindQueryOptions } from "../FindSQLBuilder"
 
 export interface PaginationQueryOptions<
-    Entity extends object
-> extends Omit<FindQueryOptions<Entity>, 'limit' | 'offset'> {
+    T extends Entity
+> extends Omit<FindQueryOptions<T>, 'limit' | 'offset'> {
     page?: number
     perPage?: number
 }

@@ -1,10 +1,10 @@
 import { HooksMetadata } from "../../../Metadata"
 
 // Types
-import type { EntityTarget } from "../../../types"
+import type { Entity, EntityTarget } from "../../../types"
 
-export default function AfterSync<Entity extends object>(
-    target: Entity,
+export default function AfterSync<T extends Entity>(
+    target: T,
     propertyName: string,
     hookFn: TypedPropertyDescriptor<() => void | Promise<void>>
 ) {

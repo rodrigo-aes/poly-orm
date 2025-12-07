@@ -42,7 +42,7 @@ export default class RelationQueryExecutionHandler<
     public async executeFindOne(sql: string): Promise<T | null> {
         return this
             .rawDataHandler('One', await this.metadata.connection.query(sql))
-            .parseEntity() as T | null
+            .entity() as T | null
     }
 
     // ------------------------------------------------------------------------
@@ -50,7 +50,7 @@ export default class RelationQueryExecutionHandler<
     public async executeFind(sql: string) {
         return this
             .rawDataHandler('Many', await this.metadata.connection.query(sql))
-            .parseEntity() as Collection<T>
+            .entity() as Collection<T>
     }
 
     // ------------------------------------------------------------------------
@@ -94,7 +94,7 @@ export default class RelationQueryExecutionHandler<
 
         return this
             .rawDataHandler('One', mySQL2RawData)
-            .parseEntity(mySQL2RawData) as T
+            .entity(mySQL2RawData) as T
     }
 
     // ------------------------------------------------------------------------

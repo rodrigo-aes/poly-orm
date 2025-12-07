@@ -1,4 +1,5 @@
 import HookMetadata from "../HookMetadata"
+import type { Entity } from "../../../../../types"
 
 export default class BeforeDeleteMetadata extends HookMetadata {
     // Getters ================================================================
@@ -9,7 +10,7 @@ export default class BeforeDeleteMetadata extends HookMetadata {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public call<Entity extends object>(entity: Entity) {
+    public call<T extends Entity>(entity: T) {
         return this.hookFn(entity)
     }
 }

@@ -1,10 +1,10 @@
 import { ColumnsMetadata } from "../../Metadata"
 
 // Types
-import type { EntityTarget } from "../../types"
+import type { Entity, EntityTarget } from "../../types"
 
-export default function PolymorphicId<Entity extends object>(
-    target: Entity,
+export default function PolymorphicId<T extends Entity>(
+    target: T,
     name: string
 ) {
     ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)

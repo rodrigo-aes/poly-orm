@@ -109,8 +109,8 @@ export default class HooksMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public async callBeforeFind<Entity extends object>(
-        options: FindQueryOptions<Entity>
+    public async callBeforeFind<T extends Entity>(
+        options: FindQueryOptions<T>
     ) {
         if (this.toCall.has('before-find'))
             for (const hook of this.beforeFind) await hook.call(options)
@@ -127,8 +127,8 @@ export default class HooksMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public async callBeforeBulkFind<Entity extends object>(
-        options: FindQueryOptions<Entity>
+    public async callBeforeBulkFind<T extends Entity>(
+        options: FindQueryOptions<T>
     ) {
         if (this.toCall.has('before-bulk-find'))
             for (const hook of this.beforeBulkFind) await hook.call(options)
@@ -151,8 +151,8 @@ export default class HooksMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public async callBeforeCreate<Entity extends object>(
-        attributes: CreationAttributes<Entity>
+    public async callBeforeCreate<T extends Entity>(
+        attributes: CreationAttributes<T>
     ) {
         if (this.toCall.has('before-create'))
             for (const hook of this.beforeCreate) await hook.call(attributes)
@@ -167,8 +167,8 @@ export default class HooksMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public async callBeforeBulkCreate<Entity extends object>(
-        attributes: CreationAttributes<Entity>[]
+    public async callBeforeBulkCreate<T extends Entity>(
+        attributes: CreationAttributes<T>[]
     ) {
         if (this.toCall.has('before-bulk-create'))
             for (const hook of this.beforeBulkCreate) (
@@ -200,7 +200,7 @@ export default class HooksMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public async callAfterUpdate<Entity extends object>(entity: Entity) {
+    public async callAfterUpdate<T extends Entity>(entity: T) {
         if (this.toCall.has('after-update'))
             for (const hook of this.afterUpdate) await hook.call(entity)
     }
@@ -233,8 +233,8 @@ export default class HooksMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public async callBeforeDelete<Entity extends object>(
-        entity: Entity
+    public async callBeforeDelete<T extends Entity>(
+        entity: T
     ) {
         if (this.toCall.has('before-delete'))
             for (const hook of this.beforeDelete) await hook.call(entity)
@@ -242,8 +242,8 @@ export default class HooksMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public async callAfterDelete<Entity extends object>(
-        entity: Entity,
+    public async callAfterDelete<T extends Entity>(
+        entity: T,
         result: DeleteResult
     ) {
         if (this.toCall.has('after-delete'))
@@ -255,8 +255,8 @@ export default class HooksMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public async callBeforeBulkDelete<Entity extends object>(
-        where: ConditionalQueryOptions<Entity>
+    public async callBeforeBulkDelete<T extends Entity>(
+        where: ConditionalQueryOptions<T>
     ) {
         if (this.toCall.has('before-bulk-delete'))
             for (const hook of this.beforeBulkDelete) await hook.call(where)
@@ -264,8 +264,8 @@ export default class HooksMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public async callAfterBulkDelete<Entity extends object>(
-        where: ConditionalQueryOptions<Entity>,
+    public async callAfterBulkDelete<T extends Entity>(
+        where: ConditionalQueryOptions<T>,
         result: DeleteResult
     ) {
         if (this.toCall.has('after-bulk-delete'))

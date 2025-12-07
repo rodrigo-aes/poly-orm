@@ -1,35 +1,34 @@
-import type { Target } from '../../../types'
 import { Exists, Cross } from './Symbol'
 import type {
+    Entity,
     EntityRelationsKeys,
     EntityRelations,
     Constructor
 } from '../../../types'
 import { ConditionalQueryOptions } from '../types'
-import { Foo } from '../../../TestTools/Entities'
 
-export type EntityExistsQueryOptions<Entity extends object> = Partial<{
-    [K in EntityRelationsKeys<Entity>]: boolean | EntityExistsQueryOption<
-        Extract<EntityRelations<Entity>[K], object>
+export type EntityExistsQueryOptions<T extends Entity> = Partial<{
+    [K in EntityRelationsKeys<T>]: boolean | EntityExistsQueryOption<
+        Extract<EntityRelations<T>[K], Entity>
     >
 }>
 
-export type EntityExistsQueryOption<Entity extends object> = {
-    relations?: EntityExistsQueryOptions<Entity>
-    where?: ConditionalQueryOptions<Entity>
+export type EntityExistsQueryOption<T extends Entity> = {
+    relations?: EntityExistsQueryOptions<T>
+    where?: ConditionalQueryOptions<T>
 }
 
-export type EntityCrossExistsOption<Entity extends object> = (
-    { target: Constructor<Entity> } & EntityExistsQueryOption<Entity>
+export type EntityCrossExistsOption<T extends Entity> = (
+    { target: Constructor<T> } & EntityExistsQueryOption<T>
 )
 
-export type EntityCrossExistsOptions<Entities extends object[] = object[]> = {
+export type EntityCrossExistsOptions<Entities extends Entity[] = Entity[]> = {
     [K in keyof Entities]: EntityCrossExistsOption<Entities[K]>
 }
 
-export type ExistsQueryOptions<Entity extends object> = {
+export type ExistsQueryOptions<T extends Entity> = {
     [Exists]: string | (
-        EntityExistsQueryOptions<Entity> &
+        EntityExistsQueryOptions<T> &
         Partial<{ [Cross]: EntityCrossExistsOptions }>
     )
 }

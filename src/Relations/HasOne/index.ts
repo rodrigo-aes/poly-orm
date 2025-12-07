@@ -47,8 +47,8 @@ export class HasOneHandler<
 export default function HasOne<T extends Entity>(
     metadata: HasOneMetadata,
     target: Entity,
-    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
-    instance?: T | null
+    instance?: T | null,
+    related: Constructor<T> = metadata.relatedTarget as Constructor<T>
 ): HasOne<T> {
     return new HasOneHandler(metadata, target, related, instance) as (
         HasOne<T>
