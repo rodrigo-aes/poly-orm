@@ -7,14 +7,20 @@ import type { PolymorphicBelongsToOptions } from "./types"
 
 export default function PolymorphicBelongsTo(
     related: PolymorphicParentRelatedGetter,
-    options: PolymorphicBelongsToOptions
+    foreignKey: string | PolymorphicBelongsToOptions
 ) {
     return function <T extends Entity>(
         target: T,
         name: string
     ) {
         RelationsMetadata.findOrBuild(target.constructor as EntityTarget)
-            .addPolymorphicBelongsTo({ name, related, ...options })
+            .addPolymorphicBelongsTo({
+                name, related, ...(
+                    typeof foreignKey === 'string'
+                        ? { foreignKey }
+                        : foreignKey
+                )
+            })
     }
 }
 

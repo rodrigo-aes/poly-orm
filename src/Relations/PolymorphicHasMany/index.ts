@@ -63,6 +63,8 @@ export default function PolymorphicHasMany<
     instances: C = new collection,
     related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
 ): PolymorphicHasMany<T, C> {
+    console.log(instances)
+
     return new PolymorphicHasManyHandler(
         metadata,
         target,

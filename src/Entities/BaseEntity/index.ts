@@ -29,7 +29,7 @@ import type { Repository } from "../../Repositories"
  */
 export default abstract class BaseEntity extends Entity {
     /** Entity name */
-    public abstract readonly name: string
+    public abstract readonly __name: string
 
     public static readonly INHERIT_POLYMORPHIC_RELATIONS = false
 

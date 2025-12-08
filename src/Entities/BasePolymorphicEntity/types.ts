@@ -23,9 +23,9 @@ export type SourceEntity<T extends BasePolymorphicEntity<any> | BaseEntity[]> =
 export type EntityNames<
     T extends BasePolymorphicEntity<any> | BaseEntity[]
 > = T extends BasePolymorphicEntity<any>
-    ? SourceEntities<T>[number]['name']
+    ? SourceEntities<T>[number]['__name']
     : T extends BaseEntity[]
-    ? T[number]['name']
+    ? T[number]['__name']
     : never
 
 export type EntitiesMap<

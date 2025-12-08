@@ -6,7 +6,7 @@ import type { HasManyOptions } from "./types"
 
 export default function HasMany(
     related: HasManyRelatedGetter,
-    foreignKey: HasManyOptions
+    foreignKey: string | HasManyOptions
 ) {
     return function <T extends Entity>(target: T, name: string) {
         RelationsMetadata.findOrBuild(target.constructor as EntityTarget)

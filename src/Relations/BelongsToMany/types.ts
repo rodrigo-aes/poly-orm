@@ -6,5 +6,5 @@ export type BelongsToMany<
     T extends Entity,
     C extends Collection<T> = Collection<T>
 > = (
-        BelongsToManyHandler<Entity, T, C> & T
+        BelongsToManyHandler<Entity, T, C> & C
     )

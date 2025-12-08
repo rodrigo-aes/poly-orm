@@ -6,5 +6,5 @@ export type PolymorphicHasMany<
     T extends Entity,
     C extends Collection<T> = Collection<T>
 > = (
-        PolymorphicHasManyHandler<Entity, T, C> & T
+        PolymorphicHasManyHandler<Entity, T, C> & C
     )

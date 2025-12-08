@@ -6,7 +6,7 @@ import type { HasOneOptions } from "./types"
 
 export default function HasOne(
     related: HasOneRelatedGetter,
-    foreignKey: HasOneOptions
+    foreignKey: string | HasOneOptions
 ) {
     return function <T extends Entity>(
         target: T,

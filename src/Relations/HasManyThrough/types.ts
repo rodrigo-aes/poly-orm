@@ -6,5 +6,5 @@ export type HasManyThrough<
     T extends Entity,
     C extends Collection<T> = Collection<T>
 > = (
-        HasManyThroughHandler<Entity, T, C> & T
+        HasManyThroughHandler<Entity, T, C> & C
     )

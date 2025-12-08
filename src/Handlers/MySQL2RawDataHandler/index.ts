@@ -58,8 +58,7 @@ export default class MySQL2RawDataHandler<T extends Target> {
                 this.raw,
                 this.metadata,
                 'json'
-            )
-                .shift() ?? null
+            )[0] ?? null
 
             // ----------------------------------------------------------------
 
@@ -103,7 +102,7 @@ export default class MySQL2RawDataHandler<T extends Target> {
         pagination?: PaginationInitMap
     ): EntityData<InstanceType<M>> {
         switch (method) {
-            case "One": return data.shift() ?? null
+            case "One": return data[0] ?? null
 
             // ----------------------------------------------------------------
 
@@ -129,7 +128,7 @@ export default class MySQL2RawDataHandler<T extends Target> {
         metadata: TargetMetadata<any> = this.metadata,
         method: 'json' | 'entity' = 'json',
         relation?: RelationMetadataType,
-        mapTo: M | T = this.target
+        mapTo: M = (relation?.relatedTarget ?? this.target) as M
     ): MappedDataType<M, typeof method>[] {
         if (raw.length === 0) return raw
 
@@ -152,7 +151,7 @@ export default class MySQL2RawDataHandler<T extends Target> {
 
             switch (method) {
                 case "json": reduced.push({
-                    ...this.filterColumns<M>(toMerge.shift()),
+                    ...this.filterColumns<M>(toMerge[0]),
                     ...this.filterRelations<M>(toMerge, metadata, method)
                 })
                     break
@@ -162,7 +161,7 @@ export default class MySQL2RawDataHandler<T extends Target> {
                 case "entity":
                     const entity = this.mapToEntity(
                         mapTo,
-                        this.filterColumns<M>(toMerge.shift()),
+                        this.filterColumns<M>(toMerge[0]),
                         (relation as any)?.shouldMapToSource
                     )
 
@@ -256,7 +255,6 @@ export default class MySQL2RawDataHandler<T extends Target> {
                 .from(this.filterRelationsKeys(raw))
                 .flatMap(key => {
                     const relation = metadata.relations.findOrThrow(key)
-
                     return [[key, this.fillRelation(
                         method,
                         this.reduce(
@@ -284,7 +282,7 @@ export default class MySQL2RawDataHandler<T extends Target> {
     ) {
         switch (method) {
             case 'json': switch (relation.fillMethod) {
-                case 'One': return data.shift() ?? null
+                case 'One': return data[0] ?? null
                 case 'Many': return data
             }
 
@@ -292,13 +290,12 @@ export default class MySQL2RawDataHandler<T extends Target> {
 
             case 'entity': return (
                 Relations[(
-                    relation.type.charAt(0).toLocaleLowerCase() +
-                    relation.type.slice(1) as keyof typeof Relations
+                    relation.type + 'Handler' as keyof typeof Relations
                 )] as any
             )(
                 ...(() => {
                     switch (relation.fillMethod) {
-                        case 'One': return [relation, parent, data.shift()]
+                        case 'One': return [relation, parent, data[0]]
 
                         // ----------------------------------------------------
 

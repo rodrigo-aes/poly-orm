@@ -7,14 +7,20 @@ import type { PolymorphicHasOneOptions } from "./types"
 
 export default function PolymorphicHasOne(
     related: PolymorphicChildRelatedGetter,
-    options: PolymorphicHasOneOptions
+    foreignKey: string | PolymorphicHasOneOptions
 ) {
     return function <T extends Entity>(
         target: T,
         name: string
     ) {
         RelationsMetadata.findOrBuild(target.constructor as EntityTarget)
-            .addPolymorphicHasOne({ name, related, ...options })
+            .addPolymorphicHasOne({
+                name, related, ...(
+                    typeof foreignKey === 'string'
+                        ? { foreignKey }
+                        : foreignKey
+                )
+            })
     }
 }
 

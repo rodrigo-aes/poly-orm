@@ -7,14 +7,20 @@ import type { PolymorphicHasManyOptions } from "./types"
 
 export default function PolymorphicHasMany(
     related: PolymorphicChildRelatedGetter,
-    options: PolymorphicHasManyOptions
+    foreignKey: string | PolymorphicHasManyOptions
 ) {
     return function <T extends Entity>(
         target: T,
         name: string
     ) {
         RelationsMetadata.findOrBuild(target.constructor as EntityTarget)
-            .addPolymorphicHasMany({ name, related, ...options })
+            .addPolymorphicHasMany({
+                name, related, ...(
+                    typeof foreignKey === 'string'
+                        ? { foreignKey }
+                        : foreignKey
+                )
+            })
     }
 }
 
