@@ -1,3 +1,5 @@
+import util from "util"
+
 import ManyRelation from ".."
 import { Collection } from "../../../Entities"
 
@@ -48,6 +50,13 @@ export default abstract class HasManyRelation<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
+    /** @internal */
+    public [util.inspect.custom]() {
+        return this.instances
+    }
+
+    // ------------------------------------------------------------------------
+
     /**
      * Create a related entity register and return instance
      * @param attributes - Related entity creation attributes

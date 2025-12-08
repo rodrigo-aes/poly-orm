@@ -1,3 +1,5 @@
+import util from "util"
+
 // Handlers
 import {
     MySQL2QueryExecutionHandler,
@@ -69,6 +71,13 @@ export default abstract class OneRelation<T extends Entity, R extends Entity> {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
+    /** @internal */
+    public [util.inspect.custom]() {
+        return this.instance
+    }
+
+    // ------------------------------------------------------------------------
+
     /**
      * Load related entity
      * @returns - Related entity intance
