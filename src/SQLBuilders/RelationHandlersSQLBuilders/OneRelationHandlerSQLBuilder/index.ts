@@ -1,18 +1,16 @@
 import RelationHandlerSQLBuilder from "../RelationHandlerSQLBuilder"
 
 // SQL Builders
-import UpdateOrCreateSQLBuilder, {
-    type UpdateOrCreateAttibutes
-} from "../../UpdateOrCreateSQLBuilder"
-
-// Helpers
-import { SQLStringHelper, PropertySQLHelper } from "../../../Helpers"
+import UpdateOrCreateSQLBuilder from "../../UpdateOrCreateSQLBuilder"
 
 // Types
 import type { OneRelationMetadataType } from "../../../Metadata"
 import type { Entity, EntityTarget } from "../../../types"
-import type { CreationAttributes } from "../../CreateSQLBuilder"
-import type { UpdateAttributes } from "../../UpdateSQLBuilder"
+import type {
+    RelationCreationAttributes,
+    RelationUpdateAttributes,
+    RelationUpdateOrCreateAttributes
+} from "./types"
 
 export default abstract class OneRelationHandlerSQLBuilder<
     RelationMetadata extends OneRelationMetadataType,
@@ -22,62 +20,46 @@ export default abstract class OneRelationHandlerSQLBuilder<
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public loadSQL(): string {
-        return SQLStringHelper.normalizeSQL(
-            `${this.selectSQL()} ${this.fixedWhereSQL()} LIMIT 1`
-        )
+        return `${this.selectSQL()} ${this.fixedWhereSQL()} LIMIT 1`
     }
 
     // ------------------------------------------------------------------------
 
-    public createSQL(attributes: CreationAttributes<R>): (
-        [string, any[]]
-    ) {
-        return [
-            SQLStringHelper.normalizeSQL(`
-                INSERT INTO ${this.relatedTable}
-                (${this.insertColumnsSQL(attributes)})
-                VALUES (${this.placeholderSetSQL(attributes)})
-            `),
-            this.createValues(attributes)
-        ]
+    public createSQL(attributes: RelationCreationAttributes<R>): string {
+        return `INSERT INTO ${this.relatedTable} (${(
+            this.insertColumnsSQL(attributes)
+        )}) VALUES (${this.insertValuesSQL(attributes)})`
     }
 
     // ------------------------------------------------------------------------
 
-    public updateOrCreateSQL(attributes: UpdateOrCreateAttibutes<R>): string {
+    public updateOrCreateSQL(
+        attributes: RelationUpdateOrCreateAttributes<R>
+    ): string {
         return new UpdateOrCreateSQLBuilder(
             this.related as EntityTarget,
-            this.mergeAttributes(attributes)
+            this.creationAttributes(attributes)
         )
             .SQL()
     }
 
     // ------------------------------------------------------------------------
 
-    public updateSQL(attributes: UpdateAttributes<R>): string {
-        return SQLStringHelper.normalizeSQL(`
-            UPDATE ${this.relatedTableAlias}
-            ${this.setSQL(attributes)}
-            ${this.fixedWhereSQL()}
-        `)
+    public updateSQL(attributes: RelationUpdateAttributes<R>): string {
+        return `UPDATE ${this.relatedTableAlias} ${this.setSQL(attributes)} ${(
+            this.fixedWhereSQL()
+        )}`
     }
 
     // ------------------------------------------------------------------------
 
     public deleteSQL(): string {
-        return `DELETE FROM ${this.relatedAlias} ${this.fixedWhereSQL()}`
+        return `DELETE FROM ${this.relatedTableAlias} ${this.fixedWhereSQL()}`
     }
+}
 
-    // Protecteds -------------------------------------------------------------
-    protected insertColumnsSQL(attributes: CreationAttributes<R>): string {
-        return this.attributesKeys(attributes).join(', ')
-    }
-
-    // ------------------------------------------------------------------------
-
-    protected insertValuesSQL(attributes: CreationAttributes<R>): string {
-        return this.attributesValues(attributes)
-            .map(value => PropertySQLHelper.valueSQL(value))
-            .join(', ')
-    }
+export type {
+    RelationCreationAttributes,
+    RelationUpdateAttributes,
+    RelationUpdateOrCreateAttributes
 }

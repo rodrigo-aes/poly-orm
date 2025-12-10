@@ -4,6 +4,6 @@ import type {
     EntityProperties
 } from "../../types"
 
-export type UpdateOrCreateAttibutes<T extends Entity> = (
+export type UpdateOrCreateAttributes<T extends Entity = Entity> = (
     OptionalNullable<EntityProperties<T>>
 )

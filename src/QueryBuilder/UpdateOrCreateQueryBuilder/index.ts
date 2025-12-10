@@ -2,7 +2,7 @@
 import {
     UpdateOrCreateSQLBuilder,
 
-    type UpdateOrCreateAttibutes,
+    type UpdateOrCreateAttributes,
 } from "../../SQLBuilders"
 
 // Handlers
@@ -67,7 +67,7 @@ export default class UpdateOrCreateQueryBuilder<T extends BaseEntity> {
      * @param attributes - Attributes data 
      * @returns {this} - `this`
      */
-    public data(attributes: UpdateOrCreateAttibutes<T>): (
+    public data(attributes: UpdateOrCreateAttributes<T>): (
         Omit<this, 'fields' | 'values'>
     ) {
         this.sqlBuilder.setData(attributes)

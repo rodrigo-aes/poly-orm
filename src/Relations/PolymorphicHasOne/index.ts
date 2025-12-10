@@ -4,7 +4,7 @@ import HasOneRelation from "../OneRelation/HasOneRelation"
 import { PolymorphicHasOneHandlerSQLBuilder } from "../../SQLBuilders"
 
 // Types
-import type { Entity, Constructor, Target } from "../../types"
+import type { Entity, Constructor } from "../../types"
 import type { PolymorphicHasOneMetadata } from "../../Metadata"
 import type { PolymorphicHasOne } from "./types"
 

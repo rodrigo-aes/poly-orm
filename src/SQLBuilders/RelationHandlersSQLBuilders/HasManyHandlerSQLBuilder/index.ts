@@ -38,6 +38,6 @@ export default class HasManyHandlerSQLBuilder<
     // Instance Methods =======================================================
     // Protecteds -------------------------------------------------------------
     protected fixedWhereSQL(): string {
-        return `WHERE ${this.foreignKey} = ${this.targetPrimaryValue}`
+        return `WHERE ${this.foreignKey} = ${this.targetPrimaryValueSQL}`
     }
 }

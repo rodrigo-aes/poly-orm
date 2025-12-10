@@ -1,6 +1,9 @@
 import ManyRelationHandlerSQLBuilder from "../ManyRelationHandlerSQLBuilder"
 import { BasePolymorphicEntity } from "../../../Entities"
 
+// Helpers
+import { PropertySQLHelper } from "../../../Helpers"
+
 // Types
 import type { PolymorphicHasManyMetadata } from "../../../Metadata"
 import type { Entity, Constructor } from "../../../types"
@@ -71,10 +74,8 @@ export default class PolymorphicHasManyHandlerSQLBuilder<
     // Instance Methods =======================================================
     // Protecteds -------------------------------------------------------------
     protected fixedWhereSQL(): string {
-        return (
-            `WHERE ${this.aliasedForeignKey} = ${this.targetPrimaryValue}` + (
-                this.andTypeKeySQL
-            )
-        )
+        return `WHERE ${this.aliasedForeignKey} = ${(
+            this.targetPrimaryValueSQL
+        )}` + this.andTypeKeySQL
     }
 }

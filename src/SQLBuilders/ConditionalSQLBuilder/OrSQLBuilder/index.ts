@@ -31,7 +31,9 @@ export default class OrSQLBuilder<T extends Target> {
 
     // Privates ---------------------------------------------------------------
     private andSQL(option: AndQueryOptions<InstanceType<T>>): string {
-        const and = new AndSQLBuilder(this.target, option, this.alias)
+        const and = new AndSQLBuilder(
+            this.target, option, this.alias
+        )
         this.unionSQLBuilders.push(...and.unions())
 
         return and.SQL()

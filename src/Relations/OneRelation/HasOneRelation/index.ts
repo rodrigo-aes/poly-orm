@@ -2,14 +2,15 @@ import OneRelation from ".."
 
 // Types
 import type { Constructor, Entity } from "../../../types"
+
 import type {
     HasOneMetadata,
-    PolymorphicHasOneMetadata
+    PolymorphicHasOneMetadata,
 } from "../../../Metadata"
 
 import type {
-    CreationAttributes,
-    UpdateOrCreateAttibutes
+    RelationCreationAttributes,
+    RelationUpdateOrCreateAttributes,
 } from "../../../SQLBuilders"
 
 /**
@@ -43,10 +44,12 @@ export default abstract class HasOneRelation<
      * @param attributes - Related creation attributes data
      * @returns - Instance of created related entity
      */
-    public async create(attributes: CreationAttributes<R>): Promise<this> {
+    public async create(attributes: RelationCreationAttributes<R>): Promise<
+        this
+    > {
         this.instance = await this.queryExecutionHandler.executeCreate(
             this.sqlBuilder.createSQL(attributes),
-            attributes
+            (this.sqlBuilder.creationAttributes as any)(attributes)
         )
 
         return this
@@ -59,7 +62,9 @@ export default abstract class HasOneRelation<
      * @param attributes - Related update or create attributes data
      * @returns - Instance of updated or created related entity
      */
-    public async updateOrCreate(attributes: UpdateOrCreateAttibutes<R>): Promise<this> {
+    public async updateOrCreate(
+        attributes: RelationUpdateOrCreateAttributes<R>
+    ): Promise<this> {
         this.instance = await this.queryExecutionHandler.executeUpdateOrCreate(
             this.sqlBuilder.updateOrCreateSQL(attributes)
         )

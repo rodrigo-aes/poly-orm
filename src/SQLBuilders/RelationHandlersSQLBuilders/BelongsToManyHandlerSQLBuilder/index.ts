@@ -6,7 +6,7 @@ import { BaseEntity } from "../../../Entities"
 import { SyncManyToMany } from "../../Procedures"
 
 // Helpers
-import { SQLStringHelper, PropertySQLHelper } from "../../../Helpers"
+import { PropertySQLHelper } from "../../../Helpers"
 
 // Types
 import type { BelongsToManyMetadata } from "../../../Metadata"
@@ -61,7 +61,7 @@ export default class BelongsToManyHandlerSQLBuilder<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public createForeingKeysSQL(relateds: R | R[]): [string, any[]] {
+    public createForeingKeysSQL(relateds: R | R[]): string {
         return Array.isArray(relateds)
             ? this.bulkCreateForeignKeySQL(relateds)
             : this.createForeignKeySQL(relateds)
@@ -100,40 +100,30 @@ export default class BelongsToManyHandlerSQLBuilder<
 
     // Protecteds -------------------------------------------------------------
     protected fixedWhereSQL(): string {
-        return `EXISTS (SELECT 1 FROM ${this.relatedTable} WHERE EXISTS (
-            SELECT 1 FROM ${this.JT}
-            WHERE ${this.relatedForeignKey} = ${this.relatedAlias}.${(
-                this.relatedPrimary
-            )}
-            AND ${this.JTAlias}.${this.targetForeignKey} = ${(
-                this.targetAlias
-            )}.${this.targetPrimary}
-        ))`
+        return `EXISTS (SELECT 1 FROM ${(
+            this.relatedTable
+        )} WHERE EXISTS (SELECT 1 FROM ${this.JT} WHERE ${(
+            this.relatedForeignKey
+        )} = ${this.relatedAlias}.${(
+            this.relatedPrimary
+        )} AND ${this.JTAlias}.${this.targetForeignKey} = ${(
+            this.targetAlias
+        )}.${this.targetPrimary}))`
     }
 
     // Privates ---------------------------------------------------------------
-    private createForeignKeySQL(related: R): [string, any[]] {
-        return [
-            SQLStringHelper.normalizeSQL(`
-                INSERT INTO ${this.JT} 
-                (${this.joinColumns})
-                VALUES (?, ?)
-            `),
+    private createForeignKeySQL(related: R): string {
+        return `INSERT INTO ${this.JT} (${this.joinColumns}) VALUES (${(
             this.foreignKeysValues(related)
-        ]
+        )})`
     }
 
     // ------------------------------------------------------------------------
 
-    private bulkCreateForeignKeySQL(relateds: R[]): [string, any[][]] {
-        return [
-            SQLStringHelper.normalizeSQL(`
-                INSERT INTO ${this.JT}
-                (${this.joinColumns})
-                VALUES ${'(?, ?), '.repeat(relateds.length)}
-            `),
-            relateds.map(related => this.foreignKeysValues(related))
-        ]
+    private bulkCreateForeignKeySQL(relateds: R[]): string {
+        return `INSERT INTO ${this.JT} (${this.joinColumns}) VALUES ${(
+            this.bulkForeignKeysValues(relateds)
+        )}`
     }
 
     // ------------------------------------------------------------------------
@@ -156,17 +146,24 @@ export default class BelongsToManyHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    private foreignKeysValues(related: R): any[] {
-        return [this.targetPrimaryValue, related[this.relatedPrimary]]
+    private foreignKeysValues(related: R): string {
+        return `${this.targetPrimaryValueSQL}, ${(
+            PropertySQLHelper.valueSQL(related[this.relatedPrimary])
+        )}`
+    }
+
+    // ------------------------------------------------------------------------
+
+    private bulkForeignKeysValues(relateds: R[]): string[] {
+        return relateds.map(related => `(${this.foreignKeysValues(related)})`)
     }
 
     // ------------------------------------------------------------------------
 
     private extractSyncPrimaryKeys(relateds: R[]): any[] {
-        return relateds.map(related =>
-            related instanceof BaseEntity
-                ? (related as R)[this.relatedPrimary]
-                : related
+        return relateds.map(related => related instanceof BaseEntity
+            ? (related as R)[this.relatedPrimary]
+            : related
         )
     }
 

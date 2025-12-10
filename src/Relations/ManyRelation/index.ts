@@ -17,10 +17,12 @@ import type {
     EntityJSON
 } from "../../types"
 import type { ManyRelationMetadatatype } from "../../Metadata"
-import type { ManyRelationHandlerSQLBuilder } from "../../SQLBuilders"
 import type {
-    ConditionalQueryOptions,
-    UpdateAttributes
+    ManyRelationHandlerSQLBuilder,
+    FindRelationQueryOptions,
+    RelationUpdateAttributes,
+    RelationConditionalQueryOptions,
+    ConditionalQueryOptions
 } from "../../SQLBuilders"
 
 /** Many relation handler */
@@ -114,9 +116,9 @@ export default abstract class ManyRelation<
      * @param where - conditional where options
      * @returns - 
      */
-    public async load(where?: ConditionalQueryOptions<R>): Promise<this> {
+    public async load(options?: FindRelationQueryOptions<R>): Promise<this> {
         this.instances = await this.queryExecutionHandler.executeFind(
-            this.sqlBuilder.loadSQL(where)
+            this.sqlBuilder.loadSQL(options)
         ) as C // Implement this: (Parse entity collection) 
 
         return this
@@ -130,11 +132,11 @@ export default abstract class ManyRelation<
      * @param where - Conditional where options
      * @returns - Related entity instance or `null`
      */
-    public async loadOne(where?: ConditionalQueryOptions<R>): Promise<
+    public async loadOne(options?: FindRelationQueryOptions<R>): Promise<
         R | null
     > {
         const instance = await this.queryExecutionHandler.executeFindOne(
-            this.sqlBuilder.loadOneSQL(where)
+            this.sqlBuilder.loadOneSQL(options)
         )
         if (instance) this.instances.push(instance)
 
@@ -151,8 +153,8 @@ export default abstract class ManyRelation<
      * @returns - A result header with details of operation
      */
     public update(
-        attributes: UpdateAttributes<R>,
-        where?: ConditionalQueryOptions<R>
+        attributes: RelationUpdateAttributes<R>,
+        where?: RelationConditionalQueryOptions<R>
     ): Promise<ResultSetHeader> {
         return this.queryExecutionHandler.executeUpdate(
             this.sqlBuilder.updateSQL(attributes, where)
@@ -167,7 +169,9 @@ export default abstract class ManyRelation<
      * @param where - Conditional where options
      * @returns - Delete result
      */
-    public delete(where?: ConditionalQueryOptions<R>): Promise<DeleteResult> {
+    public delete(where?: RelationConditionalQueryOptions<R>): Promise<
+        DeleteResult
+    > {
         return this.queryExecutionHandler.executeDelete(
             this.sqlBuilder.deleteSQL(where)
         )

@@ -3,9 +3,13 @@ import OneRelationHandlerSQLBuilder from "../OneRelationHandlerSQLBuilder"
 // Types
 import type { BelongsToThroughMetadata } from "../../../Metadata"
 import type { Entity, Constructor } from "../../../types"
-import type { CreationAttributes } from "../../CreateSQLBuilder"
-import type { OptionalNullable } from "../../../types/Properties"
-import type { EntityProperties } from "../../../types"
+
+import type {
+    RelationCreationAttributes,
+    RelationUpdateOrCreateAttributes
+} from "../OneRelationHandlerSQLBuilder"
+
+import type { EntityProperties, OptionalNullable } from "../../../types"
 
 // Exceptions
 import PolyORMException from "../../../Errors"
@@ -61,7 +65,7 @@ export default class BelongsToThroughHandlerSQLBuilder<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public override createSQL(_: CreationAttributes<R>): [string, any[]] {
+    public override createSQL(_: RelationCreationAttributes<R>): string {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'createSQL', this.constructor.name
         )
@@ -70,7 +74,7 @@ export default class BelongsToThroughHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     public override updateOrCreateSQL(
-        _: Partial<OptionalNullable<EntityProperties<R>>>
+        _: RelationUpdateOrCreateAttributes<R>
     ): string {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'updateOrCreateSQL', this.constructor.name
@@ -79,12 +83,14 @@ export default class BelongsToThroughHandlerSQLBuilder<
 
     // Protecteds -------------------------------------------------------------
     protected fixedWhereSQL(): string {
-        return `WHERE EXISTS (
-            SELECT 1 FROM ${this.relatedTableAlias} WHERE EXISTS (
-                SELECT 1 FROM ${this.throughTable}
-                WHERE ${this.throughForeignKey} = ${this.relatedPrimary}
-                AND ${this.throughPrimary} = ${this.foreignKey}
-            )
-        )`
+        return `WHERE EXISTS (SELECT 1 FROM ${(
+            this.relatedTableAlias
+        )} WHERE EXISTS (SELECT 1 FROM ${(
+            this.throughTable
+        )} WHERE ${(
+            this.throughForeignKey
+        )} = ${this.relatedPrimary} AND ${(
+            this.throughPrimary
+        )} = ${this.foreignKey}))`
     }
 }

@@ -14,7 +14,7 @@ import { MetadataHandler } from "../../../Metadata"
 import { SQLStringHelper, PropertySQLHelper } from "../../../Helpers"
 
 // Types
-import type { Target, TargetMetadata } from "../../../types"
+import type { Entity, Target, TargetMetadata } from "../../../types"
 import type UnionSQLBuilder from "../../UnionSQLBuilder"
 import type {
     AndQueryOptions,
@@ -25,7 +25,7 @@ import type {
 export default class AndSQLBuilder<T extends Target> {
     private metadata: TargetMetadata<T>
     private propOptions: PropAndQueryOptions<InstanceType<T>>
-    private relOptions: RelationAndQueryOptions
+    private relOptions?: RelationAndQueryOptions
     private existsSQLBuilder?: ExistsSQLBuilder<T>
 
     constructor(
@@ -71,9 +71,11 @@ export default class AndSQLBuilder<T extends Target> {
     // ------------------------------------------------------------------------
 
     private relationsSQL(): string[] {
-        return Object
-            .entries(this.relOptions)
-            .map(([key, value]) => this.relationSQL(key, value))
+        return this.relOptions
+            ? Object
+                .entries(this.relOptions)
+                .map(([key, value]) => this.relationSQL(key, value))
+            : []
     }
 
     // ------------------------------------------------------------------------
@@ -153,12 +155,22 @@ export default class AndSQLBuilder<T extends Target> {
     // ------------------------------------------------------------------------
 
     private filterRelationOptions(): RelationAndQueryOptions {
+        console.log('relations', Object.fromEntries(
+            Object
+                .entries(this.options)
+                .filter(([key, value]) =>
+                    (key.includes('.') || this.metadata.relations.search(key))
+                    && value
+                )
+        ))
+
         return Object.fromEntries(
             Object
                 .entries(this.options)
-                .filter(([key]) => (
-                    key.includes('.') || this.metadata.relations.search(key)
-                ))
+                .filter(([key, value]) =>
+                    (key.includes('.') || this.metadata.relations.search(key))
+                    && value
+                )
         )
     }
 

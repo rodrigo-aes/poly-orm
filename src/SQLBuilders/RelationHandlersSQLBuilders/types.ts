@@ -1,3 +1,6 @@
+import type { Entity } from "../../types"
+import type { BasePolymorphicEntity } from "../../Entities"
+
 import type HasOneHandlerSQLBuilder from "./HasOneHandlerSQLBuilder"
 import type HasManyHandlerSQLBuilder from "./HasManyHandlerSQLBuilder"
 import type BelongsToHandlerSQLBuilder from "./BelongsToHandlerSQLBuilder"
@@ -9,18 +12,24 @@ import type PolymorphicHasOneHandlerSQLBuilder from "./PolymorphicHasOneHandlerS
 import type PolymorphicHasManyHandlerSQLBuilder from "./PolymorphicHasManyHandlerSQLBuilder"
 import type PolymorphicBelongsToHandlerSQLBuilder from "./PolymorphicBelongsToHandlerSQLBuilder"
 
-export type OneRelationHandlerSQLBuilder = (
-    HasOneHandlerSQLBuilder<any, any> |
-    BelongsToHandlerSQLBuilder<any, any> |
-    HasOneThroughHandlerSQLBuilder<any, any> |
-    BelongsToThroughHandlerSQLBuilder<any, any> |
-    PolymorphicHasOneHandlerSQLBuilder<any, any> |
-    PolymorphicBelongsToHandlerSQLBuilder<any, any>
-)
+export type OneRelationHandlerSQLBuilder<
+    T extends Entity = any,
+    R extends Entity = any
+> = (
+        HasOneHandlerSQLBuilder<T, R> |
+        BelongsToHandlerSQLBuilder<T, R> |
+        HasOneThroughHandlerSQLBuilder<T, R> |
+        BelongsToThroughHandlerSQLBuilder<T, R> |
+        PolymorphicHasOneHandlerSQLBuilder<T, R> |
+        PolymorphicBelongsToHandlerSQLBuilder<T, BasePolymorphicEntity<any>>
+    )
 
-export type ManyRelationHandlerSQLBuilder = (
-    HasManyHandlerSQLBuilder<any, any> |
-    HasManyThroughHandlerSQLBuilder<any, any> |
-    BelongsToManyHandlerSQLBuilder<any, any> |
-    PolymorphicHasManyHandlerSQLBuilder<any, any>
-)
+export type ManyRelationHandlerSQLBuilder<
+    T extends Entity = any,
+    R extends Entity = any
+> = (
+        HasManyHandlerSQLBuilder<T, R> |
+        HasManyThroughHandlerSQLBuilder<T, R> |
+        BelongsToManyHandlerSQLBuilder<T, R> |
+        PolymorphicHasManyHandlerSQLBuilder<T, R>
+    )

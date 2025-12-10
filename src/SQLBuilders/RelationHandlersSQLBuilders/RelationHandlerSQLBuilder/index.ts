@@ -1,5 +1,6 @@
 import { BaseEntity, ColumnsSnapshots } from "../../../Entities"
 import { BasePolymorphicEntity } from "../../../Entities"
+import { v4 as UUIDV4 } from "uuid"
 
 // Handlers 
 import { MetadataHandler } from "../../../Metadata"
@@ -9,11 +10,24 @@ import { PropertySQLHelper } from "../../../Helpers"
 
 // Types
 import type { RelationMetadataType, } from "../../../Metadata"
-import type { Constructor, Entity, EntityTarget, TargetMetadata } from "../../../types"
-import type { CreationAttributes } from "../../CreateSQLBuilder"
-import type { UpdateOrCreateAttibutes } from "../../UpdateOrCreateSQLBuilder"
-import type { UpdateAttributes } from "../../UpdateSQLBuilder"
 
+import type {
+    Constructor,
+    Entity,
+    TargetMetadata
+} from "../../../types"
+import type { CreationAttributes } from "../../CreateSQLBuilder"
+
+import type {
+    RelationCreateManyAttributes
+} from "../ManyRelationHandlerSQLBuilder"
+
+import type {
+    RelationCreationAttributes,
+    RelationUpdateAttributes,
+} from "../OneRelationHandlerSQLBuilder"
+
+import type { Att, RelationAtt, ResolveAtt } from "./types"
 export default abstract class RelationHandlerSQLBuilder<
     RelationMetadata extends RelationMetadataType,
     T extends Entity,
@@ -21,6 +35,8 @@ export default abstract class RelationHandlerSQLBuilder<
 > {
     protected targetMetadata: TargetMetadata<Constructor<T>>
     protected relatedMetadata: TargetMetadata<Constructor<R>>
+
+    private attributes?: Att<R>
 
     constructor(
         protected metadata: RelationMetadata,
@@ -56,7 +72,13 @@ export default abstract class RelationHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     protected get targetPrimaryValue(): any {
-        return PropertySQLHelper.valueSQL(this.target[this.targetPrimary])
+        return this.target[this.targetPrimary]
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected get targetPrimaryValueSQL(): string {
+        return PropertySQLHelper.valueSQL(this.targetPrimaryValue)
     }
 
     // ------------------------------------------------------------------------
@@ -89,6 +111,31 @@ export default abstract class RelationHandlerSQLBuilder<
     protected abstract get includedAtrributes(): any
 
     // Instance Methods =======================================================
+    // Publics ----------------------------------------------------------------
+    public creationAttributes<A extends RelationAtt<R>>(
+        attributes: A
+    ): ResolveAtt<R, A> {
+        return this.attributes ??= Object.fromEntries(
+            Object
+                .entries({
+                    ...this.PKPattern(),
+                    ...attributes,
+                    ...this.includedAtrributes
+                })
+                .filter(([key]) => this.relatedMetadata.columns.search(key))
+        ) as any
+    }
+
+    // ------------------------------------------------------------------------
+
+    public bulkCreationAttributes(
+        attributes: RelationCreateManyAttributes<R>
+    ): CreationAttributes<R>[] {
+        return attributes.map(
+            attribute => this.creationAttributes(attribute)
+        ) as CreationAttributes<R>[]
+    }
+
     // Protecteds -------------------------------------------------------------
     protected abstract fixedWhereSQL(): string
 
@@ -102,12 +149,6 @@ export default abstract class RelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected relatedColumnAsSQL(column: string): string {
-        return `${column} AS ${this.relatedAlias}_${column}`
-    }
-
-    // ------------------------------------------------------------------------
-
     protected relatedColumnsSQL(): string {
         return this.relatedMetadata.columns
             .map(({ name }) => this.relatedColumnAsSQL(name))
@@ -116,54 +157,33 @@ export default abstract class RelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected mergeAttributes<Att extends (
-        CreationAttributes<R> |
-        UpdateAttributes<R> |
-        UpdateOrCreateAttibutes<R>
-    )>(attributes: Att): Att {
-        return { ...attributes, ...this.includedAtrributes }
+    protected relatedColumnAsSQL(column: string): string {
+        return `${column} AS ${this.relatedAlias}_${column}`
     }
 
     // ------------------------------------------------------------------------
 
-    protected attributesKeys(attributes: (
-        CreationAttributes<R> |
-        UpdateAttributes<R>
-    )): (keyof R)[] {
-        return Object.keys(this.mergeAttributes(attributes)) as (
+    protected attributesKeys(attributes: RelationAtt<R>): (keyof R)[] {
+        return Object.keys(this.creationAttributes(attributes)) as (
             (keyof R)[]
         )
     }
 
     // ------------------------------------------------------------------------
 
-    protected attributesValues(attributes: (
-        CreationAttributes<R> |
-        UpdateAttributes<R>
-    )): any[] {
-        return Object.values(this.mergeAttributes(attributes))
+    protected attributesValues(attributes: RelationAtt<R>): any[] {
+        return Object.values(this.creationAttributes(attributes))
     }
 
     // ------------------------------------------------------------------------
 
-    protected attributesEntries(attributes: (
-        CreationAttributes<R> |
-        UpdateAttributes<R>
-    )): [(keyof R), any][] {
-        return Object.entries(this.mergeAttributes(attributes)) as (
-            [(keyof R), any][]
-        )
-    }
-
-    // ------------------------------------------------------------------------
-
-    protected setSQL(attributes: UpdateAttributes<R>): string {
+    protected setSQL(attributes: RelationUpdateAttributes<R>): string {
         return `SET ${this.setValuesSQL(attributes)}`
     }
 
     // ------------------------------------------------------------------------
 
-    protected setValuesSQL(attributes: UpdateAttributes<R>): string {
+    protected setValuesSQL(attributes: RelationUpdateAttributes<R>): string {
         return Object
             .entries(this.onlyChangedAttributes(attributes))
             .map(([column, value]) => `${this.relatedAlias}.${column} = ${(
@@ -174,7 +194,9 @@ export default abstract class RelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected onlyChangedAttributes(attributes: UpdateAttributes<R>): any {
+    protected onlyChangedAttributes(
+        attributes: RelationUpdateAttributes<R>
+    ): Partial<RelationUpdateAttributes<R>> {
         return (
             attributes instanceof BaseEntity ||
             attributes instanceof BasePolymorphicEntity
@@ -185,60 +207,37 @@ export default abstract class RelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected placeholderSetSQL(attributes: (
-        CreationAttributes<R> |
-        UpdateAttributes<R> |
-        number
-    )): string {
-        return `(${(
-            Array(typeof attributes === 'number'
-                ? attributes
-                : this.attributesKeys(attributes).length
-            )
-                .fill('?')
-                .join(', ')
-        )})`
+    protected patternAttributes(): any {
+        return this.PKPattern()
     }
 
     // ------------------------------------------------------------------------
 
-    protected bulkPlaceholderSQL(attributes: (
-        CreationAttributes<R> |
-        UpdateAttributes<R>
-    )[]): string {
-        return Array(attributes.length)
-            .fill(
-                this.placeholderSetSQL(
-                    this.bulkCreateColumns(attributes).length
-                )
-            )
-            .join(', ')
-    }
+    protected PKPattern(): any {
+        switch (this.relatedMetadata.columns.primary.pattern) {
+            case 'polymorphic-id': return {
+                [this.relatedPrimary]: `${this.related.name}_${UUIDV4()}`
+            }
 
-    // ------------------------------------------------------------------------
-
-    protected createValues<Att extends (
-        CreationAttributes<R> |
-        UpdateAttributes<R>
-    )>(
-        attributes: Att | Att[]
-    ): any[] | any[][] {
-        if (Array.isArray(attributes)) {
-            const columns = this.bulkCreateColumns(attributes) as (keyof Att)[]
-            return attributes.map(att => columns.map(col => att[col] ?? null))
+            default: return {}
         }
-
-        return Object.values(attributes)
     }
 
     // ------------------------------------------------------------------------
 
-    protected bulkCreateColumns(attributes: (
-        CreationAttributes<R> |
-        UpdateAttributes<R>
-    )[]): string[] {
-        return Array.from(new Set<string>(
-            attributes.flatMap(att => Object.keys(att))
-        ))
+    protected insertColumnsSQL(
+        attributes: RelationCreationAttributes<R>
+    ): string {
+        return this.attributesKeys(attributes).join(', ')
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected insertValuesSQL(
+        attributes: RelationCreationAttributes<R>
+    ): string {
+        return this.attributesValues(attributes)
+            .map(value => PropertySQLHelper.valueSQL(value))
+            .join(', ')
     }
 }

@@ -17,7 +17,7 @@ import type {
     Constructor,
     InstancesOf
 } from "."
-import type { EntityProperties, EntityRelations } from "../.."
+import type { EntityProperties, EntityRelations } from "../Properties"
 
 // Bases =============================================================================================================
 export type Entity = BaseEntity | BasePolymorphicEntity<any>

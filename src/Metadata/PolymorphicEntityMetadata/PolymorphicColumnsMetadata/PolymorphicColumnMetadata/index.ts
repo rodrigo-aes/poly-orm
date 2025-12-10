@@ -7,16 +7,18 @@ import type {
     PolymorphicEntityTarget
 } from "../../../../types"
 
-import type { ColumnMetadata } from "../../../EntityMetadata"
+import type { ColumnMetadata, ColumnPattern } from "../../../EntityMetadata"
 import type { PolymorphicColumnMetadataJSON } from "./types"
 
 export default class PolymorphicColumnMetadata {
     public primary?: boolean
     public isForeignKey?: boolean
+    public pattern?: ColumnPattern
 
     private static readonly commonPropsKeys: (keyof ColumnMetadata)[] = [
         'primary',
         'isForeignKey',
+        'pattern',
     ]
 
     constructor(
@@ -43,6 +45,7 @@ export default class PolymorphicColumnMetadata {
             name: this.name,
             primary: this.primary,
             isForeignKey: this.isForeignKey,
+            pattern: this.pattern,
         }
     }
 

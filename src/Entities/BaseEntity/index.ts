@@ -10,13 +10,13 @@ import type {
     Constructor,
     StaticEntityTarget
 } from "../../types"
-
+import type { Collection } from "../Components"
 import type { DeleteResult } from "../../Handlers"
 
 import type {
     CreationAttributes,
     UpdateAttributes,
-    UpdateOrCreateAttibutes,
+    UpdateOrCreateAttributes,
     ConditionalQueryOptions
 } from "../../SQLBuilders"
 
@@ -54,7 +54,13 @@ export default abstract class BaseEntity extends Entity {
      * @returns {this} - Same entity instance
      */
     public async save<T extends BaseEntity>(this: T): Promise<T> {
-        return this.getRepository().updateOrCreate(this, 'json') as Promise<T>
+        for (const { name } of this.getTrueMetadata().relations) if (
+            (this[name as keyof T] as Entity | Collection<any>).shouldUpdate
+        ) (
+            await (this[name as keyof T] as any).save()
+        )
+
+        return this.getRepository().updateOrCreate(this)
     }
 
     // ------------------------------------------------------------------------
@@ -171,7 +177,7 @@ export default abstract class BaseEntity extends Entity {
      */
     public static updateOrCreate<T extends EntityTarget>(
         this: T,
-        attributes: UpdateOrCreateAttibutes<InstanceType<T>>,
+        attributes: UpdateOrCreateAttributes<InstanceType<T>>,
     ): Promise<InstanceType<T>> {
         return (
             (this as StaticEntityTarget<T>)

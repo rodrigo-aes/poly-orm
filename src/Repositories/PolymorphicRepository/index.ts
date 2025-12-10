@@ -10,7 +10,7 @@ import {
 
     type CreationAttributes,
     type UpdateAttributes,
-    type UpdateOrCreateAttibutes,
+    type UpdateOrCreateAttributes,
     type ConditionalQueryOptions
 } from "../../SQLBuilders"
 
@@ -145,7 +145,7 @@ export default class PolymorphicRepository<
         M extends 'this' | 'source' = 'this'
     >(
         source: S,
-        attributes: UpdateOrCreateAttibutes<InstanceType<ResolveSource<T, S>>>,
+        attributes: UpdateOrCreateAttributes<InstanceType<ResolveSource<T, S>>>,
         mapTo?: M
     ): Promise<UpdateOrCreateQueryResult<Constructor<T>, S, M>> {
         return new MySQL2QueryExecutionHandler(

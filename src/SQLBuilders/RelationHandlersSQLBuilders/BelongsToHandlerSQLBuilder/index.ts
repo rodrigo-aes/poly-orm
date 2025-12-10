@@ -10,7 +10,10 @@ import type {
     OptionalNullable
 } from "../../../types"
 
-import { CreationAttributes } from "../../CreateSQLBuilder"
+import type {
+    RelationCreationAttributes,
+    RelationUpdateOrCreateAttributes
+} from "../OneRelationHandlerSQLBuilder"
 
 // Exceptions
 import PolyORMException from "../../../Errors"
@@ -49,7 +52,7 @@ export default class BelongsToHandlerSQLBuilder<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public override createSQL(_: CreationAttributes<R>): [string, any[]] {
+    public override createSQL(_: RelationCreationAttributes<R>): string {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'createSQL', this.constructor.name
         )
@@ -58,7 +61,7 @@ export default class BelongsToHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     public override updateOrCreateSQL(
-        _: Partial<OptionalNullable<EntityProperties<R>>>
+        _: RelationUpdateOrCreateAttributes<R>
     ): string {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'updateOrCreateSQL', this.constructor.name

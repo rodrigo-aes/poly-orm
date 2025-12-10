@@ -39,7 +39,7 @@ import type { DeleteResult } from "../../Handlers"
 import type {
     CreationAttributes,
     UpdateAttributes,
-    UpdateOrCreateAttibutes,
+    UpdateOrCreateAttributes,
     ConditionalQueryOptions,
 } from "../../SQLBuilders"
 
@@ -140,10 +140,16 @@ export default abstract class BasePolymorphicEntity<
     public async save<T extends BasePolymorphicEntity<any>>(this: T): (
         Promise<T>
     ) {
+        for (const { name } of this.getTrueMetadata().relations) if (
+            (this[name as keyof T] as Entity | Collection<any>).shouldUpdate
+        ) (
+            await (this[name as keyof T] as any).save()
+        )
+
         return this.getRepository().updateOrCreate(
             this.entityType,
             this.toSourceEntity()
-        ) as Promise<T>
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -333,7 +339,7 @@ export default abstract class BasePolymorphicEntity<
     >(
         this: T,
         source: S,
-        attributes: UpdateOrCreateAttibutes<ResolveSource<InstanceType<T>, S>>,
+        attributes: UpdateOrCreateAttributes<ResolveSource<InstanceType<T>, S>>,
         mapTo: 'this' | 'source' = 'this'
     ): Promise<Collection<InstanceType<T>>> {
         return (this as StaticPolymorphicEntityTarget<T>)

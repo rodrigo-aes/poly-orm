@@ -5,7 +5,6 @@ import type {
     Entity,
     CollectionTarget,
     EntityProperties,
-    EntityJSON
 } from "../../../types"
 import type { UpdateAttributes } from "../../../SQLBuilders"
 
@@ -18,6 +17,12 @@ export default class Collection<T extends Entity> extends Array<T> {
     }
 
     // Getters ================================================================
+    // Publics ----------------------------------------------------------------
+    /** @internal */
+    public get shouldUpdate(): boolean {
+        return true
+    }
+
     // Protecteds -------------------------------------------------------------
     /**
      * An array of properties keys that must be hidden in JSON
@@ -84,7 +89,10 @@ export default class Collection<T extends Entity> extends Array<T> {
      * @returns {this} - Same collection instance
      */
     public async save(): Promise<this> {
-        for (const entity of this) await (entity as any).save()
+        for (const entity of this) if (entity.shouldUpdate) (
+            await (entity as any).save()
+        )
+
         return this
     }
 

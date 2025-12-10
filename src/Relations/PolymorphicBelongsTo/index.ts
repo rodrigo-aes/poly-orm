@@ -12,7 +12,7 @@ import type {
     ResolveSource
 } from "../../Entities"
 import type { PolymorphicBelongsToMetadata } from "../../Metadata"
-import type { UpdateAttributes } from "../../SQLBuilders"
+import type { RelationUpdateAttributes } from "../../SQLBuilders"
 import type { ResultSetHeader } from "mysql2"
 import type { PolymorphicBelongsToRelated, PolymorphicBelongsTo } from "./types"
 
@@ -44,7 +44,7 @@ export class PolymorphicBelongsToHandler<
     // Protecteds -------------------------------------------------------------
     /** @internal */
     protected get sqlBuilder(): PolymorphicBelongsToHandlerSQLBuilder<
-        T, PolymorphicBelongsToRelated<R>
+        T, any
     > {
         return new PolymorphicBelongsToHandlerSQLBuilder(
             this.metadata,
@@ -65,7 +65,9 @@ export class PolymorphicBelongsToHandler<
     // ------------------------------------------------------------------------
 
     public update<T extends Source<R> = Source<R>>(
-        attributes: UpdateAttributes<ResolveSource<R, T>>,
+        attributes: RelationUpdateAttributes<Extract<
+            ResolveSource<R, T>, PolymorphicBelongsToRelated<R>
+        >>,
     ): Promise<ResultSetHeader> {
         return this.queryExecutionHandler.executeUpdate(
             this.sqlBuilder.updateSQL(attributes as any)

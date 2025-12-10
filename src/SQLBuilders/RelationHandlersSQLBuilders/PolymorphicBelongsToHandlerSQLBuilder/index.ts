@@ -7,19 +7,18 @@ import UnionSQLBuilder from "../../UnionSQLBuilder"
 import { InternalPolymorphicEntities } from "../../../Entities"
 
 // Helpers
-import { SQLStringHelper, PropertySQLHelper } from "../../../Helpers"
+import { PropertySQLHelper } from "../../../Helpers"
 
 // Types
 import type { PolymorphicBelongsToMetadata } from "../../../Metadata"
-import type {
-    Entity,
-    Constructor,
-    EntityProperties,
-    OptionalNullable
-} from "../../../types"
+import type { Entity, Constructor } from "../../../types"
 import type { BasePolymorphicEntity } from "../../../Entities"
-import type { CreationAttributes } from "../../CreateSQLBuilder"
-import type { UpdateAttributes } from "../../UpdateSQLBuilder"
+
+import type {
+    RelationCreationAttributes,
+    RelationUpdateAttributes,
+    RelationUpdateOrCreateAttributes
+} from "../OneRelationHandlerSQLBuilder"
 
 // Exceptions
 import PolyORMException from "../../../Errors"
@@ -116,7 +115,7 @@ export default class PolymorphicBelongsToHandlerSQLBuilder<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public override createSQL(_: CreationAttributes<R>): [string, any[]] {
+    public override createSQL(_: RelationCreationAttributes<R>): string {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'createSQL', this.constructor.name
         )
@@ -125,7 +124,7 @@ export default class PolymorphicBelongsToHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     public override updateOrCreateSQL(
-        _: Partial<OptionalNullable<EntityProperties<R>>>
+        _: RelationUpdateOrCreateAttributes<R>
     ): string {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'updateOrCreateSQL', this.constructor.name
@@ -134,14 +133,12 @@ export default class PolymorphicBelongsToHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public override updateSQL(attributes: Partial<EntityProperties<R>>): (
-        string
-    ) {
-        return SQLStringHelper.normalizeSQL(`
-            UPDATE ${this.sourceTable} ${this.sourceAlias}
-            ${this.setSQL(attributes)}
-            ${this.sourceWhereSQL}
-        `)
+    public override updateSQL(
+        attributes: RelationUpdateAttributes<R>
+    ): string {
+        return `UPDATE ${this.sourceTable} ${this.sourceAlias} ${(
+            this.setSQL(attributes)
+        )} ${this.sourceWhereSQL}`
     }
 
     // ------------------------------------------------------------------------
@@ -157,7 +154,9 @@ export default class PolymorphicBelongsToHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected override setValuesSQL(attributes: UpdateAttributes<R>): string {
+    protected override setValuesSQL(
+        attributes: RelationUpdateAttributes<R>
+    ): string {
         return Object
             .entries(this.onlyChangedAttributes(attributes))
             .map(([column, value]) => `${this.sourceAlias}.${column} = ${(

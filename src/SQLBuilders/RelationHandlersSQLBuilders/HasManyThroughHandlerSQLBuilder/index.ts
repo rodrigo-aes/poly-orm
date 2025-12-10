@@ -9,7 +9,10 @@ import type {
     Entity,
     Constructor
 } from "../../../types"
-import { CreationAttributes } from "../../CreateSQLBuilder"
+
+import type {
+    RelationCreationAttributes
+} from "../OneRelationHandlerSQLBuilder"
 
 // Exceptions
 import PolyORMException from "../../../Errors"
@@ -57,7 +60,7 @@ export default class HasManyThroughHandlerSQLBuilder<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public override createSQL(_: CreationAttributes<R>): [string, any[]] {
+    public override createSQL(_: RelationCreationAttributes<R>): string {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'createSQL', this.constructor.name
         )
@@ -65,9 +68,7 @@ export default class HasManyThroughHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public override createManySQL(_: CreationAttributes<R>[]): [
-        string, any[][]
-    ] {
+    public override createManySQL(_: RelationCreationAttributes<R>[]): string {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'updateOrCreateSQL', this.constructor.name
         )
@@ -75,11 +76,12 @@ export default class HasManyThroughHandlerSQLBuilder<
 
     // Protecteds -------------------------------------------------------------
     protected fixedWhereSQL(): string {
-        return `WHERE EXISTS (SELECT 1 FROM ${this.relatedTableAlias}
-            WHERE EXISTS (SELECT 1 FROM ${this.throughTable}
-                WHERE ${this.throughForeignKey} = ${this.targetPrimaryValue}
-                AND ${this.foreignKey} = ${this.throughPrimary}
-            )
-        )`
+        return `WHERE EXISTS (SELECT 1 FROM ${(
+            this.relatedTableAlias
+        )} WHERE EXISTS (SELECT 1 FROM ${(
+            this.throughTable
+        )} WHERE ${this.throughForeignKey} = ${(
+            this.targetPrimaryValueSQL
+        )} AND ${this.foreignKey} = ${this.throughPrimary}))`
     }
 }

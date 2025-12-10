@@ -238,7 +238,7 @@ export default class MySQL2QueryExecutionHandler<
 
     private async executeUpdate(): Promise<UpdateResult<T>> {
         const isEntity = (this.sqlBuilder as UpdateSQLBuilder<T>)
-            .attributes instanceof BaseEntity
+            ._attributes instanceof BaseEntity
 
         this.callBeforeUpdateHook(isEntity)
 
@@ -247,7 +247,7 @@ export default class MySQL2QueryExecutionHandler<
         ) as any
 
         const result = isEntity
-            ? (this.sqlBuilder as UpdateSQLBuilder<T>).attributes as (
+            ? (this.sqlBuilder as UpdateSQLBuilder<T>)._attributes as (
                 InstanceType<T>
             )
             : resultHeader
@@ -391,12 +391,12 @@ export default class MySQL2QueryExecutionHandler<
         await (
             single
                 ? this.metadata.hooks?.callBeforeUpdate(
-                    (this.sqlBuilder as UpdateSQLBuilder<T>).attributes,
+                    (this.sqlBuilder as UpdateSQLBuilder<T>)._attributes,
                     (this.sqlBuilder as UpdateSQLBuilder<T>).conditional
                 )
 
                 : this.metadata.hooks?.callBeforeBulkUpdate(
-                    (this.sqlBuilder as UpdateSQLBuilder<T>).attributes as (
+                    (this.sqlBuilder as UpdateSQLBuilder<T>)._attributes as (
                         UpdateAttributes<InstanceType<T>>
                     ),
                     (this.sqlBuilder as UpdateSQLBuilder<T>).conditional

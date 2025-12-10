@@ -1,26 +1,32 @@
 import RelationHandlerSQLBuilder from "../RelationHandlerSQLBuilder"
 
 // SQL Builders
-import { WhereSQLBuilder } from "../../ConditionalSQLBuilder"
-import UpdateOrCreateSQLBuilder, {
-    type UpdateOrCreateAttibutes
-} from "../../UpdateOrCreateSQLBuilder"
+import {
+    WhereSQLBuilder,
+    type ConditionalQueryOptions
+} from "../../ConditionalSQLBuilder"
 
-// Helpers
-import { SQLStringHelper, PropertySQLHelper } from "../../../Helpers"
+import UpdateOrCreateSQLBuilder from "../../UpdateOrCreateSQLBuilder"
 
 // Types
 import type { ManyRelationMetadatatype } from "../../../Metadata"
 
 import type {
     Entity,
-    Constructor,
     EntityTarget
 } from "../../../types"
 
-import type { ConditionalQueryOptions } from "../../ConditionalSQLBuilder"
-import type { CreationAttributes } from "../../CreateSQLBuilder"
-import type { UpdateAttributes } from "../../UpdateSQLBuilder"
+import type {
+    RelationCreationAttributes,
+    RelationUpdateAttributes,
+    RelationUpdateOrCreateAttributes
+} from "../OneRelationHandlerSQLBuilder"
+
+import type {
+    FindRelationQueryOptions,
+    RelationCreateManyAttributes,
+    RelationConditionalQueryOptions,
+} from "./types"
 
 export default abstract class ManyRelationHandlerSQLBuilder<
     RelationMetadata extends ManyRelationMetadatatype,
@@ -33,58 +39,42 @@ export default abstract class ManyRelationHandlerSQLBuilder<
 > {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public loadSQL(where?: ConditionalQueryOptions<R>): (
-        string
-    ) {
-        return SQLStringHelper.normalizeSQL(
-            `${this.selectSQL()} ${this.whereSQL(where)}`
-        )
+    public loadSQL(options?: FindRelationQueryOptions<R>): string {
+        return `${this.selectSQL()} ${this.whereSQL(options?.where)}`
     }
 
     // ------------------------------------------------------------------------
 
-    public loadOneSQL(
-        where?: ConditionalQueryOptions<R>
-    ): string {
-        return `${this.loadSQL(where)} LIMIT 1`
+    public loadOneSQL(options?: FindRelationQueryOptions<R>): string {
+        return `${this.loadSQL(options)} LIMIT 1`
     }
 
     // ------------------------------------------------------------------------
 
-    public createSQL(attributes: CreationAttributes<R>): (
-        [string, any[]]
-    ) {
-        return [
-            SQLStringHelper.normalizeSQL(`
-                INSERT INTO ${this.relatedTable}
-                (${this.insertColumnsSQL(attributes)})
-                VALUES (${this.placeholderSetSQL(attributes)})   
-            `),
-            this.createValues(attributes)
-        ]
+    public createSQL(attributes: RelationCreationAttributes<R>): string {
+        return `INSERT INTO ${this.relatedTable} (${(
+            this.insertColumnsSQL(attributes)
+        )}) VALUES (${this.insertValuesSQL(attributes)})`
     }
 
     // ------------------------------------------------------------------------
 
     public createManySQL(
-        attributes: CreationAttributes<R>[]
-    ): [string, any[][]] {
-        return [
-            SQLStringHelper.normalizeSQL(`
-                INSERT INTO ${this.relatedTable}
-                (${this.bulkCreateColumns(attributes).join(', ')})
-                VALUES (${this.bulkPlaceholderSQL(attributes)})   
-            `),
-            this.createValues(attributes)
-        ]
+        attributes: RelationCreateManyAttributes<R>
+    ): string {
+        return `INSERT INTO ${this.relatedTable} (${(
+            this.bulkInsertColumns(attributes)
+        )}) VALUES ${this.bulkInsertValuesSQL(attributes)}`
     }
 
     // ------------------------------------------------------------------------
 
-    public updateOrCreateSQL(attributes: UpdateOrCreateAttibutes<R>): string {
+    public updateOrCreateSQL(
+        attributes: RelationUpdateOrCreateAttributes<R>
+    ): string {
         return new UpdateOrCreateSQLBuilder(
             this.related as EntityTarget,
-            this.mergeAttributes(attributes)
+            this.creationAttributes(attributes)
         )
             .SQL()
     }
@@ -92,48 +82,64 @@ export default abstract class ManyRelationHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     public updateSQL(
-        attributes: UpdateAttributes<R>,
-        where?: ConditionalQueryOptions<R>
+        attributes: RelationUpdateAttributes<R>,
+        where?: RelationConditionalQueryOptions<R>
     ): string {
-        return SQLStringHelper.normalizeSQL(
-            `UPDATE ${this.relatedTable}
-            ${this.setSQL(attributes)}
-            ${this.whereSQL(where)}
-        `)
+        return `UPDATE ${this.relatedTable} ${this.setSQL(attributes)} ${(
+            this.whereSQL(where)
+        )}`
     }
 
     // ------------------------------------------------------------------------
 
-    public deleteSQL(where?: ConditionalQueryOptions<R>): string {
+    public deleteSQL(where?: RelationConditionalQueryOptions<R>): string {
         return `DELETE FROM ${this.relatedTable} ${this.whereSQL(where)}`
     }
 
     // Protecteds -------------------------------------------------------------
-    protected whereSQL(where?: ConditionalQueryOptions<R>): string {
+    protected whereSQL(where?: RelationConditionalQueryOptions<R>): string {
         return this.fixedWhereSQL() + this.andSQL(where)
     }
 
     // ------------------------------------------------------------------------
 
-    protected andSQL(where?: ConditionalQueryOptions<R>): string {
+    protected andSQL(where?: RelationConditionalQueryOptions<R>): string {
         return where
             ? ` AND ${(
-                new WhereSQLBuilder(this.related, where).conditionalSQL()
+                new WhereSQLBuilder(
+                    this.related,
+                    where as ConditionalQueryOptions<R>
+                )
+                    .conditionalSQL()
             )}`
             : ''
     }
 
     // ------------------------------------------------------------------------
 
-    protected insertColumnsSQL(attributes: CreationAttributes<R>): string {
-        return this.attributesKeys(attributes).join(', ')
+    protected bulkInsertColumns(
+        attributes: RelationCreateManyAttributes<R>
+    ): string {
+        return Array
+            .from(new Set(attributes.flatMap(
+                att => Object.keys(this.creationAttributes(att))
+            )))
+            .join(', ')
     }
 
     // ------------------------------------------------------------------------
 
-    protected insertValuesSQL(attributes: CreationAttributes<R>): string {
-        return this.attributesValues(attributes)
-            .map(value => PropertySQLHelper.valueSQL(value))
+    protected bulkInsertValuesSQL(
+        attributes: RelationCreateManyAttributes<R>
+    ): string {
+        return attributes
+            .map(att => `(${this.insertValuesSQL(att)})`)
             .join(', ')
     }
+}
+
+export type {
+    FindRelationQueryOptions,
+    RelationCreateManyAttributes,
+    RelationConditionalQueryOptions,
 }

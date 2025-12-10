@@ -85,7 +85,6 @@ import type {
 // Exceptions
 import PolyORMException from "../Errors"
 
-
 export default abstract class Entity {
     public static readonly INHERIT_HOOKS: boolean = true
     public static readonly INHERIT_ONLY_HOOKS?: HookType[]
@@ -106,6 +105,13 @@ export default abstract class Entity {
      */
     public get include(): string[] {
         return []
+    }
+
+    // ------------------------------------------------------------------------
+
+    /** @internal */
+    public get shouldUpdate(): boolean {
+        return ColumnsSnapshots.shouldUpdate(this as any)
     }
 
     // Protecteds -------------------------------------------------------------
@@ -153,6 +159,12 @@ export default abstract class Entity {
      */
     public toObject<T extends EntityT>(this: T): EntityObject<T> {
         return Object.fromEntries(this.entries()) as EntityObject<T>
+    }
+
+    // ------------------------------------------------------------------------
+
+    public columns<T extends EntityT>(this: T): EntityProperties<T> {
+        return Object.fromEntries(this.columnsEntries()) as EntityProperties<T>
     }
 
     // ------------------------------------------------------------------------
@@ -557,7 +569,7 @@ export default abstract class Entity {
             .computedProperties
             ?.assign(instance)
 
-        ColumnsSnapshots.set(instance, instance.toObject())
+        ColumnsSnapshots.set(instance, instance.columns())
 
         return instance
     }

@@ -4,8 +4,12 @@ import {
     MetadataHandler
 } from "../../Metadata"
 
-import { BaseEntity, ColumnsSnapshots } from "../../Entities"
-import { BasePolymorphicEntity } from "../../Entities"
+import {
+    Entity,
+    BaseEntity,
+    BasePolymorphicEntity,
+    ColumnsSnapshots
+} from "../../Entities"
 
 // SQL Builders
 import ConditionalSQLBuilder from "../ConditionalSQLBuilder"
@@ -25,12 +29,11 @@ import type { UpdateAttributes, UpdateAttributesKeys } from "./types"
 export default class UpdateSQLBuilder<T extends Target> {
     protected metadata: TargetMetadata<T>
 
-    private _propertiesNames?: UpdateAttributesKeys<InstanceType<T>>
-    private _values?: any[]
+    private filtered: boolean = false
 
     constructor(
         public target: T,
-        public attributes: (
+        public _attributes: (
             UpdateAttributes<InstanceType<T>> |
             BaseEntity |
             BasePolymorphicEntity<any>
@@ -41,31 +44,34 @@ export default class UpdateSQLBuilder<T extends Target> {
         this.metadata = MetadataHandler.targetMetadata(this.target)
         this.applyConditionalScope()
 
-        if (this.attributes instanceof BasePolymorphicEntity) (
-            this.attributes = this.attributes.toSourceEntity()
+        if (this._attributes instanceof BasePolymorphicEntity) (
+            this._attributes = this._attributes.toSourceEntity()
         )
     }
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get columns(): UpdateAttributesKeys<InstanceType<T>> {
-        return this._propertiesNames = this._propertiesNames ?? Array.from(
-            new Set(this.propertyNames())
-        )
-    }
-
-    // ------------------------------------------------------------------------
-
-    public get values(): any[] {
-        return this._values ?? this.getValues()
+    public get attributes(): UpdateAttributes<InstanceType<T>> {
+        return (
+            this.filtered
+                ? this._attributes
+                : Object.fromEntries(
+                    Object.entries(
+                        this._attributes instanceof Entity
+                            ? ColumnsSnapshots.changed(this._attributes)
+                            : this._attributes
+                    )
+                        .filter(([key]) => this.metadata.columns.search(key))
+                )
+        ) as UpdateAttributes<InstanceType<T>>
     }
 
     // Protecteds -------------------------------------------------------------
     protected get targetMetadata(): EntityMetadata {
         return this.metadata instanceof PolymorphicEntityMetadata
-            ? this.metadata.sourcesMetadata[
-            (this.attributes as BasePolymorphicEntity<any>).entityType
-            ]
+            ? this.metadata.sourcesMetadata[(
+                (this._attributes as BasePolymorphicEntity<any>).entityType
+            )]
             : this.metadata
     }
 
@@ -114,6 +120,16 @@ export default class UpdateSQLBuilder<T extends Target> {
             : ''
     }
 
+    // ------------------------------------------------------------------------
+
+    public setValuesSQL(): string {
+        return Object.entries(this.attributes)
+            .map(([col, val]) => `${this.alias}.${col} = ${(
+                PropertySQLHelper.valueSQL(val)
+            )}`)
+            .join(', ')
+    }
+
     // Privates ---------------------------------------------------------------
     private applyConditionalScope(): void {
         if (this.conditional) this.conditional = (
@@ -123,47 +139,6 @@ export default class UpdateSQLBuilder<T extends Target> {
                 this.conditional
             )
         )
-    }
-    // ------------------------------------------------------------------------
-
-    private propertyNames(attributes?: UpdateAttributesKeys<InstanceType<T>>): (
-        UpdateAttributesKeys<InstanceType<T>>
-    ) {
-        return Object
-            .keys(attributes ?? this.attributes!)
-            .filter(key => this.metadata.columns.search(key)) as (
-                UpdateAttributesKeys<InstanceType<T>>
-            )
-    }
-
-    // ------------------------------------------------------------------------
-
-    private getValues(): any[] {
-        return this.columns.map(column =>
-            (this.attributes as UpdateAttributes<InstanceType<T>>)[column]
-            ?? null
-        )
-    }
-
-    // ------------------------------------------------------------------------
-
-    private setValuesSQL(): string {
-        return Object.entries(this.updatedAttributes())
-            .map(([col, val]) => `${this.alias}.${col} = ${(
-                PropertySQLHelper.valueSQL(val)
-            )}`)
-            .join(', ')
-    }
-
-    // ------------------------------------------------------------------------
-
-    private updatedAttributes(): any {
-        return (
-            this.attributes instanceof BaseEntity ||
-            this.attributes instanceof BasePolymorphicEntity
-        )
-            ? ColumnsSnapshots.changed(this.attributes)
-            : this.attributes
     }
 }
 

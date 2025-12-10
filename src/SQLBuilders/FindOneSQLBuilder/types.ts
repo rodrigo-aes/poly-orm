@@ -1,4 +1,4 @@
-import type { Entity, EntityTarget } from "../../types"
+import type { Entity } from "../../types"
 
 import type { SelectOptions } from "../SelectSQLBuilder"
 import type { ConditionalQueryOptions } from "../ConditionalSQLBuilder"

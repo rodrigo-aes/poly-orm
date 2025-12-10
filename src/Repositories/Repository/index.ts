@@ -9,7 +9,7 @@ import {
     DeleteSQLBuilder,
     type CreationAttributes,
     type UpdateAttributes,
-    type UpdateOrCreateAttibutes,
+    type UpdateOrCreateAttributes,
     type ConditionalQueryOptions,
 } from "../../SQLBuilders"
 
@@ -116,7 +116,7 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
      * @returns - A entity instance for updated or created register
      */
     public updateOrCreate(
-        attributes: UpdateOrCreateAttibutes<T>,
+        attributes: UpdateOrCreateAttributes<T>,
         mapTo: ResultMapOption = 'entity'
     ): Promise<T> {
         return new MySQL2QueryExecutionHandler(

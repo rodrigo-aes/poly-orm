@@ -20,7 +20,7 @@ import {
 } from "./Components"
 
 export {
-    type Entity,
+    Entity,
     BaseEntity,
     BasePolymorphicEntity,
 

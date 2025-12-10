@@ -4,7 +4,11 @@ import ManyRelation from ".."
 import { Collection } from "../../../Entities"
 
 // Types
-import type { Constructor, Entity } from "../../../types"
+import type {
+    Constructor,
+    Entity,
+    ExcludeRelationAttributes
+} from "../../../types"
 import type {
     HasManyMetadata,
     PolymorphicHasManyMetadata,
@@ -12,8 +16,8 @@ import type {
 } from "../../../Metadata"
 
 import type {
-    CreationAttributes,
-    UpdateOrCreateAttibutes
+    RelationCreationAttributes,
+    RelationUpdateOrCreateAttributes
 } from "../../../SQLBuilders"
 
 /** Has many relation handler */
@@ -62,10 +66,10 @@ export default abstract class HasManyRelation<
      * @param attributes - Related entity creation attributes
      * @returns - Related entity instance
      */
-    public async create(attributes: CreationAttributes<R>): Promise<R> {
+    public async create(attributes: RelationCreationAttributes<R>): Promise<R> {
         const instance = await this.queryExecutionHandler.executeCreate(
             this.sqlBuilder.createSQL(attributes),
-            attributes
+            (this.sqlBuilder.creationAttributes as any)(attributes)
         )
         this.instances.push(instance)
 
@@ -79,10 +83,10 @@ export default abstract class HasManyRelation<
      * @param attributes - An array of creation attributes data
      * @returns - Related entity instances
      */
-    public async createMany(attributes: CreationAttributes<R>[]): Promise<R[]> {
+    public async createMany(attributes: RelationCreationAttributes<R>[]): Promise<R[]> {
         const instances = await this.queryExecutionHandler.executeCreateMany(
             this.sqlBuilder.createManySQL(attributes),
-            attributes
+            (this.sqlBuilder.creationAttributes as any)(attributes)
         )
         this.instances.push(...instances)
 
@@ -96,9 +100,9 @@ export default abstract class HasManyRelation<
      * @param attributes - Update or create attributes data
      * @returns - Related entity instance
      */
-    public async updateOrCreate(attributes: UpdateOrCreateAttibutes<R>): (
-        Promise<R>
-    ) {
+    public async updateOrCreate(
+        attributes: RelationUpdateOrCreateAttributes<R>
+    ): Promise<R> {
         const instance = await this.queryExecutionHandler.executeUpdateOrCreate(
             this.sqlBuilder.updateOrCreateSQL(attributes)
         )

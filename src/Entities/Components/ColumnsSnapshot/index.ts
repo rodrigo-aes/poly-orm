@@ -1,3 +1,6 @@
+// Types
+import type { Entity } from "../../../types"
+
 class ColumnsSnapshots extends WeakMap<object, any> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
@@ -7,13 +10,20 @@ class ColumnsSnapshots extends WeakMap<object, any> {
 
     // ------------------------------------------------------------------------
 
-    public changed(entity: object): any {
-        return Object.fromEntries(Object.entries(this.get(entity)).flatMap(
-            ([column, value]) =>
-                entity[column as keyof object] !== value
-                    ? [[column, entity[column as keyof object]]]
-                    : []
-        ))
+    public shouldUpdate(entity: Entity): boolean {
+        return Object.entries(this.get(entity)).some(
+            ([column, value]) => entity[column as keyof object] !== value
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
+    public changed(entity: Entity): any {
+        return Object.entries(this.get(entity)).flatMap(
+            ([column, value]) => entity[column as keyof object] !== value
+                ? [[column, entity[column as keyof object]]]
+                : []
+        )
     }
 }
 

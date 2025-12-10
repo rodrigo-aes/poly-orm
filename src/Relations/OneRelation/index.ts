@@ -12,8 +12,11 @@ import {
 import type { ResultSetHeader } from "mysql2"
 import type { Entity, Constructor, EntityJSON } from "../../types"
 import type { OneRelationMetadataType } from "../../Metadata"
-import type { OneRelationHandlerSQLBuilder } from "../../SQLBuilders"
-import type { UpdateAttributes } from "../../SQLBuilders"
+import type {
+    OneRelationHandlerSQLBuilder,
+    RelationUpdateAttributes,
+} from "../../SQLBuilders"
+
 
 /**
  * One to one relation handler
@@ -60,7 +63,7 @@ export default abstract class OneRelation<T extends Entity, R extends Entity> {
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected abstract get sqlBuilder(): OneRelationHandlerSQLBuilder
+    protected abstract get sqlBuilder(): OneRelationHandlerSQLBuilder<T, R>
 
     // ------------------------------------------------------------------------
 
@@ -95,7 +98,9 @@ export default abstract class OneRelation<T extends Entity, R extends Entity> {
      * @param attributes - Update attributes data
      * @returns - Result header containing details of operation
      */
-    public update(attributes: UpdateAttributes<R>): Promise<ResultSetHeader> {
+    public update(attributes: RelationUpdateAttributes<R>): Promise<
+        ResultSetHeader
+    > {
         return this.queryExecutionHandler.executeUpdate(
             this.sqlBuilder.updateSQL(attributes)
         )

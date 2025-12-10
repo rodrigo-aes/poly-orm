@@ -53,6 +53,7 @@ export default class ConditionalQueryJoinsHandler<T extends Target> {
         metadata: TargetMetadata<any> = this.metadata,
         alias: string = this.alias
     ): JoinSQLBuilder<any>[] {
+        console.log('key:', key)
         const [first, ...rest] = key.split('.')
         current += first
 

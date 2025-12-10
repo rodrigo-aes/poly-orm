@@ -92,6 +92,13 @@ export default abstract class Procedure<
     // Protecteds -------------------------------------------------------------
     protected abstract proccessSQL(): string
 
+    // ------------------------------------------------------------------------
+
+    /** @internal */
+    protected callInArgsSQL(...args: In[1]): string[] {
+        return args.map(arg => PropertySQLHelper.valueSQL(arg))
+    }
+
     // Privates ---------------------------------------------------------------
     private dropIfExistsSQL(): string {
         return `DROP PROCEDURE IF EXISTS ${this.name}`
@@ -136,12 +143,6 @@ export default abstract class Procedure<
                 this.callOutArgsSQL()
             )
             .join(', ')
-    }
-
-    // ------------------------------------------------------------------------
-
-    private callInArgsSQL(...args: In[1]): string[] {
-        return args.map(arg => PropertySQLHelper.valueSQL(arg))
     }
 
     // ------------------------------------------------------------------------

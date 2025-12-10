@@ -1,3 +1,5 @@
+import { MetadataHandler } from "../../Metadata"
+
 // Symbols
 import { Literal } from "../../SQLBuilders"
 import { Old, New } from "../../Triggers"
@@ -28,7 +30,9 @@ export default class PropertySQLHelper {
 
             case "object": switch (true) {
                 case value === null: return 'NULL'
-                case value instanceof Date: return `'${value.toISOString()}'`
+                case value instanceof Date: return `'${(
+                    value.toISOString().slice(0, 19).replace('T', ' ')
+                )}'`
                 case this.hasSymbols(value): return this.handleSymbolValue(
                     value, target
                 )

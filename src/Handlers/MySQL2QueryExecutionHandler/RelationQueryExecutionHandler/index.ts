@@ -28,9 +28,7 @@ import type {
 import type { MySQL2RawData } from "../../MySQL2RawDataHandler"
 import type { DeleteResult } from "../types"
 
-export default class RelationQueryExecutionHandler<
-    T extends BaseEntity | BasePolymorphicEntity<any>
-> {
+export default class RelationQueryExecutionHandler<T extends Entity> {
     protected metadata: TargetMetadata<Constructor<T>>
 
     constructor(public target: Constructor<T>) {
@@ -56,15 +54,12 @@ export default class RelationQueryExecutionHandler<
     // ------------------------------------------------------------------------
 
     public async executeCreate(
-        sql: [string, any[]],
+        sql: string,
         attributes: CreationAttributes<T>
     ): Promise<T> {
-        const resultHeader: ResultSetHeader = await this.metadata.connection
-            .query(...sql) as any
-
         return this.entityBuilder(
             attributes,
-            resultHeader.insertId
+            (await this.metadata.connection.query(sql) as any).insertId
         )
             .build() as T
     }
@@ -72,29 +67,25 @@ export default class RelationQueryExecutionHandler<
     // ------------------------------------------------------------------------
 
     public async executeCreateMany(
-        sql: [string, any[][]],
+        sql: string,
         attributes: CreationAttributes<T>[]
     ): Promise<Collection<T>> {
-        const resultHeader: ResultSetHeader = await this.metadata.connection
-            .query(...sql) as any
-
         return this.entityBuilder(
             attributes,
-            resultHeader.insertId
+            (await this.metadata.connection.query(sql) as any).insertId
         )
             .build() as Collection<T>
     }
 
     // ------------------------------------------------------------------------
 
-    public async executeUpdateOrCreate(
-        sql: string,
-    ): Promise<T> {
-        const [mySQL2RawData] = await this.metadata.connection.query(sql)
-
+    public async executeUpdateOrCreate(sql: string): Promise<T> {
         return this
-            .rawDataHandler('One', mySQL2RawData)
-            .entity(mySQL2RawData) as T
+            .rawDataHandler(
+                'One',
+                (await this.metadata.connection.query(sql) as any[])[0]
+            )
+            .entity() as T
     }
 
     // ------------------------------------------------------------------------

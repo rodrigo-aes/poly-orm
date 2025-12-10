@@ -32,6 +32,12 @@ class UpdateOrCreate<T extends any[] = any[]> extends Procedure<
             DEALLOCATE PREPARE stmt;
         `
     }
+
+    // ------------------------------------------------------------------------
+
+    protected override callInArgsSQL(...args: In[1]): string[] {
+        return args.map(arg => `"${arg}"`)
+    }
 }
 
 export default new UpdateOrCreate

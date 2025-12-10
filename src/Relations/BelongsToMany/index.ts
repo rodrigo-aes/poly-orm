@@ -58,10 +58,9 @@ export class BelongsToManyHandler<
     public override async create(attributes: CreationAttributes<R>): Promise<R> {
         const entity = await super.create(attributes)
 
-        await this.queryExecutionHandler
-            .executeVoidOperation(
-                ...this.sqlBuilder.createForeingKeysSQL(entity)
-            )
+        await this.queryExecutionHandler.executeVoidOperation(
+            this.sqlBuilder.createForeingKeysSQL(entity)
+        )
 
         return entity
     }
@@ -73,10 +72,9 @@ export class BelongsToManyHandler<
     ) {
         const entities = await super.createMany(attributes)
 
-        await this.queryExecutionHandler
-            .executeVoidOperation(
-                ...this.sqlBuilder.createForeingKeysSQL(entities)
-            )
+        await this.queryExecutionHandler.executeVoidOperation(
+            this.sqlBuilder.createForeingKeysSQL(entities)
+        )
 
         return entities
     }
@@ -88,8 +86,9 @@ export class BelongsToManyHandler<
      * @param relateds - Array of related entity instance or primary key
      */
     public attach(...relateds: (R | any)[]): Promise<void> {
-        return this.queryExecutionHandler
-            .executeVoidOperation(this.sqlBuilder.attachSQL(relateds))
+        return this.queryExecutionHandler.executeVoidOperation(
+            this.sqlBuilder.attachSQL(relateds)
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -99,8 +98,9 @@ export class BelongsToManyHandler<
      * @param relateds - Array of related entity instance or primary key
      */
     public detach(...relateds: (R | any)[]): Promise<void> {
-        return this.queryExecutionHandler
-            .executeVoidOperation(this.sqlBuilder.detachSQL(relateds))
+        return this.queryExecutionHandler.executeVoidOperation(
+            this.sqlBuilder.detachSQL(relateds)
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -110,8 +110,9 @@ export class BelongsToManyHandler<
      * @param relateds - Array of related entity instance or primary key
      */
     public sync(...relateds: (R | any)[]): Promise<void> {
-        return this.queryExecutionHandler
-            .executeVoidOperation(this.sqlBuilder.syncSQL(relateds))
+        return this.queryExecutionHandler.executeVoidOperation(
+            this.sqlBuilder.syncSQL(relateds)
+        )
     }
 }
 

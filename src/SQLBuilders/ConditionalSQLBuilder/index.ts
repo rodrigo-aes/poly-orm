@@ -42,7 +42,7 @@ export default class ConditionalSQLBuilder {
     public static where<T extends Target>(
         target: T,
         options: ConditionalQueryOptions<InstanceType<T>>,
-        alias?: string
+        alias?: string,
     ): WhereSQLBuilder<T> {
         return new WhereSQLBuilder(target, options, alias)
     }

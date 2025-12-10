@@ -29,8 +29,6 @@ export default class CreateSQLBuilder<T extends EntityTarget> {
     private _values?: any[]
 
     private _patternNames?: CreationAttributesKey<InstanceType<T>>[]
-    private _patternValues: Partial<CreationAttributes<InstanceType<T>>> = {}
-
     private _mapped?: CreationAttributesOptions<InstanceType<T>>
 
     constructor(

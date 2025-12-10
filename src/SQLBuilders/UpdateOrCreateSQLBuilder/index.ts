@@ -1,48 +1,56 @@
 import { EntityMetadata } from "../../Metadata"
+import { BaseEntity } from "../../Entities"
 
 // Procedures
 import { UpdateOrCreate } from "../Procedures"
 
 // SQL Builder
+import CreateSQLBuilder from "../CreateSQLBuilder"
 import FindOneSQLBuilder from "../FindOneSQLBuilder"
 
 // Helpers
-import { SQLStringHelper, PropertySQLHelper } from "../../Helpers"
+import { SQLStringHelper } from "../../Helpers"
 
 // Types
 import type { EntityTarget } from "../../types"
-import type { UpdateOrCreateAttibutes } from "./types"
+import type { UpdateOrCreateAttributes } from "./types"
 import type { EntityPropertiesKeys } from "../../types"
 
 export default class UpdateOrCreateSQLBuilder<T extends EntityTarget> {
     protected metadata: EntityMetadata
 
+    private createSQLBuilder: CreateSQLBuilder<T>
     private _columns: EntityPropertiesKeys<InstanceType<T>>[] = []
     private _values: any[] = []
 
     constructor(
         public target: T,
-        public attributes: UpdateOrCreateAttibutes<InstanceType<T>>,
+        public _attributes: BaseEntity | UpdateOrCreateAttributes<
+            InstanceType<T>
+        >,
         public alias: string = target.name.toLowerCase()
     ) {
         this.metadata = EntityMetadata.findOrThrow(this.target)
-        this.mergeAttributes()
+        this.createSQLBuilder = new CreateSQLBuilder(
+            this.target,
+            this.attributes,
+            this.alias
+        )
     }
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get columns(): EntityPropertiesKeys<InstanceType<T>>[] {
-        return this._columns = this._columns ?? Object.keys(
-            this.mergeAttributes()
-        )
-    }
-
-    // ------------------------------------------------------------------------
-
-    public get columnValues(): any[] {
-        return this._values = this._values ?? Object.values(
-            this.mergeAttributes()
-        )
+    public get attributes(): UpdateOrCreateAttributes<InstanceType<T>> {
+        return {
+            ...(
+                this._attributes instanceof BaseEntity
+                    ? this._attributes.columns()
+                    : this._attributes
+            ),
+            ...Object.fromEntries(this._columns.map(
+                (column, index) => [column, this._values[index]]
+            ))
+        } as UpdateOrCreateAttributes<InstanceType<T>>
     }
 
     // Instance Methods =======================================================
@@ -61,11 +69,10 @@ export default class UpdateOrCreateSQLBuilder<T extends EntityTarget> {
 
     // ------------------------------------------------------------------------
 
-    public setData(attributes: UpdateOrCreateAttibutes<InstanceType<T>>): (
+    public setData(attributes: UpdateOrCreateAttributes<InstanceType<T>>): (
         this
     ) {
-        this.attributes = attributes
-        this.mergeAttributes()
+        this._attributes = attributes
 
         return this
     }
@@ -81,11 +88,17 @@ export default class UpdateOrCreateSQLBuilder<T extends EntityTarget> {
     // ------------------------------------------------------------------------
 
     public insertOrUpdateSQL(): string {
-        return SQLStringHelper.normalizeSQL(`
-            INSERT INTO ${this.metadata.tableName} (${this.propertiesSQL()}) 
-            VALUES (${this.valuesSQL()})
-            ON DUPLICATE KEY UPDATE ${this.updateSQL()}
-        `)
+        return `${this.createSQLBuilder.SQL()} ON DUPLICATE KEY UPDATE ${(
+            this.updateValuesSQL()
+        )}`
+    }
+
+    // ------------------------------------------------------------------------
+
+    public updateValuesSQL(): string {
+        return this.createSQLBuilder.columnsNames
+            .map((column: string) => `${column} = VALUES(${column})`)
+            .join(', ')
     }
 
     // ------------------------------------------------------------------------
@@ -93,52 +106,15 @@ export default class UpdateOrCreateSQLBuilder<T extends EntityTarget> {
     public selectSQL(): string {
         return new FindOneSQLBuilder(
             this.target,
-            { where: this.mergeAttributes() as any },
+            {
+                where: this.attributes as any
+            },
             this.alias
         )
             .SQL()
     }
-
-    // Privates ---------------------------------------------------------------
-    private propertiesSQL(): string {
-        return this.columns.join(', ')
-    }
-
-    // ------------------------------------------------------------------------
-
-    private valuesSQL(): string {
-        return this.columnValues
-            .map(value => PropertySQLHelper.valueSQL(value))
-            .join(', ')
-    }
-
-    // ------------------------------------------------------------------------
-
-    private updateSQL(): string {
-        return this.columns
-            .map((prop) => `${prop} = VALUES(${prop})`)
-            .join(', ')
-    }
-
-    // ------------------------------------------------------------------------
-
-    private mergeAttributes(): UpdateOrCreateAttibutes<InstanceType<T>> {
-        this.attributes = {
-            ...this.attributes,
-            ...Object.fromEntries(
-                this._columns.map((key, index) => [key, this._values[index]])
-            )
-        }
-
-        this._columns = Object.keys(this.attributes) as (
-            EntityPropertiesKeys<InstanceType<T>>[]
-        )
-        this._values = Object.values(this.attributes)
-
-        return this.attributes
-    }
 }
 
 export {
-    type UpdateOrCreateAttibutes
+    type UpdateOrCreateAttributes
 }

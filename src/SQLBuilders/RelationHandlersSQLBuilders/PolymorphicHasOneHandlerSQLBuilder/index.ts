@@ -68,10 +68,8 @@ export default class PolymorphicHasOneHandlerSQLBuilder<
     // Instance Methods =======================================================
     // Protecteds -------------------------------------------------------------
     protected fixedWhereSQL(): string {
-        return (
-            `WHERE ${this.aliasedForeignKey} = ${this.targetPrimaryValue}` + (
-                this.andTypeKeySQL
-            )
-        )
+        return `WHERE ${this.aliasedForeignKey} = ${(
+            this.targetPrimaryValueSQL
+        )}` + this.andTypeKeySQL
     }
 }

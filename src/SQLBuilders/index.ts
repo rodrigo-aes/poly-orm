@@ -25,7 +25,7 @@ import CreateSQLBuilder, {
 import UpdateSQLBuilder, { type UpdateAttributes } from "./UpdateSQLBuilder"
 
 import UpdateOrCreateSQLBuilder, {
-    type UpdateOrCreateAttibutes
+    type UpdateOrCreateAttributes
 } from "./UpdateOrCreateSQLBuilder"
 
 import DeleteSQLBuilder from "./DeleteSQLBuilder"
@@ -46,6 +46,11 @@ import {
     type RelationHandlerSQLBuilder,
     type OneRelationHandlerSQLBuilder,
     type ManyRelationHandlerSQLBuilder,
+    type FindRelationQueryOptions,
+    type RelationCreationAttributes,
+    type RelationUpdateAttributes,
+    type RelationUpdateOrCreateAttributes,
+    type RelationConditionalQueryOptions
 } from './RelationHandlersSQLBuilders'
 
 import {
@@ -162,7 +167,7 @@ export {
     type CreationAttributesOptions,
     type CreationAttibutesKey,
     type UpdateAttributes,
-    type UpdateOrCreateAttibutes,
+    type UpdateOrCreateAttributes,
     type SelectOptions,
     type SelectPropertyOptions,
     type SelectPropertyKey,
@@ -179,6 +184,11 @@ export {
     type RelationHandlerSQLBuilder,
     type OneRelationHandlerSQLBuilder,
     type ManyRelationHandlerSQLBuilder,
+    type FindRelationQueryOptions,
+    type RelationCreationAttributes,
+    type RelationUpdateAttributes,
+    type RelationUpdateOrCreateAttributes,
+    type RelationConditionalQueryOptions,
 
     type CompatibleOperators,
     type CaseQueryOptions,
