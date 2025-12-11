@@ -28,10 +28,19 @@ import type { Repository } from "../../Repositories"
  * class User extends BaseEntity {}
  */
 export default abstract class BaseEntity extends Entity {
-    /** Entity name */
-    public abstract readonly __name: string
+    /** @internal */
+    declare readonly __name: string
 
     public static readonly INHERIT_POLYMORPHIC_RELATIONS = false
+
+    constructor() {
+        super()
+
+        Object.defineProperty(this, '__name', {
+            get() { return this.constructor.name },
+            enumerable: false,
+        })
+    }
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
