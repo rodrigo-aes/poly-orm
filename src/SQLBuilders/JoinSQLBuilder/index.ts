@@ -15,14 +15,16 @@ import UnionSQLBuilder from "../UnionSQLBuilder"
 
 // Types
 import type {
+    Entity,
     Target,
+    Constructor,
     PolymorphicEntityTarget,
     TargetMetadata
 } from "../../types"
 import type { RelationMetadataType } from "../../Metadata"
 import type { RelationOptions, RelationsOptions } from "./types"
 
-export default class JoinSQLBuilder<T extends Target> {
+export default class JoinSQLBuilder<T extends Entity> {
     private relatedMetadata: TargetMetadata<any>
 
     public required?: boolean
@@ -33,7 +35,7 @@ export default class JoinSQLBuilder<T extends Target> {
     private _unionSQLBuilders?: UnionSQLBuilder[]
 
     constructor(
-        public target: T,
+        public target: Constructor<T>,
         public relation: RelationMetadataType,
         options?: Omit<RelationOptions<any>, 'relations'>,
         public alias: string = target.name.toLowerCase(),

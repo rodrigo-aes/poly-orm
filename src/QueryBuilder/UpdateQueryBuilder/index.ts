@@ -9,7 +9,7 @@ import {
 import ConditionalQueryBuilder from "../ConditionalQueryBuilder"
 
 // Handlers
-import { MySQL2QueryExecutionHandler } from "../../Handlers"
+import { MySQLOperation } from "../../Handlers"
 
 // Types
 import type { ResultSetHeader } from "mysql2"
@@ -38,7 +38,7 @@ export default class UpdateQueryBuilder<T extends BaseEntity> {
     private attributes: UpdateAttributes<T> = {}
 
     /** @internal */
-    private _sqlBuilder?: UpdateSQLBuilder<Constructor<T>>
+    private _sqlBuilder?: UpdateSQLBuilder<T>
 
     constructor(
         public target: Constructor<T>,
@@ -57,7 +57,7 @@ export default class UpdateQueryBuilder<T extends BaseEntity> {
 
     // privates ---------------------------------------------------------------
     /** @internal */
-    private get sqlBuilder(): UpdateSQLBuilder<Constructor<T>> {
+    private get sqlBuilder(): UpdateSQLBuilder<T> {
         return this._sqlBuilder ?? this.instantiateSQLBuilder()
     }
 
@@ -170,10 +170,9 @@ export default class UpdateQueryBuilder<T extends BaseEntity> {
     * @returns - Update result
     */
     public exec(): Promise<ResultSetHeader> {
-        return new MySQL2QueryExecutionHandler(
+        return new MySQLOperation.Update(
             this.target,
-            this.sqlBuilder,
-            'raw'
+            this.sqlBuilder
         )
             .exec() as Promise<ResultSetHeader>
     }
@@ -189,7 +188,7 @@ export default class UpdateQueryBuilder<T extends BaseEntity> {
 
     // Privates ---------------------------------------------------------------
     /** @internal */
-    private instantiateSQLBuilder(): UpdateSQLBuilder<Constructor<T>> {
+    private instantiateSQLBuilder(): UpdateSQLBuilder<T> {
         this._sqlBuilder = new UpdateSQLBuilder(
             this.target,
             this.attributes,

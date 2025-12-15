@@ -1,9 +1,9 @@
 // Handlers
 import { MetadataHandler } from "../../../Metadata"
 
-import MySQL2RawDataHandler, {
+import MySQLDataHandler, {
     type DataFillMethod
-} from "../../MySQL2RawDataHandler"
+} from "../../MySQLHandler"
 
 import EntityBuilder from "../../EntityBuilder"
 
@@ -25,7 +25,7 @@ import type {
     CreationAttributesOptions
 } from "../../../SQLBuilders"
 
-import type { MySQL2RawData } from "../../MySQL2RawDataHandler"
+import type { MySQL2RawData } from "../../MySQLHandler"
 import type { DeleteResult } from "../types"
 
 export default class RelationQueryExecutionHandler<T extends Entity> {
@@ -114,8 +114,8 @@ export default class RelationQueryExecutionHandler<T extends Entity> {
     private rawDataHandler(
         fillMethod: DataFillMethod,
         rawData: MySQL2RawData
-    ): MySQL2RawDataHandler<Target> {
-        return new MySQL2RawDataHandler(
+    ): MySQLDataHandler<Target> {
+        return new MySQLDataHandler(
             this.target as Target,
             fillMethod,
             rawData

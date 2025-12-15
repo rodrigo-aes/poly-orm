@@ -2,16 +2,16 @@
 import AndSQLBuilder, { type AndQueryOptions } from "../AndSQLBuilder"
 
 // Types
-import type { Target } from "../../../types"
+import type { Entity, Constructor, TargetMetadata } from "../../../types"
 import type { OrQueryOptions } from "./types"
 import type UnionSQLBuilder from "../../UnionSQLBuilder"
 
-export default class OrSQLBuilder<T extends Target> {
+export default class OrSQLBuilder<T extends Entity> {
     private unionSQLBuilders: UnionSQLBuilder[] = []
 
     constructor(
-        public target: T,
-        public options: OrQueryOptions<InstanceType<T>>,
+        public target: Constructor<T>,
+        public options: OrQueryOptions<T>,
         public alias: string = target.name.toLowerCase()
     ) { }
 
@@ -30,7 +30,7 @@ export default class OrSQLBuilder<T extends Target> {
     }
 
     // Privates ---------------------------------------------------------------
-    private andSQL(option: AndQueryOptions<InstanceType<T>>): string {
+    private andSQL(option: AndQueryOptions<T>): string {
         const and = new AndSQLBuilder(
             this.target, option, this.alias
         )

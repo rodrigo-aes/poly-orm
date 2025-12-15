@@ -12,7 +12,7 @@ import { MetadataHandler } from "../../../Metadata"
 import { SQLStringHelper, PropertySQLHelper } from "../../../Helpers"
 
 // Types
-import type { Target, TargetMetadata } from "../../../types"
+import type { Entity, Constructor, TargetMetadata } from "../../../types"
 import type {
     CaseQueryOptions,
     CaseQueryTuple,
@@ -20,12 +20,12 @@ import type {
     ElseQueryOption,
 } from "./types"
 
-export default class CaseSQLBuilder<T extends Target> {
+export default class CaseSQLBuilder<T extends Entity> {
     protected metadata: TargetMetadata<T>
 
     constructor(
-        public target: T,
-        public options: CaseQueryOptions<InstanceType<T>>,
+        public target: Constructor<T>,
+        public options: CaseQueryOptions<T>,
         public as?: string,
         public alias: string = target.name.toLowerCase()
     ) {
@@ -34,7 +34,7 @@ export default class CaseSQLBuilder<T extends Target> {
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get whenClauses(): CaseQueryTuple<InstanceType<T>>[] {
+    public get whenClauses(): CaseQueryTuple<T>[] {
         return Array.isArray(this.lastOption)
             ? this.options
             : this.options.slice(0, -1)
@@ -48,7 +48,7 @@ export default class CaseSQLBuilder<T extends Target> {
 
     // Privates ---------------------------------------------------------------
     private get lastOption(): (
-        CaseQueryTuple<InstanceType<T>> | ElseQueryOption
+        CaseQueryTuple<T> | ElseQueryOption
     ) {
         return this.options[this.options.length - 1]
     }
@@ -85,7 +85,7 @@ export default class CaseSQLBuilder<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    private whenSQL(when: WhenQueryOption<InstanceType<T>>): string {
+    private whenSQL(when: WhenQueryOption<T>): string {
         return Array.isArray(when)
             ? new OrSQLBuilder(this.target, when, this.alias).SQL()
             : new AndSQLBuilder(this.target, when, this.alias).SQL()

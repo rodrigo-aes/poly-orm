@@ -18,7 +18,7 @@ import {
 } from "./ExistsSQLBuilder"
 
 // Types
-import type { Target } from "../../types"
+import type { Entity, Constructor, Target } from "../../types"
 import type {
     ConditionalQueryOptions,
     AndQueryOptions,
@@ -39,9 +39,9 @@ export default class ConditionalSQLBuilder {
 
     // Static Methods =========================================================
     // Publics ----------------------------------------------------------------
-    public static where<T extends Target>(
-        target: T,
-        options: ConditionalQueryOptions<InstanceType<T>>,
+    public static where<T extends Entity>(
+        target: Constructor<T>,
+        options: ConditionalQueryOptions<T>,
         alias?: string,
     ): WhereSQLBuilder<T> {
         return new WhereSQLBuilder(target, options, alias)
@@ -49,11 +49,11 @@ export default class ConditionalSQLBuilder {
 
     // ------------------------------------------------------------------------
 
-    public static on<P extends Target, T extends Target>(
-        parent: P,
-        target: T,
+    public static on<P extends Entity, T extends Entity>(
+        parent: Constructor<P>,
+        target: Constructor<T>,
         relation: RelationMetadataType,
-        options?: ConditionalQueryOptions<InstanceType<T>>,
+        options?: ConditionalQueryOptions<T>,
         parentAlias?: string,
         alias?: string,
     ): OnSQLBuilder<P, T> {
@@ -69,9 +69,9 @@ export default class ConditionalSQLBuilder {
 
     // ------------------------------------------------------------------------
 
-    public static case<T extends Target>(
-        target: T,
-        options: CaseQueryOptions<InstanceType<T>>,
+    public static case<T extends Entity>(
+        target: Constructor<T>,
+        options: CaseQueryOptions<T>,
         as?: string,
         alias?: string
     ): CaseSQLBuilder<T> {

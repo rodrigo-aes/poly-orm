@@ -37,7 +37,7 @@ import PolyORMException from "../../Errors"
  */
 export default class JoinQueryBuilder<T extends Entity> {
     /** @internal */
-    protected metadata: TargetMetadata<Constructor<T>>
+    protected metadata: TargetMetadata<T>
 
     /** @internal */
     private _options: JoinQueryClause<T> = {

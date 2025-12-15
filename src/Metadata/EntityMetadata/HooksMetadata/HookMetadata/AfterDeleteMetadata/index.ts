@@ -11,7 +11,7 @@ export default class AfterDeleteMetadata extends HookMetadata {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public call<T extends Entity>(entity: T, result: DeleteResult) {
+    public call(entity: Entity, result: DeleteResult) {
         return this.hookFn(entity, result)
     }
 }

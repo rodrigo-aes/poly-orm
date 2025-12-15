@@ -12,7 +12,7 @@ import ConditionalQueryBuilder from "../ConditionalQueryBuilder"
 import CaseQueryBuilder from "../CaseQueryBuilder"
 
 // Handlers
-import { MySQL2QueryExecutionHandler } from "../../Handlers"
+import { MySQLOperation } from "../../Handlers"
 
 // Types
 import type {
@@ -202,15 +202,11 @@ export default class CountQueryBuilder<T extends Entity> {
      * @returns - Count result
      */
     public async exec(): Promise<number> {
-        return (
-            await new MySQL2QueryExecutionHandler(
-                this.target,
-                this.toSQLBuilder(),
-                'json'
-            )
-                .exec()
+        return await new MySQLOperation.Count(
+            this.target,
+            this.toSQLBuilder()
         )
-            .result
+            .exec()
     }
 
     // ------------------------------------------------------------------------
@@ -225,7 +221,7 @@ export default class CountQueryBuilder<T extends Entity> {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    public toSQLBuilder(): CountSQLBuilder<Constructor<T>> {
+    public toSQLBuilder(): CountSQLBuilder<T> {
         return CountSQLBuilder.countBuilder(
             this.target,
             this.toQueryOptions(),

@@ -18,27 +18,22 @@ import {
 
 // Handlers
 import {
-    MySQL2QueryExecutionHandler,
-    type ResultMapOption,
+    MySQLOperation,
+
     type FindOneResult,
     type FindResult,
+    type CountManyResult,
+    type MapOptions,
+    type CollectMapOptions
 } from "../Handlers"
 
 // Types
 import type { Collection, Pagination } from "../Entities"
-
-import type {
-    Constructor,
-    Entity,
-    Target,
-    TargetMetadata
-} from "../types"
-
-import type { CountManyQueryResult } from "./types"
+import type { Constructor, Target, Entity, TargetMetadata } from "../types"
 
 export default abstract class BaseRepository<T extends Entity> {
     /** @internal */
-    protected metadata: TargetMetadata<Constructor<T>>
+    protected metadata: TargetMetadata<T>
 
     constructor(
         /** @internal */
@@ -52,17 +47,17 @@ export default abstract class BaseRepository<T extends Entity> {
     /**
      * Search a entity register in database and return a instance case finded
      * @param pk - Entity primary key
-     * @param mapTo - Switch data mapped return
+     * @param mapOptions - Switch data mapped return
      * @default - 'entity'
      * @returns - Entity instance or `null`
      */
-    public findByPk(pk: any, mapTo: ResultMapOption = 'entity'): Promise<
-        T | null
+    public findByPk<M extends MapOptions>(pk: any, mapOptions?: M): Promise<
+        FindOneResult<T, M>
     > {
-        return new MySQL2QueryExecutionHandler(
+        return new MySQLOperation.FindByPk(
             this.target,
-            new FindByPkSQLBuilder<Target>(this.target, pk),
-            mapTo
+            new FindByPkSQLBuilder(this.target, pk),
+            mapOptions
         )
             .exec()
     }
@@ -72,18 +67,18 @@ export default abstract class BaseRepository<T extends Entity> {
     /**
     *  Search the first register matched by options in database
     * @param options - Find one options
-    * @param mapTo - Switch data mapped return
+    * @param mapOptions - Switch data mapped return
     * @default 'entity'
     * @returns - A entity instance or `null`
     */
-    public findOne<M extends ResultMapOption = 'entity'>(
+    public findOne<M extends MapOptions>(
         options?: FindOneQueryOptions<T>,
-        mapTo: M = 'entity' as M
-    ): Promise<FindOneResult<Constructor<T>, M>> {
-        return new MySQL2QueryExecutionHandler(
+        mapOptions?: M
+    ): Promise<FindOneResult<T, M>> {
+        return new MySQLOperation.FindOne(
             this.target,
             new FindOneSQLBuilder(this.target, options),
-            mapTo
+            mapOptions
         )
             .exec()
     }
@@ -97,16 +92,16 @@ export default abstract class BaseRepository<T extends Entity> {
      * @default 'entity'
      * @returns - A entity instance collection
      */
-    public find<M extends ResultMapOption = 'entity'>(
+    public find<M extends CollectMapOptions<T>>(
         options?: FindQueryOptions<T>,
-        mapTo: M = 'entity' as M
-    ): Promise<FindResult<Constructor<T>, M>> {
-        return new MySQL2QueryExecutionHandler(
+        mapOptions?: M
+    ): Promise<FindResult<T, M>> {
+        return new MySQLOperation.Find(
             this.target,
             new FindSQLBuilder(this.target, options),
-            mapTo
+            mapOptions
         )
-            .exec() as Promise<FindResult<Constructor<T>, M>>
+            .exec()
     }
 
     // ------------------------------------------------------------------------
@@ -118,15 +113,22 @@ export default abstract class BaseRepository<T extends Entity> {
     * @default 'entity'
     * @returns - A entity instance pagination collection
     */
-    public paginate(options: PaginationQueryOptions<T>): Promise<
-        Pagination<T>
-    > {
-        return new MySQL2QueryExecutionHandler(
+    public paginate<M extends Omit<CollectMapOptions<T>, 'mapTo'>>(
+        options: PaginationQueryOptions<T>,
+        mapOptions?: M
+    ): Promise<Pagination<T, (
+        M extends CollectMapOptions<T>
+        ? M['collection'] extends Collection<T>
+        ? M['collection']
+        : Extract<T['__defaultCollection'], Collection<T>>
+        : Extract<T['__defaultCollection'], Collection<T>>
+    )>> {
+        return new MySQLOperation.Paginate(
             this.target,
             new PaginationSQLBuilder(this.target, options),
-            'entity'
+            { ...mapOptions, mapTo: 'entity' }
         )
-            .exec() as Promise<Pagination<T>>
+            .exec() as any
     }
 
     // ------------------------------------------------------------------------
@@ -137,15 +139,11 @@ export default abstract class BaseRepository<T extends Entity> {
      * @returns - The count number result
      */
     public async count(options: CountQueryOption<T>): Promise<number> {
-        return (
-            await new MySQL2QueryExecutionHandler(
-                this.target,
-                CountSQLBuilder.countBuilder(this.target, options),
-                'json'
-            )
-                .exec() as any
+        return await new MySQLOperation.Count<T, typeof options>(
+            this.target,
+            CountSQLBuilder.countBuilder(this.target, options)
         )
-            .result
+            .exec()
     }
 
     // ------------------------------------------------------------------------
@@ -156,14 +154,13 @@ export default abstract class BaseRepository<T extends Entity> {
      * options value
      * @returns - A object with count names keys and count results
      */
-    public countMany<Opts extends CountQueryOptions<T>>(
-        options: Opts
-    ): Promise<CountManyQueryResult<T, Opts>> {
-        return new MySQL2QueryExecutionHandler(
+    public countMany<O extends CountQueryOptions<T>>(
+        options: O
+    ): Promise<CountManyResult<T, O>> {
+        return new MySQLOperation.Count<T, O>(
             this.target,
-            CountSQLBuilder.countManyBuilder(this.target, options),
-            'json'
+            CountSQLBuilder.countManyBuilder(this.target, options)
         )
-            .exec() as Promise<CountManyQueryResult<T, Opts>>
+            .exec()
     }
 }

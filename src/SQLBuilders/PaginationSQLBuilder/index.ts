@@ -4,18 +4,18 @@ import FindSQLBuilder, { type FindQueryOptions } from "../FindSQLBuilder"
 import CountSQLBuilder from "../CountSQLBuilder"
 
 // Types
-import type { Target, EntityTarget, PolymorphicEntityTarget } from "../../types"
+import type { Entity, Constructor } from "../../types"
 import type { PaginationQueryOptions } from "./types"
 
 export default class PaginationSQLBuilder<
-    T extends Target
+    T extends Entity
 > extends FindSQLBuilder<T> {
     public page: number = 1
     public perPage: number = 26
 
     constructor(
-        target: T,
-        options: PaginationQueryOptions<InstanceType<T>>,
+        target: Constructor<T>,
+        options: PaginationQueryOptions<T>,
         alias?: string
     ) {
         const { page, perPage, ...opts } = options

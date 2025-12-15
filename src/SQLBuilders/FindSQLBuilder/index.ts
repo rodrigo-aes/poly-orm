@@ -7,19 +7,19 @@ import OrderSQLBuilder from "../OrderSQLBuilder"
 import { SQLStringHelper } from "../../Helpers"
 
 // Types
-import type { Target } from "../../types"
+import type { Entity, Constructor } from "../../types"
 import type { FindQueryOptions } from "./types"
 
 export default class FindSQLBuilder<
-    T extends Target
+    T extends Entity
 > extends FindOneSQLBuilder<T> {
     public order?: OrderSQLBuilder<T>
     public limit?: number
     public offset?: number
 
     constructor(
-        public target: T,
-        public options: FindQueryOptions<InstanceType<T>> = {},
+        public target: Constructor<T>,
+        public options: FindQueryOptions<T> = {},
         alias?: string,
         isMain: boolean = true
     ) {

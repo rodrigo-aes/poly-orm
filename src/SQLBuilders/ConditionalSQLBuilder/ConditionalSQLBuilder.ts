@@ -7,20 +7,21 @@ import { MetadataHandler, ScopeMetadataHandler } from "../../Metadata"
 
 // Types
 import type {
-    Target,
+    Entity,
+    Constructor,
     TargetMetadata,
 } from "../../types"
 
 import type { ConditionalQueryOptions } from "./types"
 import type UnionSQLBuilder from "../UnionSQLBuilder"
 
-export default abstract class ConditionalSQLBuilder<T extends Target> {
+export default abstract class ConditionalSQLBuilder<T extends Entity> {
     protected metadata: TargetMetadata<T>
     public unions: UnionSQLBuilder[] = []
 
     constructor(
-        public target: T,
-        public options?: ConditionalQueryOptions<InstanceType<T>>,
+        public target: Constructor<T>,
+        public options?: ConditionalQueryOptions<T>,
         public alias: string = target.name.toLowerCase()
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)

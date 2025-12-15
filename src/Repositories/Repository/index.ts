@@ -1,5 +1,4 @@
 import BaseRepository from "../BaseRepository"
-import { BaseEntity, type Pagination } from "../../Entities"
 
 // SQL Builders
 import {
@@ -7,6 +6,7 @@ import {
     UpdateSQLBuilder,
     UpdateOrCreateSQLBuilder,
     DeleteSQLBuilder,
+
     type CreationAttributes,
     type UpdateAttributes,
     type UpdateOrCreateAttributes,
@@ -15,47 +15,41 @@ import {
 
 // Handlers
 import {
-    MySQL2QueryExecutionHandler,
+    MySQLOperation,
 
-    type ResultMapOption,
+    type CreateResult,
+    type CreateCollectMapOptions,
+    type UpdateResult,
     type DeleteResult,
 } from "../../Handlers"
 
 // Types 
 import type { Constructor } from "../../types"
-import type { UpdateQueryResult } from "../types"
+import type { BaseEntity } from "../../Entities"
 
 export default class Repository<T extends BaseEntity> extends BaseRepository<
     T
 > {
-    constructor(
-        /** @internal */
-        protected target: Constructor<T>
-    ) {
+    constructor(protected target: Constructor<T>) {
         super(target)
     }
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     /**
-     * Create a register in database and returns a entity instance by created
-     * register
+     * Create a register in database and returns a instance
      * @param attributes - Entity creation attributes
-     * @returns - A entity instance for created register
+     * @returns - Entity instance
      */
-    public create(
-        attributes: CreationAttributes<T>,
-        mapTo: ResultMapOption = 'entity'
-    ): Promise<T> {
-        return new MySQL2QueryExecutionHandler(
+    public create(attributes: CreationAttributes<T>): Promise<T> {
+        return new MySQLOperation.Create(
             this.target,
             new CreateSQLBuilder<Constructor<T>>(
                 this.target,
                 attributes
-            ),
-            mapTo
+            )
         )
-            .exec() as Promise<T>
+            .exec() as any
     }
 
     // ------------------------------------------------------------------------
@@ -67,17 +61,16 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
      * attributes
      * @returns - A entity instance collection for created registers
      */
-    public createMany(
+    public createMany<M extends CreateCollectMapOptions<T>>(
         attributes: CreationAttributes<T>[],
-        mapTo: ResultMapOption = 'entity'
-    ): Promise<T[]> {
-        return new MySQL2QueryExecutionHandler(
+        mapTo?: M
+    ): Promise<CreateResult<T, M>> {
+        return new MySQLOperation.Create(
             this.target,
             new CreateSQLBuilder(this.target, attributes),
             mapTo
         )
-            .exec() as Promise<T[]>
-
+            .exec()
     }
 
     // ------------------------------------------------------------------------
@@ -89,23 +82,15 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
      * @param where - Conditional where options
      * @returns - A result set header with the count of affected registers
      */
-    public async update(
-        attributes: T | UpdateAttributes<T>,
+    public async update<S extends T | UpdateAttributes<T>>(
+        attributes: S,
         where?: ConditionalQueryOptions<T>,
-    ): Promise<UpdateQueryResult<Constructor<T>, typeof attributes>> {
-        const header = await new MySQL2QueryExecutionHandler(
+    ): Promise<UpdateResult<T, S>> {
+        return new MySQLOperation.Update(
             this.target,
-            new UpdateSQLBuilder(this.target, attributes, where),
-            'raw'
+            new UpdateSQLBuilder(this.target, attributes, where)
         )
-            .exec()
-
-        return (
-            attributes instanceof BaseEntity
-                ? attributes
-                : header
-        ) as UpdateQueryResult<Constructor<T>, typeof attributes>
-
+            .exec() as Promise<UpdateResult<T, S>>
     }
 
     // ------------------------------------------------------------------------
@@ -115,20 +100,17 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
      * @param attributes - Update or create attributes data 
      * @returns - A entity instance for updated or created register
      */
-    public updateOrCreate(
-        attributes: UpdateOrCreateAttributes<T>,
-        mapTo: ResultMapOption = 'entity'
-    ): Promise<T> {
-        return new MySQL2QueryExecutionHandler(
+    public updateOrCreate(attributes: UpdateOrCreateAttributes<T>): Promise<
+        T
+    > {
+        return new MySQLOperation.UpdateOrCreate(
             this.target,
             new UpdateOrCreateSQLBuilder<Constructor<T>>(
                 this.target,
                 attributes
-            ),
-            mapTo
+            )
         )
-            .exec() as Promise<T>
-
+            .exec()
     }
 
     // ------------------------------------------------------------------------
@@ -138,14 +120,11 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
      * @param where - Conditional where options
      * @returns - A result header containing the count of affected registers
      */
-    public delete(where: ConditionalQueryOptions<T>): (
-        Promise<DeleteResult>
-    ) {
-        return new MySQL2QueryExecutionHandler(
+    public delete(where: ConditionalQueryOptions<T>): Promise<DeleteResult> {
+        return new MySQLOperation.Delete(
             this.target,
-            new DeleteSQLBuilder(this.target, where),
-            'raw'
+            new DeleteSQLBuilder(this.target, where)
         )
-            .exec() as Promise<DeleteResult>
+            .exec()
     }
 }

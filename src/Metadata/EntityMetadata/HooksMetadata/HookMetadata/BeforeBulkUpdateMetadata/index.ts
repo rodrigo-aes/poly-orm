@@ -1,7 +1,6 @@
 import HookMetadata from "../HookMetadata"
 
 // Types
-import type { Entity } from "../../../../../types"
 import type {
     ConditionalQueryOptions,
     UpdateAttributes,
@@ -16,9 +15,9 @@ export default class BeforeBulkUpdateMetadata extends HookMetadata {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public call<T extends Entity>(
-        attributes: UpdateAttributes<T>,
-        where?: ConditionalQueryOptions<T>
+    public call(
+        attributes: UpdateAttributes<any>,
+        where?: ConditionalQueryOptions<any>
     ) {
         return this.hookFn(attributes, where)
     }

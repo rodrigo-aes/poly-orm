@@ -1,7 +1,7 @@
 import CreateQueryBuilder from "../CreateQueryBuilder"
 
 // Handlers
-import { MySQL2QueryExecutionHandler } from "../../../Handlers"
+import { MySQLOperation } from "../../../Handlers"
 
 // Types
 import type { BaseEntity } from "../../../Entities"
@@ -38,11 +38,10 @@ export default class InsertQueryBuilder<
     public async exec(): Promise<T> {
         this.sqlBuilder.bulk = false
 
-        return new MySQL2QueryExecutionHandler(
+        return new MySQLOperation.Create<T, never>(
             this.target,
             this.sqlBuilder,
-            'entity'
         )
-            .exec() as Promise<T>
+            .exec()
     }
 }

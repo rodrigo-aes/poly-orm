@@ -1,7 +1,12 @@
 import CreateQueryBuilder from "../CreateQueryBuilder"
 
 // Handlers
-import { MySQL2QueryExecutionHandler } from "../../../Handlers"
+import {
+    MySQLOperation,
+
+    type CreateCollectMapOptions,
+    type CreateResult
+} from "../../../Handlers"
 
 // Types
 import type { BaseEntity } from "../../../Entities"
@@ -40,14 +45,16 @@ export default class BulkInsertQueryBuilder<
     * Execute defined operation in database
     * @returns - Create many result
     */
-    public async exec(): Promise<T[]> {
+    public async exec<M extends CreateCollectMapOptions<T>>(
+        mapOptions?: M
+    ): Promise<CreateResult<T, M>> {
         this.sqlBuilder.bulk = true
 
-        return new MySQL2QueryExecutionHandler(
+        return new MySQLOperation.Create<T, M>(
             this.target,
             this.sqlBuilder,
-            'entity'
+            mapOptions
         )
-            .exec() as Promise<T[]>
+            .exec()
     }
 }

@@ -1,8 +1,7 @@
 import HookMetadata from "../HookMetadata"
 
 // Types
-import type { BaseEntity } from "../../../../../Entities"
-import type { BasePolymorphicEntity } from "../../../../../Entities"
+import type { Entity } from "../../../../../types"
 
 export default class AfterCreateMetadata extends HookMetadata {
     // Getters ================================================================
@@ -13,9 +12,7 @@ export default class AfterCreateMetadata extends HookMetadata {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public call<T extends (
-        (BaseEntity | BasePolymorphicEntity<any>)
-    )>(result: T): void | Promise<void> {
+    public call(result: Entity): void | Promise<void> {
         return this.hookFn(result)
     }
 }

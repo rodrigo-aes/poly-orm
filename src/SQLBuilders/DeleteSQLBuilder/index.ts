@@ -1,7 +1,6 @@
 import { EntityMetadata, PolymorphicEntityMetadata } from "../../Metadata"
 
-import { BaseEntity } from "../../Entities"
-import { BasePolymorphicEntity } from "../../Entities"
+import { Entity as EntityBase, BasePolymorphicEntity } from "../../Entities"
 
 // SQL Builders
 import ConditionalSQLBuilder, {
@@ -16,33 +15,34 @@ import { ConditionalQueryJoinsHandler } from "../../Handlers"
 import { SQLStringHelper } from "../../Helpers"
 
 // Types
-import type { Entity, Target, TargetMetadata } from "../../types"
+import type { Entity, Constructor, TargetMetadata } from "../../types"
 
-export default class DeleteSQLBuilder<T extends Target> {
+export default class DeleteSQLBuilder<T extends Entity> {
     protected metadata: TargetMetadata<T>
+    private _isEntity?: boolean
 
     constructor(
-        public target: T,
-        public where: (
-            ConditionalQueryOptions<InstanceType<T>> | Entity
-        ),
+        public target: Constructor<T>,
+        public where: ConditionalQueryOptions<T>,
         public alias: string = target.name.toLowerCase()
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
-        this.applyWhereScope()
-
-        if (this.where instanceof BasePolymorphicEntity) this.where = (
-            this.where.toSourceEntity()
+        if (!this.isEntity) this.where = ScopeMetadataHandler.applyScope(
+            this.target, 'conditional', this.where
         )
     }
 
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
+    protected get isEntity(): boolean {
+        return this._isEntity ??= this.where instanceof EntityBase
+    }
+
+    // ------------------------------------------------------------------------
+
     protected get targetMetadata(): EntityMetadata {
         return this.metadata instanceof PolymorphicEntityMetadata
-            ? this.metadata.sourcesMetadata[(
-                (this.where as BasePolymorphicEntity<any>).entityType
-            )]
+            ? this.metadata.sourcesMetadata[(this.where as any).entityType]
             : this.metadata
     }
 
@@ -73,10 +73,10 @@ export default class DeleteSQLBuilder<T extends Target> {
     // ------------------------------------------------------------------------
 
     public joinsSQL(): string {
-        return (!this.isEntity())
+        return !this.isEntity
             ? new ConditionalQueryJoinsHandler(
                 this.target,
-                this.where as ConditionalQueryOptions<InstanceType<T>>,
+                this.where as ConditionalQueryOptions<T>,
                 this.alias
             )
                 .joins()
@@ -98,35 +98,11 @@ export default class DeleteSQLBuilder<T extends Target> {
     }
 
     // Privates ---------------------------------------------------------------
-    private applyWhereScope(): void {
-        if (!this.isEntity()) this.where = ScopeMetadataHandler.applyScope(
-            this.target,
-            'conditional',
-            this.where as ConditionalQueryOptions<InstanceType<T>>
-        )
-
-    }
-
-    // ------------------------------------------------------------------------
-
-    private isEntity(): boolean {
-        return (
-            this.where instanceof BaseEntity ||
-            this.where instanceof BasePolymorphicEntity
-        )
-    }
-
-    // ------------------------------------------------------------------------
-
-    private whereOptions(): ConditionalQueryOptions<InstanceType<T>> {
-        return (
-            this.isEntity()
-                ? {
-                    [this.primary]: (this.where as BasePolymorphicEntity<any>)[
-                        this.primary
-                    ]
-                }
-                : this.where
-        ) as ConditionalQueryOptions<InstanceType<T>>
+    private whereOptions(): ConditionalQueryOptions<any> {
+        return this.isEntity
+            ? {
+                [this.primary]: (this.where as any)[this.primary]
+            }
+            : this.where
     }
 }

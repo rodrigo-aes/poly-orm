@@ -2,7 +2,7 @@
 import MetadataHandler from "../MetadataHandler"
 
 // Types
-import type { Target, TargetMetadata } from "../../types"
+import type { Entity, Constructor, Target, TargetMetadata } from "../../types"
 import type { PolyORMConnection } from "../ConnectionsMetadata"
 import type { ScopeMetadata } from "../EntityMetadata"
 import type { Collection, Pagination } from "../../Entities"
@@ -24,17 +24,17 @@ class TempMetadata extends WeakMap<Target, TempMetadataValue> {
 
     // ------------------------------------------------------------------------
 
-    public getConnection<T extends Target>(target: T): (
-        PolyORMConnection | undefined
-    ) {
+    public getConnection<T extends Target>(
+        target: T
+    ): PolyORMConnection | undefined {
         return this.get(target)?.connection
     }
 
     // ------------------------------------------------------------------------
 
-    public getMetadata<T extends Target>(target: T): (
-        TargetMetadata<T> | undefined
-    ) {
+    public getMetadata<T extends Entity>(
+        target: Constructor<T>
+    ): TargetMetadata<T> | undefined {
         return this.get(target)?.metadata as TargetMetadata<T> | undefined
     }
 
@@ -58,18 +58,17 @@ class TempMetadata extends WeakMap<Target, TempMetadataValue> {
 
     // ------------------------------------------------------------------------
 
-    public setConnection(target: Target, connection: PolyORMConnection): (
-        this
-    ) {
+    public setConnection(target: Target, connection: PolyORMConnection): this {
         this.set(target, { ...this.get(target), connection })
         return this
     }
 
     // ------------------------------------------------------------------------
 
-    public setMetadata(target: Target, metadata: TargetMetadata<Target>): (
-        this
-    ) {
+    public setMetadata<T extends Entity>(
+        target: Constructor<T>,
+        metadata: TargetMetadata<T>
+    ): this {
         this.set(target, { ...this.get(target), metadata })
         return this
     }

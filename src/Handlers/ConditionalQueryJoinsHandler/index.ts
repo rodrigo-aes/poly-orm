@@ -6,7 +6,8 @@ import { MetadataHandler } from "../../Metadata"
 
 // Types
 import type {
-    Target,
+    Entity,
+    Constructor,
     TargetMetadata,
 } from "../../types"
 
@@ -15,13 +16,13 @@ import type {
     AndQueryOptions
 } from "../../SQLBuilders"
 
-export default class ConditionalQueryJoinsHandler<T extends Target> {
+export default class ConditionalQueryJoinsHandler<T extends Entity> {
     protected metadata: TargetMetadata<T>
     private readonly handled = new Set<string>()
 
     constructor(
-        public target: T,
-        public conditional?: ConditionalQueryOptions<InstanceType<T>>,
+        public target: Constructor<T>,
+        public conditional?: ConditionalQueryOptions<T>,
         public alias: string = target.name.toLowerCase()
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
@@ -53,7 +54,6 @@ export default class ConditionalQueryJoinsHandler<T extends Target> {
         metadata: TargetMetadata<any> = this.metadata,
         alias: string = this.alias
     ): JoinSQLBuilder<any>[] {
-        console.log('key:', key)
         const [first, ...rest] = key.split('.')
         current += first
 
@@ -81,14 +81,14 @@ export default class ConditionalQueryJoinsHandler<T extends Target> {
                     and
                 ))
                 : this.extractAndRelations(this.conditional as (
-                    AndQueryOptions<InstanceType<T>>
+                    AndQueryOptions<T>
                 ))
         ))
     }
 
     // ------------------------------------------------------------------------
 
-    private extractAndRelations(and: AndQueryOptions<InstanceType<T>>): (
+    private extractAndRelations(and: AndQueryOptions<T>): (
         string[]
     ) {
         return Object

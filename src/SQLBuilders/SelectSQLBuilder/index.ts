@@ -9,7 +9,7 @@ import { MetadataHandler } from "../../Metadata"
 import { PropertySQLHelper } from "../../Helpers"
 
 // Types
-import type { Target, TargetMetadata } from "../../types"
+import type { Entity, Constructor, TargetMetadata } from "../../types"
 import type {
     SelectOptions,
     SelectColumnsOption,
@@ -17,15 +17,15 @@ import type {
     SelectPropertyOptions
 } from "./types"
 
-export default class SelectSQLBuilder<T extends Target> {
+export default class SelectSQLBuilder<T extends Entity> {
     private metadata: TargetMetadata<T>
     private merged: string[] = []
 
     private _properties?: string[]
 
     constructor(
-        public target: T,
-        public options?: SelectOptions<InstanceType<T>>,
+        public target: Constructor<T>,
+        public options?: SelectOptions<T>,
         public alias: string = target.name.toLowerCase(),
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
@@ -49,7 +49,7 @@ export default class SelectSQLBuilder<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    private get cases(): SelectCaseOption<InstanceType<T>>[] {
+    private get cases(): SelectCaseOption<T>[] {
         return this.options?.properties
             ?.filter(option => typeof option === 'object')
             ?? []
@@ -57,7 +57,7 @@ export default class SelectSQLBuilder<T extends Target> {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public select(options: SelectOptions<InstanceType<T>>) {
+    public select(options: SelectOptions<T>) {
         this.options = options
     }
 
@@ -152,7 +152,7 @@ export default class SelectSQLBuilder<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    private groupColumns(): GroupQueryOptions<InstanceType<T>> {
+    private groupColumns(): GroupQueryOptions<T> {
         return this.options?.properties
             ? this.selectedGroupColumns()
             : this.allGroupColumns()
@@ -160,20 +160,20 @@ export default class SelectSQLBuilder<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    private allGroupColumns(): GroupQueryOptions<InstanceType<T>> {
+    private allGroupColumns(): GroupQueryOptions<T> {
         return this.metadata.columns.map(
             ({ name }) => this.groupColumn(name)
-        ) as GroupQueryOptions<InstanceType<T>>
+        ) as GroupQueryOptions<T>
     }
 
     // ------------------------------------------------------------------------
 
-    private selectedGroupColumns(): GroupQueryOptions<InstanceType<T>> {
+    private selectedGroupColumns(): GroupQueryOptions<T> {
         return (
             this.columns.includes('*')
                 ? this.allGroupColumns()
                 : this.columns.map(column => this.groupColumn(column))
-        ) as GroupQueryOptions<InstanceType<T>>
+        ) as GroupQueryOptions<T>
     }
 
     // ------------------------------------------------------------------------

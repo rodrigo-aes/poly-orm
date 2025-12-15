@@ -1,9 +1,12 @@
 import { MetadataHandler } from "../../Metadata"
 import { Collection } from "../../Entities"
 
+// Utils
+import ProxyMerge from "../../utils/ProxyMerge"
+
 // Handlers
 import {
-    MySQL2QueryExecutionHandler,
+    MySQLOperation,
     type RelationQueryExecutionHandler,
     type DeleteResult
 } from "../../Handlers"
@@ -53,32 +56,7 @@ export default abstract class ManyRelation<
         /** @internal */
         protected instances: R[] | C = new collection
     ) {
-        if (!(instances instanceof collection)) instances = new collection(
-            instances
-        )
-
-        return new Proxy(this, {
-            get: (target, prop, receiver) => {
-                const [t, value] = target.instances && prop in target.instances
-                    ? [
-                        target.instances,
-                        Reflect.get(target.instances, prop, receiver)
-                    ]
-                    : [target, Reflect.get(target, prop, receiver)]
-
-                return typeof value === "function"
-                    ? value.bind(t)
-                    : value
-            },
-
-            // ----------------------------------------------------------------
-
-            set(target, prop, value, receiver) {
-                return target.instances && prop in target.instances
-                    ? Reflect.set(target.instances, prop, value, receiver)
-                    : Reflect.set(target, prop, value, receiver)
-            }
-        })
+        return new ProxyMerge(this, this.instances) as any
     }
 
     // Getters ================================================================

@@ -12,6 +12,7 @@ import TempMetadata from "../TempMetadata"
 // Types
 import type { PolyORMConnection } from "../../Metadata"
 import type {
+    Entity,
     EntityTarget,
     PolymorphicEntityTarget,
     CollectionTarget,
@@ -44,9 +45,9 @@ export default class MetadataHandler {
 
     // ------------------------------------------------------------------------
 
-    public static register<T extends Target>(
+    public static register<T extends Entity>(
         metadata: TargetMetadata<T>,
-        target: T,
+        target: Constructor<T>,
     ): void {
         Reflect.defineMetadata(
             this.resolveTargetMetadataKey(target),
@@ -57,7 +58,7 @@ export default class MetadataHandler {
 
     // ------------------------------------------------------------------------
 
-    public static targetMetadata<T extends Target>(target: T): (
+    public static targetMetadata<T extends Entity>(target: Constructor<T>): (
         TargetMetadata<T>
     ) {
         switch (true) {
@@ -123,19 +124,17 @@ export default class MetadataHandler {
 
     // ------------------------------------------------------------------------
 
-    public static getRepository<T extends Target>(target: T): (
-        Constructor<TargetRepository<InstanceType<T>>> | undefined
-    ) {
+    public static getRepository<T extends Entity>(
+        target: Constructor<T>
+    ): Constructor<T['__repository']> | undefined {
         return Reflect.getOwnMetadata('repository', target)
     }
 
     // ------------------------------------------------------------------------
 
-    public static setRepository<
-        T extends EntityTarget | PolymorphicEntityTarget
-    >(
-        repository: Constructor<TargetRepository<InstanceType<T>>>,
-        target: T
+    public static setRepository<T extends Entity>(
+        repository: Constructor<T['__repository']>,
+        target: Constructor<T>
     ): void {
         Reflect.defineMetadata('repository', repository, target)
     }

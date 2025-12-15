@@ -1,8 +1,8 @@
 import { MetadataHandler } from "../Metadata"
 
 // Query Builders
-import FindOneQueryBuilder from "./FindOneQueryBuilder"
-import FindQueryBuilder from "./FindQueryBuilder"
+import FindOneQueryBuilder from "./FindQueryBuilder/FindOneQueryBuilder"
+import BulkFindQueryBuilder from "./FindQueryBuilder/BulkFindQueryBuilder"
 import PaginateQueryBuilder from "./PaginateQueryBuilder"
 import CountQueryBuilder from "./CountQueryBuilder"
 import CountManyQueryBuilder from "./CountManyQueryBuilder"
@@ -12,7 +12,7 @@ import type { Entity, TargetMetadata, Constructor } from "../types"
 
 export default class QueryBuilder<T extends Entity> {
     /** @internal */
-    protected metadata: TargetMetadata<Constructor<T>>
+    protected metadata: TargetMetadata<T>
 
     /** @internal */
     protected alias?: string
@@ -41,10 +41,10 @@ export default class QueryBuilder<T extends Entity> {
     /**
      * Instantiate and return a `FindQueryBuilder`
      * @param alias - Entity query alias
-     * @returns {FindQueryBuilder<T>} - FindQueryBuilder
+     * @returns {BulkFindQueryBuilder<T>} - FindQueryBuilder
      */
-    public find(alias?: string): FindQueryBuilder<T> {
-        return new FindQueryBuilder(this.target, alias ?? this.alias)
+    public find(alias?: string): BulkFindQueryBuilder<T> {
+        return new BulkFindQueryBuilder(this.target, alias ?? this.alias)
     }
 
     // ------------------------------------------------------------------------

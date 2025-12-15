@@ -31,7 +31,7 @@ import type {
 
 /** @internal */
 export default class ExistsQueryBuilder<T extends Entity> {
-    protected metadata: TargetMetadata<Constructor<T>>
+    protected metadata: TargetMetadata<T>
     private options!: (
         string |
         SQLBuilderQueryOptions<T>[typeof Exists]
@@ -98,7 +98,7 @@ export default class ExistsQueryBuilder<T extends Entity> {
                     : undefined,
 
                 relations: relations
-                    ? this.handleExists(rel.relatedTarget, relations)
+                    ? this.handleExists<any>(rel.relatedTarget, relations)
                     : undefined
             }
         }

@@ -29,7 +29,8 @@ import type BaseEntity from "./BaseEntity"
 import type {
     FindOneResult,
     FindResult,
-    ResultMapOption
+    MapOptions,
+    CollectMapOptions
 } from "../Handlers"
 
 import type { CountManyQueryResult } from "../Repositories"
@@ -86,6 +87,9 @@ import type {
 import PolyORMException from "../Errors"
 
 export default abstract class Entity {
+    /** @internal */
+    declare readonly __defaultCollection: Collection<EntityT>
+
     public static readonly INHERIT_HOOKS: boolean = true
     public static readonly INHERIT_ONLY_HOOKS?: HookType[]
 
@@ -202,9 +206,7 @@ export default abstract class Entity {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    public getTrueMetadata<T extends EntityT>(this: T): TargetMetadata<
-        Constructor<T>
-    > {
+    public getTrueMetadata<T extends EntityT>(this: T): TargetMetadata<T> {
         return MetadataHandler.targetMetadata(this.constructor as (
             Constructor<T>
         ))
@@ -564,11 +566,7 @@ export default abstract class Entity {
         attributes: CreationAttributes<InstanceType<T>>
     ): InstanceType<T> {
         const instance = new this().fill(attributes) as InstanceType<T>
-
-        (instance.getTrueMetadata() as TargetMetadata<T>)
-            .computedProperties
-            ?.assign(instance)
-
+        instance.getTrueMetadata().computedProperties?.assign(instance)
         ColumnsSnapshots.set(instance, instance.columns())
 
         return instance
@@ -652,10 +650,12 @@ export default abstract class Entity {
     public static paginate<T extends Target>(
         this: T,
         options: PaginationQueryOptions<InstanceType<T>>
-    ): Promise<Pagination<InstanceType<T>>> {
+    ): Promise<Pagination<InstanceType<T>, Collection<InstanceType<T>>>> {
         return (this as StaticTarget<T>)
             .getRepository()
-            .paginate(options as any) as Promise<Pagination<InstanceType<T>>>
+            .paginate(options as any) as Promise<
+                Pagination<InstanceType<T>, Collection<InstanceType<T>>>
+            >
     }
 
     // ------------------------------------------------------------------------

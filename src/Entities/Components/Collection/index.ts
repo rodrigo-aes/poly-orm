@@ -107,7 +107,7 @@ export default class Collection<T extends Entity> extends Array<T> {
         attributes: UpdateAttributes<T>,
         filter?: (value: T, index: number, array: T[]) => boolean
     ): Promise<T[]> {
-        const entities = filter ? this.filter(filter) : [...this]
+        const entities = filter ? this.filter(filter) : this
 
         for (const entity of entities) await (entity as any).update(
             attributes
@@ -123,15 +123,13 @@ export default class Collection<T extends Entity> extends Array<T> {
      */
     public async delete(filter: (value: T, index: number, array: T[]) => (
         boolean
-    )): Promise<T[]> {
-        const entities = filter ? this.filter(filter) : this
+    )): Promise<this> {
+        for (const entity of this.filter(filter)) await (
+            this.splice(this.indexOf(entity), 1)[0] as any
+        )
+            .delete()
 
-        for (const entity of entities) {
-            await (entity as any).delete()
-            this.splice(this.indexOf(entity), 1)
-        }
-
-        return entities
+        return this
     }
 
     // Protecteds -------------------------------------------------------------

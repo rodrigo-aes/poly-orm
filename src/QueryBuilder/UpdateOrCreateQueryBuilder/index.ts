@@ -6,7 +6,7 @@ import {
 } from "../../SQLBuilders"
 
 // Handlers
-import { MySQL2QueryExecutionHandler } from "../../Handlers"
+import { MySQLOperation } from "../../Handlers"
 
 // Types
 import type {
@@ -22,7 +22,7 @@ export default class UpdateOrCreateQueryBuilder<T extends BaseEntity> {
     /**
      * @internal
      */
-    private sqlBuilder: UpdateOrCreateSQLBuilder<Constructor<T>>
+    private sqlBuilder: UpdateOrCreateSQLBuilder<T>
 
     constructor(
         public target: Constructor<T>,
@@ -81,10 +81,9 @@ export default class UpdateOrCreateQueryBuilder<T extends BaseEntity> {
     * @returns - Update or create result
     */
     public exec(): Promise<T> {
-        return new MySQL2QueryExecutionHandler(
+        return new MySQLOperation.UpdateOrCreate(
             this.target,
-            this.sqlBuilder,
-            'entity'
+            this.sqlBuilder
         )
             .exec()
     }

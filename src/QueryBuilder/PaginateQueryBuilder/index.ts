@@ -1,4 +1,4 @@
-import FindQueryBuilder from "../FindQueryBuilder"
+import { FindQueryBuilder } from "../FindQueryBuilder"
 
 // SQL Builders
 import {
@@ -41,7 +41,7 @@ export default class PaginateQueryBuilder<
     }
 
     // Protecteds -------------------------------------------------------------
-    protected override toSQLBuilder(): PaginationSQLBuilder<Constructor<T>> {
+    protected override toSQLBuilder(): PaginationSQLBuilder<T> {
         return new PaginationSQLBuilder(
             this.target,
             this.toQueryOptions(),

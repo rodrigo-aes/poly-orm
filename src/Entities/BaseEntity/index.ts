@@ -31,6 +31,12 @@ export default abstract class BaseEntity extends Entity {
     /** @internal */
     declare readonly __name: string
 
+    /** @internal */
+    declare readonly __repository: Repository<any>
+
+    /** @internal */
+    declare readonly __defaultCollection: Collection<any>
+
     public static readonly INHERIT_POLYMORPHIC_RELATIONS = false
 
     constructor() {
@@ -44,8 +50,8 @@ export default abstract class BaseEntity extends Entity {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public getRepository<T extends Repository<this> = Repository<this>>(): T {
-        return this.getTrueMetadata().getRepository() as T
+    public getRepository<T extends BaseEntity>(this: T): T['__repository'] {
+        return this.getTrueMetadata().getRepository() as T['__repository']
     }
 
     // ------------------------------------------------------------------------
@@ -69,7 +75,7 @@ export default abstract class BaseEntity extends Entity {
             await (this[name as keyof T] as any).save()
         )
 
-        return this.getRepository().updateOrCreate(this)
+        return this.getRepository().updateOrCreate(this) as Promise<T>
     }
 
     // ------------------------------------------------------------------------

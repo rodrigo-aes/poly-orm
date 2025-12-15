@@ -18,11 +18,11 @@ import { MetadataHandler, ScopeMetadataHandler } from "../../Metadata"
 import { SQLStringHelper } from "../../Helpers"
 
 // Types
-import type { Target, TargetMetadata } from "../../types"
+import type { Entity, Constructor, TargetMetadata } from "../../types"
 import type { FindOneQueryOptions } from "./types"
 import type { RelationsOptions } from "../JoinSQLBuilder"
 
-export default class FindOneSQLBuilder<T extends Target> {
+export default class FindOneSQLBuilder<T extends Entity> {
     protected metadata: TargetMetadata<T>
 
     public unions: UnionSQLBuilder[] = []
@@ -32,8 +32,8 @@ export default class FindOneSQLBuilder<T extends Target> {
     public group?: GroupSQLBuilder<T>
 
     constructor(
-        public target: T,
-        public options: FindOneQueryOptions<InstanceType<T>> = {},
+        public target: Constructor<T>,
+        public options: FindOneQueryOptions<T> = {},
         public alias: string = target.name.toLowerCase(),
         protected isMain: boolean = true,
         scope: 'findOne' | 'find' = 'findOne'

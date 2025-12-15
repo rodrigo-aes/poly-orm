@@ -11,13 +11,13 @@ import { MetadataHandler } from "../../Metadata"
 import { SQLStringHelper, PropertySQLHelper } from "../../Helpers"
 
 // Types
-import type { Target, TargetMetadata } from "../../types"
+import type { Entity, Constructor, TargetMetadata } from "../../types"
 
-export default class FindByPkSQLBuilder<T extends Target> {
+export default class FindByPkSQLBuilder<T extends Entity> {
     protected metadata: TargetMetadata<T>
 
     constructor(
-        public target: T,
+        public target: Constructor<T>,
         public pk: any,
         public alias: string = target.name.toLowerCase()
     ) {

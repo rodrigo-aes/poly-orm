@@ -10,9 +10,7 @@ import {
 import {
     BaseEntity,
     BasePolymorphicEntity,
-    Collection,
 
-    type Pagination,
     type PaginationInitMap
 } from "../../Entities"
 
@@ -25,27 +23,27 @@ import type {
     TargetMetadata,
     PolymorphicEntityTarget,
     StaticEntityTarget,
-    StaticPolymorphicEntityTarget
+    StaticPolymorphicEntityTarget,
+    Constructor
 } from "../../types"
 
 import type {
-    MySQL2RawData,
-    MappedDataType,
     EntityData,
     JSONData,
-    DataFillMethod
+    FillMethod
 } from "./types"
 
 // Exceptions
 import PolyORMException from "../../Errors"
 
-export default class MySQL2RawDataHandler<T extends Target> {
+export default class MySQLDataHandler<T extends Entity> {
     private metadata: TargetMetadata<T>
 
     constructor(
-        public target: T,
-        public fillMethod: DataFillMethod,
-        private raw: MySQL2RawData[]
+        private target: Constructor<T>,
+        private fillMethod: FillMethod,
+        private raw: any[],
+        private toSource: boolean = false
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
     }
@@ -76,10 +74,10 @@ export default class MySQL2RawDataHandler<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    public entity<M extends Target = T>(
-        mapTo: M | T = this.target,
+    public entity(
+        mapTo: Constructor<T> = this.target,
         pagination?: PaginationInitMap
-    ): EntityData<InstanceType<M>> {
+    ): EntityData<T> {
         return this.fill(
             this.fillMethod,
             mapTo,
@@ -89,18 +87,18 @@ export default class MySQL2RawDataHandler<T extends Target> {
                 'entity',
                 undefined,
                 mapTo
-            ) as InstanceType<M>[],
+            ),
             pagination
-        ) as EntityData<InstanceType<M>>
+        )
     }
 
     // Privates ---------------------------------------------------------------
-    private fill<M extends Target = T>(
-        method: DataFillMethod = this.fillMethod,
-        mapTo: M | T = this.target,
-        data: InstanceType<M>[],
+    private fill(
+        method: FillMethod = this.fillMethod,
+        mapTo: Constructor<T> = this.target,
+        data: T[],
         pagination?: PaginationInitMap
-    ): EntityData<InstanceType<M>> {
+    ): EntityData<T> {
         switch (method) {
             case "One": return data[0] ?? null
 
@@ -109,34 +107,37 @@ export default class MySQL2RawDataHandler<T extends Target> {
             case "Many": return CollectionsMetadataHandler.build(
                 mapTo,
                 data
-            ) as Collection<InstanceType<M>>
+            )
 
             // ----------------------------------------------------------------
 
             case "Paginate": return PaginationMetadataHandler.build(
                 mapTo,
                 pagination!,
-                data
-            ) as Pagination<InstanceType<M>>
+                CollectionsMetadataHandler.build(
+                    mapTo,
+                    data
+                )
+            )
         }
     }
 
     // ------------------------------------------------------------------------
 
-    private reduce<M extends Target = T>(
-        raw: MySQL2RawData[],
+    private reduce(
+        raw: any[],
         metadata: TargetMetadata<any> = this.metadata,
         method: 'json' | 'entity' = 'json',
         relation?: RelationMetadataType,
-        mapTo: M = (relation?.relatedTarget ?? this.target) as M
-    ): MappedDataType<M, typeof method>[] {
+        mapTo: Target = (relation?.relatedTarget ?? this.target)
+    ): any[] {
         if (raw.length === 0) return raw
 
         raw = raw.map(item => this.removeAlias(
             item, this.firstAlias(raw)
         ))
 
-        const reduced: MappedDataType<M, typeof method>[] = []
+        const reduced: any[] = []
         const mapped = new Set<string>()
         const pk = metadata.columns.primary.name
 
@@ -151,8 +152,8 @@ export default class MySQL2RawDataHandler<T extends Target> {
 
             switch (method) {
                 case "json": reduced.push({
-                    ...this.filterColumns<M>(toMerge[0]),
-                    ...this.filterRelations<M>(toMerge, metadata, method)
+                    ...this.filterColumns(toMerge[0]),
+                    ...this.filterRelations(toMerge, metadata, method)
                 })
                     break
 
@@ -161,19 +162,19 @@ export default class MySQL2RawDataHandler<T extends Target> {
                 case "entity":
                     const entity = this.mapToEntity(
                         mapTo,
-                        this.filterColumns<M>(toMerge[0]),
-                        (relation as any)?.shouldMapToSource
+                        this.filterColumns(toMerge[0]),
+                        (relation as any)?.shouldMapToSource ?? this.toSource
                     )
 
                     reduced.push(
                         entity.fill(
-                            this.filterRelations<M>(
+                            this.filterRelations(
                                 toMerge,
                                 metadata,
                                 method,
                                 entity
                             )
-                        ) as InstanceType<M>
+                        )
                     )
                     break
             }
@@ -217,39 +218,33 @@ export default class MySQL2RawDataHandler<T extends Target> {
     // ------------------------------------------------------------------------
 
     private mapToPolymorphicEntity(
-        target: PolymorphicEntityTarget,
+        target: any,
         data: any,
         toSource: boolean
     ): Entity {
         return toSource
-            ? (target as StaticPolymorphicEntityTarget)
-                .build(data)
-                .toSourceEntity()
-
-            : (target as StaticPolymorphicEntityTarget)
-                .build(data)
+            ? target.build(data).toSourceEntity()
+            : target.build(data)
     }
 
     // ------------------------------------------------------------------------
 
-    private filterColumns<Entity extends Target = T>(raw: MySQL2RawData): (
-        JSONData<Entity>
-    ) {
+    private filterColumns(raw: any): any {
         return Object.fromEntries(Object.entries(raw).flatMap(
             ([key, value]) => key.includes('_')
                 ? []
                 : [[key, value]]
-        )) as JSONData<Entity>
+        ))
     }
 
     // ------------------------------------------------------------------------
 
-    private filterRelations<M extends Target = T>(
-        raw: MySQL2RawData[],
+    private filterRelations(
+        raw: any[],
         metadata: TargetMetadata<any> = this.metadata,
         method: 'json' | 'entity' = 'json',
         parent?: Entity
-    ): { [K: string]: MappedDataType<M, typeof method> } {
+    ): { [K: string]: any } {
         return Object.fromEntries(
             Array
                 .from(this.filterRelationsKeys(raw))
@@ -269,7 +264,7 @@ export default class MySQL2RawDataHandler<T extends Target> {
                         parent
                     )]]
                 })
-        ) as { [K: string]: MappedDataType<M, typeof method> }
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -300,7 +295,7 @@ export default class MySQL2RawDataHandler<T extends Target> {
                         // ----------------------------------------------------
 
                         case 'Many': return [
-                            relation,
+                            relation as any,
                             parent,
                             undefined,
                             new relation.collection!(...data)
@@ -314,21 +309,21 @@ export default class MySQL2RawDataHandler<T extends Target> {
     // ------------------------------------------------------------------------
 
     private filterRelationsByKey(
-        raw: MySQL2RawData[],
+        raw: any[],
         key: string
-    ): MySQL2RawData[] {
+    ): any[] {
         return raw
             .map(item => Object.fromEntries(
                 Object
                     .entries(item)
                     .filter(([path]) => path.startsWith(`${key}_`))
-            ) as MySQL2RawData)
+            ))
             .filter(item => !this.allNull(item))
     }
 
     // ------------------------------------------------------------------------
 
-    private filterRelationsKeys(raw: MySQL2RawData[]): Set<string> {
+    private filterRelationsKeys(raw: any[]): Set<string> {
         return new Set(raw.flatMap(item => Object.keys(item).flatMap(
             key => key.includes('_')
                 ? key.split('_')[0]
@@ -338,7 +333,7 @@ export default class MySQL2RawDataHandler<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    private allNull(columns: JSONData<T>): boolean {
+    private allNull(columns: any): boolean {
         return Object.entries(columns)
             .map(([_, value]) => value)
             .every(value => value === null)
@@ -362,7 +357,5 @@ export default class MySQL2RawDataHandler<T extends Target> {
 }
 
 export {
-    type MySQL2RawData,
-    type JSONData as RawData,
-    type DataFillMethod
+    type FillMethod
 }

@@ -24,7 +24,7 @@ import type { SelectPropertyType, SelectPropertiesOptions } from "./types"
  */
 export default class SelectQueryBuilder<T extends Entity> {
     /** @internal */
-    protected metadata: TargetMetadata<Constructor<T>>
+    protected metadata: TargetMetadata<T>
 
     /** @internal */
     private _properties: SelectPropertyType<T>[] = []

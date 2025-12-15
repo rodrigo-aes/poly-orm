@@ -8,13 +8,13 @@ import {
 import { Case } from "../../ConditionalSQLBuilder"
 
 // Types
-import type { Target } from "../../../types"
+import type { Entity, Constructor } from "../../../types"
 import type { CountQueryOption, CountCaseOptions } from "./types"
 
-export default class CountSQL<T extends Target> {
+export default class CountSQL<T extends Entity> {
     constructor(
-        public target: T,
-        public options: CountQueryOption<InstanceType<T>>,
+        public target: Constructor<T>,
+        public options: CountQueryOption<T>,
         public as?: string,
         public alias: string = target.name.toLowerCase()
     ) { }
@@ -62,7 +62,7 @@ export default class CountSQL<T extends Target> {
 
     private caseOptionSQL(): string {
         return this.caseClauseSQL(this.options as (
-            CaseQueryOptions<InstanceType<T>>
+            CaseQueryOptions<T>
         ))
     }
 
@@ -74,7 +74,7 @@ export default class CountSQL<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    private caseClauseSQL(options: CaseQueryOptions<InstanceType<T>>): string {
+    private caseClauseSQL(options: CaseQueryOptions<T>): string {
         return new CaseSQLBuilder(
             this.target,
             options,

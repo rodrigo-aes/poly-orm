@@ -16,9 +16,9 @@ export default class BeforeUpdateMetadata extends HookMetadata {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public call<T extends Entity>(
-        attributes: T | UpdateAttributes<T>,
-        where?: ConditionalQueryOptions<T>
+    public call(
+        attributes: Entity | UpdateAttributes<any>,
+        where?: ConditionalQueryOptions<any>
     ) {
         return this.hookFn(attributes, where)
     }

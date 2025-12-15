@@ -6,7 +6,7 @@ import ConditionalQueryBuilder from "../ConditionalQueryBuilder"
 
 // Handlers
 import {
-    MySQL2QueryExecutionHandler,
+    MySQLOperation,
     type DeleteResult
 } from "../../Handlers"
 
@@ -28,7 +28,7 @@ import type { ExistsQueryOptions } from "../ExistsQueryBuilder"
  */
 export default class DeleteQueryBuilder<T extends BaseEntity> {
     /** @internal */
-    private _sqlBuilder?: DeleteSQLBuilder<Constructor<T>>
+    private _sqlBuilder?: DeleteSQLBuilder<T>
 
     /** @internal */
     private _where?: ConditionalQueryBuilder<T>
@@ -52,7 +52,7 @@ export default class DeleteQueryBuilder<T extends BaseEntity> {
 
     // Privates ---------------------------------------------------------------
     /** @internal */
-    private get sqlBuilder(): DeleteSQLBuilder<Constructor<T>> {
+    private get sqlBuilder(): DeleteSQLBuilder<T> {
         return this._sqlBuilder ?? this.instantiateSQLBuilder()
     }
 
@@ -151,10 +151,9 @@ export default class DeleteQueryBuilder<T extends BaseEntity> {
     * @returns - Delete result
     */
     public exec(): Promise<DeleteResult> {
-        return new MySQL2QueryExecutionHandler(
+        return new MySQLOperation.Delete(
             this.target,
-            this.sqlBuilder,
-            'raw'
+            this.sqlBuilder
         )
             .exec()
     }
@@ -170,7 +169,7 @@ export default class DeleteQueryBuilder<T extends BaseEntity> {
 
     // Privates ---------------------------------------------------------------
     /** @internal */
-    private instantiateSQLBuilder(): DeleteSQLBuilder<Constructor<T>> {
+    private instantiateSQLBuilder(): DeleteSQLBuilder<T> {
         this._sqlBuilder = new DeleteSQLBuilder(
             this.target,
             this._where?.toQueryOptions() ?? {},

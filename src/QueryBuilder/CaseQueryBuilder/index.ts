@@ -14,7 +14,7 @@ import type { ConditionalQueryHandler } from "../types"
  */
 export default class CaseQueryBuilder<T extends Entity> {
     /** @internal */
-    protected metadata: TargetMetadata<Constructor<T>>
+    protected metadata: TargetMetadata<T>
 
     /** @internal */
     private _whens!: CaseQueryTuple<T>[]

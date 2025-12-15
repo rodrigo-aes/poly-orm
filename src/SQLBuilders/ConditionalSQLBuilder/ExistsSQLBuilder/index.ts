@@ -12,20 +12,20 @@ import { MetadataHandler, type RelationMetadataType } from "../../../Metadata"
 import { SQLStringHelper } from "../../../Helpers"
 
 // Types
-import type { Target, TargetMetadata } from "../../../types"
+import type { Entity, Constructor, TargetMetadata } from "../../../types"
 import type {
     ExistsQueryOptions,
     EntityExistsQueryOptions,
     EntityExistsQueryOption
 } from "./types"
 
-export default class ExistsSQLBuilder<T extends Target> {
+export default class ExistsSQLBuilder<T extends Entity> {
     protected metadata: TargetMetadata<T>
     public unions: UnionSQLBuilder[] = []
 
     constructor(
-        public target: T,
-        public options: string | ExistsQueryOptions<InstanceType<T>>[
+        public target: Constructor<T>,
+        public options: string | ExistsQueryOptions<T>[
             typeof Exists
         ],
         public alias: string = target.name.toLowerCase()
@@ -90,11 +90,11 @@ export default class ExistsSQLBuilder<T extends Target> {
         parentAlias?: string,
         alias?: string
     ): string {
-        const on = ConditionalSQLBuilder.on(
+        const on = ConditionalSQLBuilder.on<any, any>(
             parentMeta.target,
             metadata.target,
             relation,
-            options?.where as ConditionalQueryOptions<any> | undefined,
+            options?.where,
             parentAlias,
             alias
         )

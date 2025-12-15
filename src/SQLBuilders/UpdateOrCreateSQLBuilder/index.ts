@@ -12,22 +12,20 @@ import FindOneSQLBuilder from "../FindOneSQLBuilder"
 import { SQLStringHelper } from "../../Helpers"
 
 // Types
-import type { EntityTarget } from "../../types"
+import type { Constructor } from "../../types"
 import type { UpdateOrCreateAttributes } from "./types"
 import type { EntityPropertiesKeys } from "../../types"
 
-export default class UpdateOrCreateSQLBuilder<T extends EntityTarget> {
+export default class UpdateOrCreateSQLBuilder<T extends BaseEntity> {
     protected metadata: EntityMetadata
 
     private createSQLBuilder: CreateSQLBuilder<T>
-    private _columns: EntityPropertiesKeys<InstanceType<T>>[] = []
+    private _columns: EntityPropertiesKeys<T>[] = []
     private _values: any[] = []
 
     constructor(
-        public target: T,
-        public _attributes: BaseEntity | UpdateOrCreateAttributes<
-            InstanceType<T>
-        >,
+        public target: Constructor<T>,
+        public _attributes: BaseEntity | UpdateOrCreateAttributes<T>,
         public alias: string = target.name.toLowerCase()
     ) {
         this.metadata = EntityMetadata.findOrThrow(this.target)
@@ -40,22 +38,20 @@ export default class UpdateOrCreateSQLBuilder<T extends EntityTarget> {
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get attributes(): UpdateOrCreateAttributes<InstanceType<T>> {
+    public get attributes(): UpdateOrCreateAttributes<T> {
         return {
-            ...(
-                this._attributes instanceof BaseEntity
-                    ? this._attributes.columns()
-                    : this._attributes
-            ),
+            ...this._attributes instanceof BaseEntity
+                ? this._attributes.columns()
+                : this._attributes,
             ...Object.fromEntries(this._columns.map(
                 (column, index) => [column, this._values[index]]
             ))
-        } as UpdateOrCreateAttributes<InstanceType<T>>
+        } as UpdateOrCreateAttributes<T>
     }
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public fields(...names: EntityPropertiesKeys<InstanceType<T>>[]): this {
+    public fields(...names: EntityPropertiesKeys<T>[]): this {
         this._columns.push(...names)
         return this
     }
@@ -69,9 +65,7 @@ export default class UpdateOrCreateSQLBuilder<T extends EntityTarget> {
 
     // ------------------------------------------------------------------------
 
-    public setData(attributes: UpdateOrCreateAttributes<InstanceType<T>>): (
-        this
-    ) {
+    public setData(attributes: UpdateOrCreateAttributes<T>): this {
         this._attributes = attributes
 
         return this

@@ -4,7 +4,8 @@ import {
 
 // SQL Builders
 import {
-    FindOneSQLBuilder,
+    type FindOneSQLBuilder,
+    type FindSQLBuilder,
 
     type FindOneQueryOptions as SQLBuilderOptions,
     type RelationsOptions,
@@ -20,9 +21,11 @@ import GroupQueryBuilder from "../GroupQueryBuilder"
 
 // Handlers
 import {
-    MySQL2QueryExecutionHandler,
+    MySQLOperation,
     type FindOneResult,
-    type ResultMapOption
+    type FindResult,
+    type MapOptions,
+    type CollectMapOptions
 } from "../../Handlers"
 
 // Types
@@ -36,7 +39,7 @@ import type {
     Constructor,
 } from "../../types"
 
-import type { FindOneQueryOptions } from "./types"
+import type { FindOneQueryOptions } from "./FindOneQueryBuilder"
 
 import type {
     SelectQueryHandler,
@@ -59,9 +62,9 @@ import PolyORMException from "../../Errors"
 /**
  * Build FindOne query
  */
-export default class FindOneQueryBuilder<T extends Entity> {
+export default abstract class FindQueryBuilder<T extends Entity> {
     /** @internal */
-    protected metadata: TargetMetadata<Constructor<T>>
+    protected metadata: TargetMetadata<T>
 
     /** @internal */
     protected _options: FindOneQueryOptions<T> = {
@@ -247,11 +250,11 @@ export default class FindOneQueryBuilder<T extends Entity> {
      * @param joinClause - Join query handler
      * @returns {this} - `this`
      */
-    public innerJoin<Related extends Entity>(
-        relation: Constructor<Related> | string,
-        joinClause?: JoinQueryHandler<Related>
+    public innerJoin<R extends Entity>(
+        relation: Constructor<R> | string,
+        joinClause?: JoinQueryHandler<R>
     ): this {
-        JoinQueryBuilder.build(
+        JoinQueryBuilder.build<T, R>(
             this.metadata,
             relation,
             this._options.relations!,
@@ -270,11 +273,11 @@ export default class FindOneQueryBuilder<T extends Entity> {
      * @param joinClause - Join query handler
      * @returns {this} - `this`
      */
-    public leftJoin<Related extends Entity>(
-        relation: Constructor<Related> | string,
-        joinClause?: JoinQueryHandler<Related>
+    public leftJoin<R extends Entity>(
+        relation: Constructor<R> | string,
+        joinClause?: JoinQueryHandler<R>
     ): this {
-        JoinQueryBuilder.build(
+        JoinQueryBuilder.build<T, R>(
             this.metadata,
             relation,
             this._options.relations!,
@@ -308,16 +311,9 @@ export default class FindOneQueryBuilder<T extends Entity> {
      * @default 'entity'
      * @returns - A entity instance or `null`
      */
-    public exec<MapTo extends ResultMapOption>(mapTo: MapTo): (
-        Promise<FindOneResult<Constructor<T>, MapTo>>
-    ) {
-        return new MySQL2QueryExecutionHandler(
-            this.target,
-            this.toSQLBuilder(),
-            mapTo
-        )
-            .exec()
-    }
+    public abstract exec(
+        mapOptions?: MapOptions | CollectMapOptions<T>
+    ): Promise<any>
 
     // ------------------------------------------------------------------------
 
@@ -347,13 +343,7 @@ export default class FindOneQueryBuilder<T extends Entity> {
 
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected toSQLBuilder(): FindOneSQLBuilder<Constructor<T>> {
-        return new FindOneSQLBuilder(
-            this.target,
-            this.toQueryOptions(),
-            this.alias
-        )
-    }
+    protected abstract toSQLBuilder(): FindOneSQLBuilder<T> | FindSQLBuilder<T>
 
     // ------------------------------------------------------------------------
 

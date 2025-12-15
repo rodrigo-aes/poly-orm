@@ -30,7 +30,7 @@ import type {
  */
 export default class AndQueryBuilder<T extends Entity> {
     /** @internal */
-    protected metadata: TargetMetadata<Constructor<T>>
+    protected metadata: TargetMetadata<T>
 
     /** @internal */
     private _options: AndQueryOptions<T> = {}

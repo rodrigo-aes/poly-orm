@@ -5,17 +5,17 @@ import ConditionalSQLBuilder, { Case } from "../ConditionalSQLBuilder"
 import { SQLStringHelper, PropertySQLHelper } from "../../Helpers"
 
 // Types
-import type { Target } from "../../types"
+import type { Entity, Constructor } from "../../types"
 import type {
     OrderQueryOptions,
     OrderQueryOption,
     OrderCaseOption
 } from "./types"
 
-export default class OrderSQLBuilder<T extends Target> {
+export default class OrderSQLBuilder<T extends Entity> {
     constructor(
-        public target: T,
-        public options: OrderQueryOptions<InstanceType<T>>,
+        public target: Constructor<T>,
+        public options: OrderQueryOptions<T>,
         public alias: string = target.name.toLowerCase()
     ) { }
 
@@ -31,7 +31,7 @@ export default class OrderSQLBuilder<T extends Target> {
     }
 
     // Privates ---------------------------------------------------------------
-    private orderSQL(option: OrderQueryOption<InstanceType<T>>): string {
+    private orderSQL(option: OrderQueryOption<T>): string {
         return `${PropertySQLHelper.pathToAlias(option[0], this.alias)} ${(
             option[1]
         )}`
@@ -39,7 +39,7 @@ export default class OrderSQLBuilder<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    private caseSQL(option: OrderCaseOption<InstanceType<T>>): string {
+    private caseSQL(option: OrderCaseOption<T>): string {
         return ConditionalSQLBuilder.case(
             this.target,
             option[Case],

@@ -9,10 +9,7 @@ import {
 import CountQueryBuilder from "../CountQueryBuilder"
 
 // Handlers
-import {
-    MySQL2QueryExecutionHandler,
-    type CountResult
-} from "../../Handlers"
+import { MySQLOperation } from "../../Handlers"
 
 // Types
 import type {
@@ -181,13 +178,12 @@ export default class CountManyQueryBuilder<T extends Entity> {
      * Execute defined operation in database
      * @returns - Count result
      */
-    public exec<T extends CountResult = CountResult>(): Promise<T> {
-        return new MySQL2QueryExecutionHandler(
+    public exec<T extends any = any>(): Promise<T> {
+        return new MySQLOperation.Count(
             this.target,
-            this.toSQLBuilder(),
-            'json'
+            this.toSQLBuilder()
         )
-            .exec() as unknown as Promise<T>
+            .exec()
     }
 
     // ------------------------------------------------------------------------
@@ -202,7 +198,7 @@ export default class CountManyQueryBuilder<T extends Entity> {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    public toSQLBuilder(): CountSQLBuilder<Constructor<T>> {
+    public toSQLBuilder(): CountSQLBuilder<T> {
         return CountSQLBuilder.countManyBuilder(
             this.target,
             this.toQueryOptions(),

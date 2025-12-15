@@ -191,7 +191,7 @@ export default class EntityMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public get Repository(): typeof Repository<any> {
+    public get Repository(): Constructor<Repository<any>> {
         return MetadataHandler.getRepository(this.target) ?? Repository
     }
 
@@ -301,7 +301,7 @@ export default class EntityMetadata extends Metadata {
     // ------------------------------------------------------------------------
 
     public defineRepository(repository: Constructor<Repository<any>>): void {
-        return MetadataHandler.setRepository(repository, this.target)
+        MetadataHandler.setRepository(repository, this.target)
     }
 
     // ------------------------------------------------------------------------

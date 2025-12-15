@@ -3,8 +3,10 @@ import EntityQueryBuilder from "./EntityQueryBuilder"
 import PolymorphicEntityQueryBuilder from "./PolymorphicEntityQueryBuilder"
 import ConnectionQueryBuilder from "./ConnectionQueryBuilder"
 
-import FindOneQueryBuilder from "./FindOneQueryBuilder"
-import FindQueryBuilder from "./FindQueryBuilder"
+import {
+    FindOneQueryBuilder,
+    FindQueryBuilder
+} from "./FindQueryBuilder"
 
 import {
     BulkInsertQueryBuilder,

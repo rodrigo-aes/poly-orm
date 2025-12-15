@@ -16,9 +16,11 @@ import { SQLStringHelper } from "../../Helpers"
 
 // Types
 import type {
-    Target,
+    Entity,
+    Constructor,
     TargetMetadata,
-    PolymorphicEntityTarget
+    PolymorphicEntityTarget,
+    Target
 } from "../../types"
 import type { AndQueryOptions } from "../ConditionalSQLBuilder"
 import type { CountQueryOptions } from "./types"
@@ -26,15 +28,15 @@ import type { CountQueryOption, CountCaseOptions } from "./CountSQL"
 import JoinSQLBuilder from "../JoinSQLBuilder"
 
 
-export default class CountSQLBuilder<T extends Target> {
+export default class CountSQLBuilder<T extends Entity> {
     protected metadata: TargetMetadata<T>
 
     private _unionSQLBuilders?: UnionSQLBuilder[]
     private _joinSQLBuilders?: JoinSQLBuilder<any>[]
 
     constructor(
-        public target: T,
-        public options: CountQueryOptions<InstanceType<T>>,
+        public target: Constructor<T>,
+        public options: CountQueryOptions<T>,
         public alias: string = target.name.toLowerCase(),
         public type: 'isolated' | 'inline' = 'isolated',
     ) {
@@ -138,8 +140,8 @@ export default class CountSQLBuilder<T extends Target> {
                 this.metadata.relations.search(option) ? option : []
             )
 
-            if ((option as CountCaseOptions<InstanceType<T>>)[Case]) return (
-                (option as CountCaseOptions<InstanceType<T>>)[Case]
+            if ((option as CountCaseOptions<T>)[Case]) return (
+                (option as CountCaseOptions<T>)[Case]
                     .flatMap(option => Array.isArray(option)
                         ? this.extractAndRelationKeys(option[0])
                         : []
@@ -160,9 +162,9 @@ export default class CountSQLBuilder<T extends Target> {
 
     // Static Methods =========================================================
     // Publics ----------------------------------------------------------------
-    public static inline<T extends Target>(
-        target: T,
-        options: CountQueryOptions<InstanceType<T>>,
+    public static inline<T extends Entity>(
+        target: Constructor<T>,
+        options: CountQueryOptions<T>,
         alias?: string,
     ): string {
         return Object
@@ -175,9 +177,9 @@ export default class CountSQLBuilder<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    public static countBuilder<T extends Target>(
-        target: T,
-        options: CountQueryOption<InstanceType<T>>,
+    public static countBuilder<T extends Entity>(
+        target: Constructor<T>,
+        options: CountQueryOption<T>,
         alias?: string,
     ): CountSQLBuilder<T> {
         return new CountSQLBuilder(
@@ -189,9 +191,9 @@ export default class CountSQLBuilder<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    public static countManyBuilder<T extends Target>(
-        target: T,
-        options: CountQueryOptions<InstanceType<T>>,
+    public static countManyBuilder<T extends Entity>(
+        target: Constructor<T>,
+        options: CountQueryOptions<T>,
         alias?: string,
     ): CountSQLBuilder<T> {
         return new CountSQLBuilder(

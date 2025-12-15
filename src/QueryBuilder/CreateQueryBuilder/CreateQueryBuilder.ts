@@ -16,7 +16,7 @@ export default abstract class CreateQueryBuilder<T extends BaseEntity> {
     protected metadata: EntityMetadata
 
     /** @internal */
-    protected sqlBuilder: CreateSQLBuilder<Constructor<T>>
+    protected sqlBuilder: CreateSQLBuilder<T>
 
     constructor(
         public target: Constructor<T>,

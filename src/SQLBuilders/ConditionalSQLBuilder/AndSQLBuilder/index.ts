@@ -14,7 +14,7 @@ import { MetadataHandler } from "../../../Metadata"
 import { SQLStringHelper, PropertySQLHelper } from "../../../Helpers"
 
 // Types
-import type { Entity, Target, TargetMetadata } from "../../../types"
+import type { Entity, Constructor, TargetMetadata } from "../../../types"
 import type UnionSQLBuilder from "../../UnionSQLBuilder"
 import type {
     AndQueryOptions,
@@ -22,15 +22,15 @@ import type {
     RelationAndQueryOptions
 } from "./types"
 
-export default class AndSQLBuilder<T extends Target> {
+export default class AndSQLBuilder<T extends Entity> {
     private metadata: TargetMetadata<T>
-    private propOptions: PropAndQueryOptions<InstanceType<T>>
+    private propOptions: PropAndQueryOptions<T>
     private relOptions?: RelationAndQueryOptions
     private existsSQLBuilder?: ExistsSQLBuilder<T>
 
     constructor(
-        public target: T,
-        public options: AndQueryOptions<InstanceType<T>>,
+        public target: Constructor<T>,
+        public options: AndQueryOptions<T>,
         public alias: string = target.name.toLowerCase()
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
@@ -63,7 +63,7 @@ export default class AndSQLBuilder<T extends Target> {
         return Object
             .entries(this.propOptions)
             .map(([key, value]) => this.propertySQL(
-                key as keyof PropAndQueryOptions<InstanceType<T>>,
+                key as keyof PropAndQueryOptions<T>,
                 value as any
             ))
     }
@@ -86,11 +86,9 @@ export default class AndSQLBuilder<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    private propertySQL<
-        Key extends keyof PropAndQueryOptions<InstanceType<T>>
-    >(
+    private propertySQL<Key extends keyof PropAndQueryOptions<T>>(
         columnName: Key,
-        value: PropAndQueryOptions<InstanceType<T>>[Key]
+        value: PropAndQueryOptions<T>[Key]
     ): string {
         return this.isOperator(value)
             ? this.operatorSQL(columnName, value as CompatibleOperators<any>)
@@ -144,26 +142,17 @@ export default class AndSQLBuilder<T extends Target> {
 
     // ------------------------------------------------------------------------
 
-    private filterPropetiesOptions(): PropAndQueryOptions<InstanceType<T>> {
+    private filterPropetiesOptions(): PropAndQueryOptions<T> {
         return Object.fromEntries(
             Object
                 .entries(this.options)
                 .filter(([key]) => this.metadata.columns.search(key))
-        ) as PropAndQueryOptions<InstanceType<T>>
+        ) as PropAndQueryOptions<T>
     }
 
     // ------------------------------------------------------------------------
 
     private filterRelationOptions(): RelationAndQueryOptions {
-        console.log('relations', Object.fromEntries(
-            Object
-                .entries(this.options)
-                .filter(([key, value]) =>
-                    (key.includes('.') || this.metadata.relations.search(key))
-                    && value
-                )
-        ))
-
         return Object.fromEntries(
             Object
                 .entries(this.options)

@@ -1,36 +1,34 @@
-import MySQL2QueryExecutionHandler, {
-    type ResultMapOption,
-    type ExecResult,
+import MySQLOperation, {
+    type MapOptions,
+    type CollectMapOptions,
     type FindOneResult,
     type FindResult,
-    type PaginateResult,
-    type CountResult,
+    type CountManyResult,
     type CreateResult,
+    type CreateCollectMapOptions,
+    type UpdateResult,
     type DeleteResult,
+} from "./MySQLOperation"
 
-    type RelationQueryExecutionHandler
-} from "./MySQL2QueryExecutionHandler"
-
+import MySQLDataHandler from "./MySQLDataHandler"
 import EntityBuilder from "./EntityBuilder"
 import PolymorphicEntityBuilder from "./PolymorphicEntityBuilder"
-import MySQL2RawDataHandler from "./MySQL2RawDataHandler"
 import ConditionalQueryJoinsHandler from "./ConditionalQueryJoinsHandler"
 
 export {
+    MySQLOperation,
+    MySQLDataHandler,
     EntityBuilder,
     PolymorphicEntityBuilder,
-    MySQL2QueryExecutionHandler,
-    MySQL2RawDataHandler,
     ConditionalQueryJoinsHandler,
 
-    type ExecResult,
-    type ResultMapOption,
+    type MapOptions,
+    type CollectMapOptions,
     type FindOneResult,
     type FindResult,
-    type PaginateResult,
-    type CountResult,
+    type CountManyResult,
     type CreateResult,
+    type CreateCollectMapOptions,
+    type UpdateResult,
     type DeleteResult,
-
-    type RelationQueryExecutionHandler
 }

@@ -5,8 +5,8 @@ import EntityQueryBuilder from "./EntityQueryBuilder"
 import type { Entity, Constructor } from "../types"
 import type { BaseEntity } from "../Entities"
 
-import type FindOneQueryBuilder from "./FindOneQueryBuilder"
-import type FindQueryBuilder from "./FindQueryBuilder"
+import type FindOneQueryBuilder from "./FindQueryBuilder/FindOneQueryBuilder"
+import type BulkFindQueryBuilder from "./FindQueryBuilder/BulkFindQueryBuilder"
 import type { PaginateQueryBuilder } from "./types"
 import type CountQueryBuilder from "./CountQueryBuilder"
 import type CountManyQueryBuilder from "./CountManyQueryBuilder"
@@ -41,12 +41,12 @@ export default class ConnectionQueryBuilder {
      * Instantiate a `FindQueryBuilder` to target entity and return
      * @param target - Target table entity
      * @param alias - Entity query alias
-     * @returns {FindQueryBuilder<T>} - FindQueryBuilder
+     * @returns {BulkFindQueryBuilder<T>} - FindQueryBuilder
      */
     public findFrom<T extends Entity>(
         target: Constructor<T>,
         alias?: string
-    ): FindQueryBuilder<T> {
+    ): BulkFindQueryBuilder<T> {
         return new QueryBuilder(target, alias).find()
     }
 

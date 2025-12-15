@@ -21,20 +21,20 @@ import {
 import { SQLStringHelper } from "../../../Helpers"
 
 // Types
-import type { Target, TargetMetadata } from "../../../types"
+import type { Entity, Constructor, TargetMetadata } from "../../../types"
 import type { ConditionalQueryOptions } from "../types"
 
 export default class OnSQLBuilder<
-    Parent extends Target,
-    Related extends Target
+    Parent extends Entity,
+    Related extends Entity
 > extends ConditionalSQLBuilder<Related> {
     private parentMetadata: TargetMetadata<Parent>
 
     constructor(
-        public parentTarget: Parent,
-        public target: Related,
+        public parentTarget: Constructor<Parent>,
+        public target: Constructor<Related>,
         public relation: RelationMetadataType,
-        options?: ConditionalQueryOptions<InstanceType<Related>>,
+        options?: ConditionalQueryOptions<Related>,
         public parentAlias: string = parentTarget.name.toLowerCase(),
         alias: string = relation.name,
     ) {

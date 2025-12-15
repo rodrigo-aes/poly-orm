@@ -63,6 +63,12 @@ export default abstract class BasePolymorphicEntity<
     Targets extends BaseEntity[]
 > extends Entity {
     /** @internal */
+    declare readonly __repository: PolymorphicRepository<this>
+
+    /** @internal */
+    declare readonly __defaultCollection: Collection<this>
+
+    /** @internal */
     public static readonly __ROLE: 'INTERNAL' | 'EXTERNAL' = 'EXTERNAL'
 
     /**
@@ -99,10 +105,10 @@ export default abstract class BasePolymorphicEntity<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public getRepository<
-        T extends PolymorphicRepository<this> = PolymorphicRepository<this>
-    >(): T {
-        return this.getTrueMetadata().getRepository() as T
+    public getRepository<T extends BasePolymorphicEntity<any>>(this: T): T[
+        '__repository'
+    ] {
+        return this.getTrueMetadata().getRepository() as T['__repository']
     }
 
     // ------------------------------------------------------------------------
@@ -137,9 +143,9 @@ export default abstract class BasePolymorphicEntity<
      * the current polymorphic instance
      * @returns - Same polymorhic instance
      */
-    public async save<T extends BasePolymorphicEntity<any>>(this: T): (
-        Promise<T>
-    ) {
+    public async save<T extends BasePolymorphicEntity<any>>(this: T): Promise<
+        T
+    > {
         for (const { name } of this.getTrueMetadata().relations) if (
             (this[name as keyof T] as Entity | Collection<any>).shouldUpdate
         ) (
@@ -148,8 +154,9 @@ export default abstract class BasePolymorphicEntity<
 
         return this.getRepository().updateOrCreate(
             this.entityType,
-            this.toSourceEntity()
-        )
+            this.toSourceEntity(),
+            'this'
+        ) as Promise<T>
     }
 
     // ------------------------------------------------------------------------
@@ -287,11 +294,11 @@ export default abstract class BasePolymorphicEntity<
         this: T,
         source: S,
         attributes: CreationAttributes<ResolveSource<InstanceType<T>, S>>[],
-        mapTo: 'this' | 'source' = 'this'
+        returns: 'this' | 'source' = 'this'
     ): Promise<Collection<InstanceType<T>>> {
         return (this as StaticPolymorphicEntityTarget<T>)
             .getRepository()
-            .createMany(source, attributes as any, mapTo) as Promise<
+            .createMany(source, attributes, undefined, returns) as Promise<
                 Collection<InstanceType<T>>
             >
 

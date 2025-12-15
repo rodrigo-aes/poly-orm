@@ -10,7 +10,7 @@ export default class AfterUpdateMetadata extends HookMetadata {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public call<T extends Entity>(entity: T) {
+    public call(entity: Entity) {
         return this.hookFn(entity)
     }
 }

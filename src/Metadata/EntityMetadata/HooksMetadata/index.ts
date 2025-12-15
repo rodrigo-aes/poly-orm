@@ -34,11 +34,6 @@ import type { ResultSetHeader } from "mysql2"
 import type { Entity, Target, StaticTarget, } from "../../../types"
 
 import type {
-    RawData,
-    MySQL2RawData
-} from "../../../Handlers/MySQL2RawDataHandler"
-
-import type {
     FindQueryOptions,
     CreationAttributes,
     UpdateAttributes,
@@ -118,9 +113,7 @@ export default class HooksMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public async callAfterFind<
-        T extends Entity | RawData<any> | MySQL2RawData
-    >(entity: T) {
+    public async callAfterFind(entity: any) {
         if (this.toCall.has('after-find'))
             for (const hook of this.afterFind) await hook.call(entity)
     }
@@ -136,16 +129,8 @@ export default class HooksMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public async callAfterBulkFind<
-        T extends (
-            Entity |
-            RawData<any> |
-            MySQL2RawData
-        )
-    >(
-        entities: T[]
-    ) {
-        if (this.toCall.has('after-find'))
+    public async callAfterBulkFind(entities: any[]) {
+        if (this.toCall.has('after-bulk-find'))
             for (const hook of this.afterBulkFind) await hook.call(entities)
     }
 
@@ -178,9 +163,7 @@ export default class HooksMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public async callAfterBulkCreate<
-        T extends Entity | RawData<any> | MySQL2RawData
-    >(result: T[]) {
+    public async callAfterBulkCreate(result: any[]) {
         if (this.toCall.has('after-bulk-create'))
             for (const hook of this.afterBulkCreate) await hook.call(result)
     }

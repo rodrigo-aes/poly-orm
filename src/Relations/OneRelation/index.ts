@@ -1,5 +1,8 @@
 import util from "util"
 
+// Utils
+import ProxyMerge from "../../utils/ProxyMerge"
+
 // Handlers
 import {
     MySQL2QueryExecutionHandler,
@@ -36,28 +39,7 @@ export default abstract class OneRelation<T extends Entity, R extends Entity> {
         /** @internal */
         protected instance?: R | null
     ) {
-        return new Proxy(this, {
-            get: (target, prop, receiver) => {
-                const [t, value] = target.instance && prop in target.instance
-                    ? [
-                        target.instance,
-                        Reflect.get(target.instance, prop, receiver)
-                    ]
-                    : [target, Reflect.get(target, prop, receiver)]
-
-                return typeof value === "function"
-                    ? value.bind(t)
-                    : value
-            },
-
-            // ----------------------------------------------------------------
-
-            set(target, prop, value, receiver) {
-                return target.instance && prop in target.instance
-                    ? Reflect.set(target.instance, prop, value, receiver)
-                    : Reflect.set(target, prop, value, receiver)
-            }
-        })
+        return new ProxyMerge(this, 'instance') as any
     }
 
     // Getters ================================================================

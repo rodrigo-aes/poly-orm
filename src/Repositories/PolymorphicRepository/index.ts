@@ -15,17 +15,18 @@ import {
 } from "../../SQLBuilders"
 
 // Handlers
-import { MySQL2QueryExecutionHandler, type DeleteResult } from "../../Handlers"
+import {
+    MySQLOperation,
+
+    type CreateResult,
+    type CreateCollectMapOptions,
+    type UpdateResult,
+    type DeleteResult,
+} from "../../Handlers"
 
 // Types 
 import type { Constructor } from "../../types"
-import type { PolymorphicEntityMetadata } from "../../Metadata"
 import type { Source, ResolveSource } from "../../Entities"
-import type {
-    CreateQueryResult,
-    UpdateQueryResult,
-    UpdateOrCreateQueryResult
-} from "./types"
 
 // Exceptions
 import PolyORMException from "../../Errors"
@@ -47,24 +48,28 @@ export default class PolymorphicRepository<
      * entity instance of created register
      * @param source - Source entity
      * @param attributes - Creation attributes data
-     * @param mapTo - Return options map to case `this` returns a instance of 
+     * @param toSource - Return options map to case `this` returns a instance of 
      * polymorphic entity case `source` returns a instance of source entity 
      * @returns - Source or polymorphic entity instance
      */
-    public create<
-        S extends Source<T>,
-        M extends 'this' | 'source' = 'this'
-    >(
+    public create<S extends Source<T>, R extends 'this' | 'source' = 'this'>(
         source: S,
         attributes?: CreationAttributes<InstanceType<ResolveSource<T, S>>>,
-        mapTo?: M
-    ): Promise<CreateQueryResult<Constructor<T>, S, M>> {
-        return new MySQL2QueryExecutionHandler(
+        returns: R = 'this' as R
+    ): Promise<R extends 'this'
+        ? T
+        : ResolveSource<T, S>
+    > {
+        return new MySQLOperation.Create(
             this.resolveSource(source),
             new CreateSQLBuilder(source, attributes as any),
-            (mapTo ?? 'this') === 'this' ? this.target : 'entity'
+            undefined,
+            returns === 'source'
         )
-            .exec() as Promise<CreateQueryResult<Constructor<T>, S, M>>
+            .exec() as Promise<R extends 'this'
+                ? T
+                : ResolveSource<T, S>
+            >
     }
 
     // ------------------------------------------------------------------------
@@ -82,18 +87,31 @@ export default class PolymorphicRepository<
      */
     public createMany<
         S extends Source<T>,
-        M extends 'this' | 'source' = 'this'
+        M extends CreateCollectMapOptions<T>,
+        R extends 'this' | 'source' = 'this'
     >(
         source: S,
         attributes: CreationAttributes<InstanceType<ResolveSource<T, S>>>[],
-        mapTo?: M
-    ): Promise<CreateQueryResult<Constructor<T>, S, M>[]> {
-        return new MySQL2QueryExecutionHandler(
+        mapTo?: M,
+        returns: R = 'this' as R
+    ): Promise<CreateResult<
+        R extends 'this'
+        ? T
+        : ResolveSource<T, S>,
+        M
+    >> {
+        return new MySQLOperation.Create(
             this.resolveSource(source),
             new CreateSQLBuilder(source, attributes as any) as any,
-            (mapTo ?? 'this') === 'this' ? this.target : 'entity'
+            mapTo,
+            returns === 'source'
         )
-            .exec() as Promise<CreateQueryResult<Constructor<T>, S, M>[]>
+            .exec() as Promise<CreateResult<
+                R extends 'this'
+                ? T
+                : ResolveSource<T, S>,
+                M
+            >>
     }
 
     // ------------------------------------------------------------------------
@@ -108,13 +126,13 @@ export default class PolymorphicRepository<
      */
     public update<
         S extends Source<T>,
-        Att extends T | UpdateAttributes<InstanceType<ResolveSource<T, S>>>
+        A extends T | UpdateAttributes<ResolveSource<T, S>>
     >(
         source: S,
-        attributes: Att,
-        where?: ConditionalQueryOptions<InstanceType<ResolveSource<T, S>>>
-    ): Promise<UpdateQueryResult<Constructor<T>, S, Att>> {
-        return new MySQL2QueryExecutionHandler(
+        attributes: A,
+        where?: ConditionalQueryOptions<ResolveSource<T, S>>
+    ): Promise<UpdateResult<T, A>> {
+        return new MySQLOperation.Update(
             this.resolveSource(source),
             new UpdateSQLBuilder(
                 source,
@@ -123,9 +141,8 @@ export default class PolymorphicRepository<
                     : attributes,
                 where
             ),
-            'raw'
         )
-            .exec() as Promise<UpdateQueryResult<Constructor<T>, S, Att>>
+            .exec() as Promise<UpdateResult<T, A>>
     }
 
     // ------------------------------------------------------------------------
@@ -142,18 +159,27 @@ export default class PolymorphicRepository<
      */
     public updateOrCreate<
         S extends Source<T>,
-        M extends 'this' | 'source' = 'this'
+        R extends 'this' | 'source' = 'this'
     >(
         source: S,
         attributes: UpdateOrCreateAttributes<InstanceType<ResolveSource<T, S>>>,
-        mapTo?: M
-    ): Promise<UpdateOrCreateQueryResult<Constructor<T>, S, M>> {
-        return new MySQL2QueryExecutionHandler(
+        returns: R
+    ): Promise<
+        R extends 'this'
+        ? T
+        : ResolveSource<T, S>
+    > {
+        return new MySQLOperation.UpdateOrCreate(
             this.resolveSource(source),
             new UpdateOrCreateSQLBuilder<any>(source, attributes),
-            (mapTo ?? 'this') === 'this' ? this.target : 'entity'
+            undefined,
+            returns === 'source'
         )
-            .exec() as Promise<UpdateOrCreateQueryResult<Constructor<T>, S, M>>
+            .exec() as Promise<
+                R extends 'this'
+                ? T
+                : ResolveSource<T, S>
+            >
     }
 
     // ------------------------------------------------------------------------
@@ -169,12 +195,11 @@ export default class PolymorphicRepository<
         source: S,
         where: ConditionalQueryOptions<InstanceType<ResolveSource<T, S>>>
     ): Promise<DeleteResult> {
-        return new MySQL2QueryExecutionHandler(
+        return new MySQLOperation.Delete(
             this.resolveSource(source),
             new DeleteSQLBuilder(source, where),
-            'raw'
         )
-            .exec() as Promise<DeleteResult>
+            .exec()
     }
 
     // Privates ---------------------------------------------------------------
@@ -182,7 +207,7 @@ export default class PolymorphicRepository<
     private resolveSource<S extends Source<T>>(source: S): ResolveSource<
         T, S
     > {
-        return (this.metadata as PolymorphicEntityMetadata).entities[(() => {
+        return this.metadata.entities[(() => {
             switch (typeof source) {
                 case "string": return source
                 case "object": return source!.name
