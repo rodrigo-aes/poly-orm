@@ -13,20 +13,20 @@ import type PolymorphicHasManyHandlerSQLBuilder from "./PolymorphicHasManyHandle
 import type PolymorphicBelongsToHandlerSQLBuilder from "./PolymorphicBelongsToHandlerSQLBuilder"
 
 export type OneRelationHandlerSQLBuilder<
-    T extends Entity = any,
-    R extends Entity = any
+    T extends Entity = Entity,
+    R extends Entity = Entity
 > = (
         HasOneHandlerSQLBuilder<T, R> |
         BelongsToHandlerSQLBuilder<T, R> |
         HasOneThroughHandlerSQLBuilder<T, R> |
         BelongsToThroughHandlerSQLBuilder<T, R> |
         PolymorphicHasOneHandlerSQLBuilder<T, R> |
-        PolymorphicBelongsToHandlerSQLBuilder<T, BasePolymorphicEntity<any>>
+        PolymorphicBelongsToHandlerSQLBuilder<T, any>
     )
 
 export type ManyRelationHandlerSQLBuilder<
-    T extends Entity = any,
-    R extends Entity = any
+    T extends Entity = Entity,
+    R extends Entity = Entity
 > = (
         HasManyHandlerSQLBuilder<T, R> |
         HasManyThroughHandlerSQLBuilder<T, R> |

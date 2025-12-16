@@ -20,6 +20,8 @@ import {
     type DeleteResult
 } from "./OperationHandlers"
 
+import RelationOperationHandler from "./RelationOperationHandler"
+
 export default abstract class MySQLOperation {
     public static FindByPk = FindByPkOperation
     public static FindOne = FindOneOperation
@@ -30,6 +32,7 @@ export default abstract class MySQLOperation {
     public static Update = UpdateOperation
     public static UpdateOrCreate = UpdateOrCreateOperation
     public static Delete = DeleteOperation
+    public static Relation = RelationOperationHandler
 }
 
 export type {

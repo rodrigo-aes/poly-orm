@@ -42,14 +42,14 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
      * @returns - Entity instance
      */
     public create(attributes: CreationAttributes<T>): Promise<T> {
-        return new MySQLOperation.Create(
+        return new MySQLOperation.Create<T, never>(
             this.target,
-            new CreateSQLBuilder<Constructor<T>>(
+            new CreateSQLBuilder(
                 this.target,
                 attributes
             )
         )
-            .exec() as any
+            .exec()
     }
 
     // ------------------------------------------------------------------------
@@ -86,11 +86,11 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
         attributes: S,
         where?: ConditionalQueryOptions<T>,
     ): Promise<UpdateResult<T, S>> {
-        return new MySQLOperation.Update(
+        return new MySQLOperation.Update<T, S>(
             this.target,
             new UpdateSQLBuilder(this.target, attributes, where)
         )
-            .exec() as Promise<UpdateResult<T, S>>
+            .exec()
     }
 
     // ------------------------------------------------------------------------
@@ -105,7 +105,7 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
     > {
         return new MySQLOperation.UpdateOrCreate(
             this.target,
-            new UpdateOrCreateSQLBuilder<Constructor<T>>(
+            new UpdateOrCreateSQLBuilder(
                 this.target,
                 attributes
             )

@@ -1,5 +1,5 @@
 import { BaseEntity, ColumnsSnapshots } from "../../../Entities"
-import { BasePolymorphicEntity } from "../../../Entities"
+import { Entity as EntityBase } from "../../../Entities"
 import { v4 as UUIDV4 } from "uuid"
 
 // Handlers 
@@ -33,8 +33,8 @@ export default abstract class RelationHandlerSQLBuilder<
     T extends Entity,
     R extends Entity
 > {
-    protected targetMetadata: TargetMetadata<Constructor<T>>
-    protected relatedMetadata: TargetMetadata<Constructor<R>>
+    protected targetMetadata: TargetMetadata<T>
+    protected relatedMetadata: TargetMetadata<R>
 
     private attributes?: Att<R>
 
@@ -185,7 +185,7 @@ export default abstract class RelationHandlerSQLBuilder<
 
     protected setValuesSQL(attributes: RelationUpdateAttributes<R>): string {
         return Object
-            .entries(this.onlyChangedAttributes(attributes))
+            .entries(attributes)
             .map(([column, value]) => `${this.relatedAlias}.${column} = ${(
                 PropertySQLHelper.valueSQL(value)
             )}`)
@@ -195,14 +195,11 @@ export default abstract class RelationHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     protected onlyChangedAttributes(
-        attributes: RelationUpdateAttributes<R>
-    ): Partial<RelationUpdateAttributes<R>> {
-        return (
-            attributes instanceof BaseEntity ||
-            attributes instanceof BasePolymorphicEntity
-        )
-            ? ColumnsSnapshots.changed(attributes)
-            : attributes
+        attributes: R | RelationUpdateAttributes<R>
+    ): RelationUpdateAttributes<R> {
+        return (attributes as any) instanceof EntityBase
+            ? ColumnsSnapshots.changed(attributes as R)
+            : attributes as RelationUpdateAttributes<R>
     }
 
     // ------------------------------------------------------------------------

@@ -3,11 +3,14 @@ import util from "util"
 import ManyRelation from ".."
 import { Collection } from "../../../Entities"
 
+import { MySQLOperation } from "../../../Handlers"
+
+
 // Types
 import type {
     Constructor,
     Entity,
-    ExcludeRelationAttributes
+    EntityTarget,
 } from "../../../types"
 import type {
     HasManyMetadata,
@@ -67,10 +70,12 @@ export default abstract class HasManyRelation<
      * @returns - Related entity instance
      */
     public async create(attributes: RelationCreationAttributes<R>): Promise<R> {
-        const instance = await this.queryExecutionHandler.executeCreate(
+        const instance = await MySQLOperation.Relation.create(
+            this.related as EntityTarget,
             this.sqlBuilder.createSQL(attributes),
             (this.sqlBuilder.creationAttributes as any)(attributes)
-        )
+        ) as R
+
         this.instances.push(instance)
 
         return instance
@@ -84,10 +89,12 @@ export default abstract class HasManyRelation<
      * @returns - Related entity instances
      */
     public async createMany(attributes: RelationCreationAttributes<R>[]): Promise<R[]> {
-        const instances = await this.queryExecutionHandler.executeCreateMany(
+        const instances = await MySQLOperation.Relation.createMany(
+            this.related as EntityTarget,
             this.sqlBuilder.createManySQL(attributes),
             (this.sqlBuilder.creationAttributes as any)(attributes)
-        )
+        ) as Collection<R>
+
         this.instances.push(...instances)
 
         return instances
@@ -103,9 +110,12 @@ export default abstract class HasManyRelation<
     public async updateOrCreate(
         attributes: RelationUpdateOrCreateAttributes<R>
     ): Promise<R> {
-        const instance = await this.queryExecutionHandler.executeUpdateOrCreate(
-            this.sqlBuilder.updateOrCreateSQL(attributes)
-        )
+        const instance = await MySQLOperation.Relation.updateOrCreate(
+            this.related as EntityTarget,
+            this.sqlBuilder.updateOrCreateSQL(attributes),
+            (this.sqlBuilder as any).updateOrCreateAttributes(attributes)
+        ) as R
+
         this.instances.push(instance)
 
         return instance

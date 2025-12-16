@@ -16,6 +16,7 @@ import {
     type RelationMetadataType,
     type HookType
 } from "../Metadata"
+
 import {
     ColumnsSnapshots,
     Collection,
@@ -30,10 +31,9 @@ import type {
     FindOneResult,
     FindResult,
     MapOptions,
-    CollectMapOptions
+    CollectMapOptions,
+    CountManyResult
 } from "../Handlers"
-
-import type { CountManyQueryResult } from "../Repositories"
 
 import type {
     FindOneQueryOptions,
@@ -93,6 +93,12 @@ export default abstract class Entity {
     public static readonly INHERIT_HOOKS: boolean = true
     public static readonly INHERIT_ONLY_HOOKS?: HookType[]
 
+    /** @internal */
+    private __pk?: string
+
+    /** @internal */
+    private __wherePK?: ConditionalQueryOptions<EntityT>
+
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     /**
@@ -121,17 +127,18 @@ export default abstract class Entity {
     // Protecteds -------------------------------------------------------------
     /** @internal */
     protected get _pk(): string {
-        return (this as any).getTrueMetadata().columns.primary.name
+        return this.__pk ??= (
+            (this as any).getTrueMetadata().columns.primary.name
+        )
     }
 
     // ------------------------------------------------------------------------
 
     /** @internal */
-    protected get _wherePK(): ConditionalQueryOptions<EntityT> {
-        const pk = this._pk
-        return { [pk]: this[pk as keyof this] } as ConditionalQueryOptions<
-            EntityT
-        >
+    protected get _wherePK(): ConditionalQueryOptions<any> {
+        return this.__wherePK ??= {
+            [this._pk]: this[this._pk as keyof this]
+        } as any
     }
 
     // Instance Methods =======================================================
@@ -469,7 +476,7 @@ export default abstract class Entity {
      * Get entity metadata
      */
     public static getMetadata<T extends Target>(this: T) {
-        return (this as T & typeof Entity)
+        return (this as any)
             .getTrueMetadata()
             .toJSON()
     }
@@ -519,7 +526,7 @@ export default abstract class Entity {
 
         TempMetadata
             .reply(scoped, this)
-            .setScope(scoped, (this as T & typeof Entity)
+            .setScope(scoped, (this as any)
                 .getTrueMetadata()
                 .scopes
                 ?.getOrThrow(name, ...args)
@@ -545,7 +552,7 @@ export default abstract class Entity {
             scoped,
             typeof collection === 'object'
                 ? collection
-                : (this as StaticTarget<T>)
+                : (this as any)
                     .getTrueMetadata()
                     .collections
                     .findOrThrow(collection)
@@ -582,16 +589,14 @@ export default abstract class Entity {
      * @returns - Entity instance or `null`
      */
     public static findByPk<
-        T extends Target,
-        M extends ResultMapOption = 'entity'
+        T extends EntityT,
+        M extends MapOptions
     >(
-        this: T,
+        this: Constructor<T>,
         pk: any,
         mapTo?: M
     ): Promise<FindOneResult<T, M>> {
-        return (this as StaticTarget<T>)
-            .getRepository()
-            .findByPk(pk, mapTo) as Promise<FindOneResult<T, M>>
+        return (this as any).getRepository().findByPk(pk, mapTo)
     }
 
     // ------------------------------------------------------------------------
@@ -604,16 +609,14 @@ export default abstract class Entity {
     * @returns - A entity instance or `null`
     */
     public static findOne<
-        T extends Target,
-        M extends ResultMapOption = 'entity'
+        T extends EntityT,
+        M extends MapOptions
     >(
-        this: T,
-        options?: FindOneQueryOptions<InstanceType<T>>,
+        this: Constructor<T>,
+        options?: FindOneQueryOptions<T>,
         mapTo?: M
     ): Promise<FindOneResult<T, M>> {
-        return (this as StaticTarget<T>)
-            .getRepository()
-            .findOne(options as any, mapTo) as Promise<FindOneResult<T, M>>
+        return (this as any).getRepository().findOne(options as any, mapTo)
     }
 
     // ------------------------------------------------------------------------
@@ -626,16 +629,14 @@ export default abstract class Entity {
      * @returns - A entity instance collection
      */
     public static find<
-        T extends Target,
-        M extends ResultMapOption = 'entity'
+        T extends EntityT,
+        M extends CollectMapOptions<T>
     >(
-        this: T,
-        options?: FindQueryOptions<InstanceType<T>>,
+        this: Constructor<T>,
+        options?: FindQueryOptions<T>,
         mapTo?: M
     ): Promise<FindResult<T, M>> {
-        return (this as StaticTarget<T>)
-            .getRepository()
-            .find(options as any, mapTo) as Promise<FindResult<T, M>>
+        return (this as any).getRepository().find(options, mapTo)
     }
 
     // ------------------------------------------------------------------------
@@ -647,15 +648,11 @@ export default abstract class Entity {
     * @default 'entity'
     * @returns - A entity instance pagination collection
     */
-    public static paginate<T extends Target>(
-        this: T,
-        options: PaginationQueryOptions<InstanceType<T>>
-    ): Promise<Pagination<InstanceType<T>, Collection<InstanceType<T>>>> {
-        return (this as StaticTarget<T>)
-            .getRepository()
-            .paginate(options as any) as Promise<
-                Pagination<InstanceType<T>, Collection<InstanceType<T>>>
-            >
+    public static paginate<T extends EntityT>(
+        this: Constructor<T>,
+        options: PaginationQueryOptions<T>
+    ): Promise<Pagination<T, Collection<T>>> {
+        return (this as any).getRepository().paginate(options)
     }
 
     // ------------------------------------------------------------------------
@@ -665,13 +662,11 @@ export default abstract class Entity {
      * @param options - Count options
      * @returns - The count number result
      */
-    public static count<T extends Target>(
-        this: T,
-        options: CountQueryOption<InstanceType<T>>
+    public static count<T extends EntityT>(
+        this: Constructor<T>,
+        options: CountQueryOption<T>
     ): Promise<number> {
-        return (this as StaticTarget<T>)
-            .getRepository()
-            .count(options)
+        return (this as any).getRepository().count(options)
     }
 
     // ------------------------------------------------------------------------
@@ -683,22 +678,20 @@ export default abstract class Entity {
      * @returns - A object with count names keys and count results
      */
     public static countMany<
-        T extends Target,
-        Opts extends CountQueryOptions<InstanceType<T>>
+        T extends EntityT,
+        O extends CountQueryOptions<T>
     >(
-        this: T,
-        options: Opts
-    ): Promise<CountManyQueryResult<InstanceType<T>, Opts>> {
-        return (this as StaticTarget<any>)
-            .getRepository()
-            .countMany(options)
+        this: Constructor<T>,
+        options: O
+    ): Promise<CountManyResult<T, O>> {
+        return (this as any).getRepository().countMany(options)
     }
 
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected static getTrueMetadata<T extends Target>(this: T): (
-        TargetMetadata<T>
-    ) {
+    protected static getTrueMetadata<T extends EntityT>(
+        this: Constructor<T>
+    ): TargetMetadata<T> {
         return MetadataHandler.targetMetadata(this)
     }
 

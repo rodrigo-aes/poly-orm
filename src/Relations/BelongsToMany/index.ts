@@ -1,6 +1,8 @@
 import HasManyRelation from "../ManyRelation/HasManyRelation"
 import { Collection } from "../../Entities"
 
+import { MySQLOperation } from "../../Handlers"
+
 // SQL Builders
 import {
     BelongsToManyHandlerSQLBuilder,
@@ -58,7 +60,8 @@ export class BelongsToManyHandler<
     public override async create(attributes: CreationAttributes<R>): Promise<R> {
         const entity = await super.create(attributes)
 
-        await this.queryExecutionHandler.executeVoidOperation(
+        await MySQLOperation.Relation.voidOperation(
+            this.related,
             this.sqlBuilder.createForeingKeysSQL(entity)
         )
 
@@ -67,12 +70,13 @@ export class BelongsToManyHandler<
 
     // ------------------------------------------------------------------------
 
-    public override async createMany(attributes: CreationAttributes<R>[]): (
-        Promise<R[]>
-    ) {
+    public override async createMany(
+        attributes: CreationAttributes<R>[]
+    ): Promise<R[]> {
         const entities = await super.createMany(attributes)
 
-        await this.queryExecutionHandler.executeVoidOperation(
+        await MySQLOperation.Relation.voidOperation(
+            this.related,
             this.sqlBuilder.createForeingKeysSQL(entities)
         )
 
@@ -86,7 +90,8 @@ export class BelongsToManyHandler<
      * @param relateds - Array of related entity instance or primary key
      */
     public attach(...relateds: (R | any)[]): Promise<void> {
-        return this.queryExecutionHandler.executeVoidOperation(
+        return MySQLOperation.Relation.voidOperation(
+            this.related,
             this.sqlBuilder.attachSQL(relateds)
         )
     }
@@ -98,7 +103,8 @@ export class BelongsToManyHandler<
      * @param relateds - Array of related entity instance or primary key
      */
     public detach(...relateds: (R | any)[]): Promise<void> {
-        return this.queryExecutionHandler.executeVoidOperation(
+        return MySQLOperation.Relation.voidOperation(
+            this.related,
             this.sqlBuilder.detachSQL(relateds)
         )
     }
@@ -110,7 +116,8 @@ export class BelongsToManyHandler<
      * @param relateds - Array of related entity instance or primary key
      */
     public sync(...relateds: (R | any)[]): Promise<void> {
-        return this.queryExecutionHandler.executeVoidOperation(
+        return MySQLOperation.Relation.voidOperation(
+            this.related,
             this.sqlBuilder.syncSQL(relateds)
         )
     }

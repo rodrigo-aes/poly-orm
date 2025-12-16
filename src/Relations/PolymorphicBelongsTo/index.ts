@@ -1,5 +1,7 @@
 import OneRelation from "../OneRelation"
 
+import { MySQLOperation } from "../../Handlers"
+
 // SQL Builders
 import { PolymorphicBelongsToHandlerSQLBuilder } from "../../SQLBuilders"
 
@@ -57,7 +59,8 @@ export class PolymorphicBelongsToHandler<
     public async load<T extends Source<R> = Source<R>>(): Promise<
         ResolveSource<R, T> | null
     > {
-        return this.instance = await this.queryExecutionHandler.executeFindOne(
+        return this.instance = await MySQLOperation.Relation.findOne(
+            this.related,
             this.sqlBuilder.loadSQL()
         ) as any
     }
@@ -69,7 +72,8 @@ export class PolymorphicBelongsToHandler<
             ResolveSource<R, T>, PolymorphicBelongsToRelated<R>
         >>,
     ): Promise<ResultSetHeader> {
-        return this.queryExecutionHandler.executeUpdate(
+        return MySQLOperation.Relation.update(
+            this.related,
             this.sqlBuilder.updateSQL(attributes as any)
         )
     }
@@ -93,7 +97,7 @@ export default function PolymorphicBelongsTo<
         metadata,
         target,
         related,
-        instance
+        instance as any
     ) as PolymorphicBelongsTo<T>
 }
 

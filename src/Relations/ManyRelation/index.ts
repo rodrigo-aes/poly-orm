@@ -5,11 +5,7 @@ import { Collection } from "../../Entities"
 import ProxyMerge from "../../utils/ProxyMerge"
 
 // Handlers
-import {
-    MySQLOperation,
-    type RelationQueryExecutionHandler,
-    type DeleteResult
-} from "../../Handlers"
+import { MySQLOperation, type DeleteResult } from "../../Handlers"
 
 // Types
 import type { ResultSetHeader } from "mysql2"
@@ -35,7 +31,7 @@ export default abstract class ManyRelation<
     C extends Collection<R> = Collection<R>
 > {
     /** @internal */
-    private _relatedMetadata?: TargetMetadata<Constructor<R>>
+    private _relatedMetadata?: TargetMetadata<R>
 
     /** @internal */
     constructor(
@@ -62,19 +58,12 @@ export default abstract class ManyRelation<
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected abstract get sqlBuilder(): ManyRelationHandlerSQLBuilder
+    protected abstract get sqlBuilder(): ManyRelationHandlerSQLBuilder<T, R>
 
     // ------------------------------------------------------------------------
 
     /** @internal */
-    protected get queryExecutionHandler(): RelationQueryExecutionHandler<R> {
-        return MySQL2QueryExecutionHandler.relation(this.related)
-    }
-
-    // ------------------------------------------------------------------------
-
-    /** @internal */
-    protected get relatedMetadata(): TargetMetadata<Constructor<R>> {
+    protected get relatedMetadata(): TargetMetadata<R> {
         return this._relatedMetadata ??= MetadataHandler.targetMetadata(
             this.related
         )
@@ -95,7 +84,8 @@ export default abstract class ManyRelation<
      * @returns - 
      */
     public async load(options?: FindRelationQueryOptions<R>): Promise<this> {
-        this.instances = await this.queryExecutionHandler.executeFind(
+        this.instances = await MySQLOperation.Relation.find(
+            this.related,
             this.sqlBuilder.loadSQL(options)
         ) as C // Implement this: (Parse entity collection) 
 
@@ -113,7 +103,8 @@ export default abstract class ManyRelation<
     public async loadOne(options?: FindRelationQueryOptions<R>): Promise<
         R | null
     > {
-        const instance = await this.queryExecutionHandler.executeFindOne(
+        const instance = await MySQLOperation.Relation.findOne(
+            this.related,
             this.sqlBuilder.loadOneSQL(options)
         )
         if (instance) this.instances.push(instance)
@@ -134,7 +125,8 @@ export default abstract class ManyRelation<
         attributes: RelationUpdateAttributes<R>,
         where?: RelationConditionalQueryOptions<R>
     ): Promise<ResultSetHeader> {
-        return this.queryExecutionHandler.executeUpdate(
+        return MySQLOperation.Relation.update(
+            this.related,
             this.sqlBuilder.updateSQL(attributes, where)
         )
     }
@@ -150,7 +142,8 @@ export default abstract class ManyRelation<
     public delete(where?: RelationConditionalQueryOptions<R>): Promise<
         DeleteResult
     > {
-        return this.queryExecutionHandler.executeDelete(
+        return MySQLOperation.Relation.delete(
+            this.related,
             this.sqlBuilder.deleteSQL(where)
         )
     }

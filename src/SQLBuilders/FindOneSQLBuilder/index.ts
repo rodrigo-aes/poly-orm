@@ -167,7 +167,7 @@ export default class FindOneSQLBuilder<T extends Entity> {
         if (this.options.where) {
             const where = ConditionalSQLBuilder.where(
                 this.target,
-                this.options.where,
+                this.options.where as any,
                 this.alias
             )
 

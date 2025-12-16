@@ -1,7 +1,10 @@
 import OneRelation from ".."
 
+// Handlers
+import { MySQLOperation, type DeleteResult } from "../../../Handlers"
+
 // Types
-import type { Constructor, Entity } from "../../../types"
+import type { Constructor, Entity, EntityTarget } from "../../../types"
 
 import type {
     HasOneMetadata,
@@ -47,10 +50,11 @@ export default abstract class HasOneRelation<
     public async create(attributes: RelationCreationAttributes<R>): Promise<
         this
     > {
-        this.instance = await this.queryExecutionHandler.executeCreate(
+        this.instance = await MySQLOperation.Relation.create(
+            this.related as EntityTarget,
             this.sqlBuilder.createSQL(attributes),
-            (this.sqlBuilder.creationAttributes as any)(attributes)
-        )
+            (this.sqlBuilder as any).creationAttributes(attributes)
+        ) as R
 
         return this
     }
@@ -65,9 +69,11 @@ export default abstract class HasOneRelation<
     public async updateOrCreate(
         attributes: RelationUpdateOrCreateAttributes<R>
     ): Promise<this> {
-        this.instance = await this.queryExecutionHandler.executeUpdateOrCreate(
-            this.sqlBuilder.updateOrCreateSQL(attributes)
-        )
+        this.instance = await MySQLOperation.Relation.updateOrCreate(
+            this.related as EntityTarget,
+            this.sqlBuilder.updateOrCreateSQL(attributes),
+            (this.sqlBuilder as any).updateOrCreateAttributes(attributes)
+        ) as R
 
         return this
     }

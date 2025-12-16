@@ -18,15 +18,14 @@ export type TriggerActionType = (
     'DELETE FROM'
 )
 
-export type TriggerActionOptions<Options extends (
+export type TriggerActionOptions<O extends (
     CreationAttributesOptions<any> |
     UpdateAttributes<any> |
     ConditionalQueryOptions<any>
 )> = {
-        [K in keyof Options]: Options[K] | (
-            { [Old]: string } |
-            { [New]: string }
-        )
+        [K in keyof O]: O[K] |
+        { [Old]: string } |
+        { [New]: string }
     }
 
 export type SetAction<T extends BaseEntity> = {

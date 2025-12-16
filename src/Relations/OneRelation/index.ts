@@ -4,12 +4,7 @@ import util from "util"
 import ProxyMerge from "../../utils/ProxyMerge"
 
 // Handlers
-import {
-    MySQL2QueryExecutionHandler,
-
-    type RelationQueryExecutionHandler,
-    type DeleteResult
-} from "../../Handlers"
+import { MySQLOperation, type DeleteResult } from "../../Handlers"
 
 // Types
 import type { ResultSetHeader } from "mysql2"
@@ -47,13 +42,6 @@ export default abstract class OneRelation<T extends Entity, R extends Entity> {
     /** @internal */
     protected abstract get sqlBuilder(): OneRelationHandlerSQLBuilder<T, R>
 
-    // ------------------------------------------------------------------------
-
-    /** @internal */
-    protected get queryExecutionHandler(): RelationQueryExecutionHandler<R> {
-        return MySQL2QueryExecutionHandler.relation(this.related)
-    }
-
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     /** @internal */
@@ -68,7 +56,8 @@ export default abstract class OneRelation<T extends Entity, R extends Entity> {
      * @returns - Related entity intance
      */
     public async load(): Promise<R | null> {
-        return this.instance = await this.queryExecutionHandler.executeFindOne(
+        return this.instance = await MySQLOperation.Relation.findOne(
+            this.related,
             this.sqlBuilder.loadSQL()
         )
     }
@@ -83,7 +72,8 @@ export default abstract class OneRelation<T extends Entity, R extends Entity> {
     public update(attributes: RelationUpdateAttributes<R>): Promise<
         ResultSetHeader
     > {
-        return this.queryExecutionHandler.executeUpdate(
+        return MySQLOperation.Relation.update(
+            this.related,
             this.sqlBuilder.updateSQL(attributes)
         )
     }
@@ -95,7 +85,8 @@ export default abstract class OneRelation<T extends Entity, R extends Entity> {
      * @returns - Delete result
      */
     public delete(): Promise<DeleteResult> {
-        return this.queryExecutionHandler.executeDelete(
+        return MySQLOperation.Relation.delete(
+            this.related,
             this.sqlBuilder.deleteSQL()
         )
     }

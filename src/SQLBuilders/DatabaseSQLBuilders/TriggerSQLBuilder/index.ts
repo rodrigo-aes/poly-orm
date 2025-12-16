@@ -24,7 +24,8 @@ import type {
     InsertIntoTableAction,
     UpdateTableAction,
     DeleteFromAction,
-} from "../../../Triggers/types"
+} from "../../../Triggers"
+import type { ConditionalQueryOptions } from "../../ConditionalSQLBuilder"
 
 export default abstract class TriggerSQLBuilder<
     T extends BaseEntity
@@ -152,7 +153,7 @@ export default abstract class TriggerSQLBuilder<
         return new UpdateSQLBuilder(
             target,
             attributes,
-            where
+            where as ConditionalQueryOptions<T>
         )
             .SQL()
     }
@@ -163,7 +164,7 @@ export default abstract class TriggerSQLBuilder<
     private deleteFromSQL({ target, where }: DeleteFromAction): string {
         return new DeleteSQLBuilder(
             target,
-            where
+            where as ConditionalQueryOptions<T>
         )
             .SQL()
     }
