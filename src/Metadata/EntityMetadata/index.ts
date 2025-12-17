@@ -252,20 +252,26 @@ export default class EntityMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public get foreignKeys(): ColumnMetadata[] {
+    public get PK(): string {
+        return this.columns.primary.name
+    }
+
+    // ------------------------------------------------------------------------
+
+    public get FKs(): ColumnMetadata[] {
         return this.columns.foreignKeys
     }
 
     // ------------------------------------------------------------------------
 
-    public get constrainedForeignKeys(): ColumnMetadata[] {
+    public get constrainedFKs(): ColumnMetadata[] {
         return this.columns.constrainedForeignKeys
     }
 
     // ------------------------------------------------------------------------
 
     public get dependencies(): EntityTarget[] {
-        return this.constrainedForeignKeys.flatMap(({ references }) =>
+        return this.constrainedFKs.flatMap(({ references }) =>
             references!.referenced()
         )
     }

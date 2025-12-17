@@ -171,7 +171,13 @@ export default class PolymorphicEntityMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public get foreignKeys(): PolymorphicColumnMetadata[] {
+    public get PK(): string {
+        return this.columns.primary.name
+    }
+
+    // ------------------------------------------------------------------------
+
+    public get FKs(): PolymorphicColumnMetadata[] {
         return this.columns.filter(({ isForeignKey }) => isForeignKey)
     }
 

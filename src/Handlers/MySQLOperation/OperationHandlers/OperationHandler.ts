@@ -46,26 +46,13 @@ export default abstract class OperationHandler<
     // ------------------------------------------------------------------------
 
     protected map(data: any, pagination?: PaginationInitMap): any {
-        switch (this.mapOptions?.mapTo ?? 'entity') {
-            case 'entity': return new MySQLDataHandler(
-                this.target, this.fillMethod, data, this.toSource
-            )
-                .entity(undefined, pagination)
-
-            // ----------------------------------------------------------------
-
-            case 'json': return new MySQLDataHandler(
-                this.target, this.fillMethod, data
-            )
-                .json()
-
-            // ----------------------------------------------------------------
-
-            case 'raw': return data
-
-            // ----------------------------------------------------------------
-
-            default: throw new Error('Unreachable Error')
-        }
+        return MySQLDataHandler.parse({
+            target: this.target,
+            raw: data,
+            fillMethod: this.fillMethod,
+            mapOptions: this.mapOptions,
+            pagination,
+            toSource: this.toSource
+        })
     }
 }

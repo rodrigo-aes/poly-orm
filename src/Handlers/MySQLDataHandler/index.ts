@@ -19,51 +19,100 @@ import * as Relations from "../../Relations"
 // Types
 import type {
     Entity,
-    Target,
-    TargetMetadata,
-    PolymorphicEntityTarget,
     StaticEntityTarget,
+    StaticPolymorphicEntityTarget,
     Constructor
 } from "../../types"
 
 import type {
     EntityData,
     JSONData,
-    FillMethod
+    FillMethod,
+    ParseOptions,
+    ReduceOptions,
+    FilterRelationsOptions
 } from "./types"
 
 // Exceptions
 import PolyORMException from "../../Errors"
 
-export default class MySQLDataHandler<T extends Entity> {
-    private metadata: TargetMetadata<T>
-
-    constructor(
-        private target: Constructor<T>,
-        private fillMethod: FillMethod,
-        private raw: any[],
-        private toSource: boolean = false
-    ) {
-        this.metadata = MetadataHandler.targetMetadata(this.target)
+export default class MySQLDataHandler {
+    constructor() {
+        PolyORMException.Common.throw(
+            'NOT_INSTANTIABLE_CLASS', this.constructor.name
+        )
     }
 
-    // Instance Methods =======================================================
+    // Static Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public json(): (JSONData<T> | null) | JSONData<T>[] {
-        switch (this.fillMethod) {
-            case "One": return this.reduce(
-                this.raw,
-                this.metadata,
-                'json'
-            )[0] ?? null
+    public static parse<T extends Entity>(
+        {
+            target,
+            raw,
+            fillMethod,
+            mapOptions,
+            pagination,
+            toSource,
+        }: ParseOptions<T>
+    ) {
+        switch (typeof mapOptions?.mapTo) {
+            case 'undefined': return this.entity(
+                target, fillMethod, raw, toSource, pagination
+            )
 
             // ----------------------------------------------------------------
 
-            case "Many": return this.reduce(
-                this.raw,
-                this.metadata,
-                'json'
+            case "string": switch (mapOptions.mapTo) {
+                case "entity": return this.entity(
+                    target, fillMethod, raw, toSource, pagination
+                )
+
+                // ------------------------------------------------------------
+
+                case "json": return this.json(target, raw, fillMethod)
+
+                // ------------------------------------------------------------
+
+                case "raw": return raw
+            }
+
+            // ----------------------------------------------------------------
+
+            case "object": return this.entity(
+                mapOptions.mapTo!, fillMethod, raw, toSource, pagination
             )
+        }
+    }
+
+    // Privates ---------------------------------------------------------------
+    private static entity<T extends Entity>(
+        target: Constructor<T>,
+        fillMethod: FillMethod,
+        raw: any[],
+        toSource: boolean = false,
+        pagination?: PaginationInitMap
+    ): EntityData<T> {
+        return this.fill(
+            target,
+            fillMethod,
+            this.reduce({ target, raw, toSource }),
+            pagination
+        )
+    }
+
+    // ------------------------------------------------------------------------
+    private static json<T extends Entity>(
+        target: Constructor<T>,
+        raw: any[],
+        fillMethod: FillMethod,
+    ): JSONData<T> | JSONData<T>[] | null {
+        switch (fillMethod) {
+            case "One": return this.reduce({ target, raw, method: 'json' })[0]
+                ?? null
+
+            // ----------------------------------------------------------------
+
+            case "Many": return this.reduce({ target, raw, method: 'json' })
 
             // ----------------------------------------------------------------
 
@@ -73,28 +122,9 @@ export default class MySQLDataHandler<T extends Entity> {
 
     // ------------------------------------------------------------------------
 
-    public entity(
-        mapTo: Constructor<T> = this.target,
-        pagination?: PaginationInitMap
-    ): EntityData<T> {
-        return this.fill(
-            this.fillMethod,
-            mapTo,
-            this.reduce(
-                this.raw,
-                this.metadata,
-                'entity',
-                undefined,
-                mapTo
-            ),
-            pagination
-        )
-    }
-
-    // Privates ---------------------------------------------------------------
-    private fill(
-        method: FillMethod = this.fillMethod,
-        mapTo: Constructor<T> = this.target,
+    private static fill<T extends Entity>(
+        target: Constructor<T>,
+        method: FillMethod,
         data: T[],
         pagination?: PaginationInitMap
     ): EntityData<T> {
@@ -103,79 +133,70 @@ export default class MySQLDataHandler<T extends Entity> {
 
             // ----------------------------------------------------------------
 
-            case "Many": return CollectionsMetadataHandler.build(
-                mapTo,
-                data
-            )
+            case "Many": return CollectionsMetadataHandler.build(target, data)
 
             // ----------------------------------------------------------------
 
             case "Paginate": return PaginationMetadataHandler.build(
-                mapTo,
-                pagination!,
-                data
+                target, pagination!, data
             )
         }
     }
 
     // ------------------------------------------------------------------------
 
-    private reduce(
-        raw: any[],
-        metadata: TargetMetadata<any> = this.metadata,
-        method: 'json' | 'entity' = 'json',
-        relation?: RelationMetadataType,
-        mapTo: Target = (relation?.relatedTarget ?? this.target)
+    private static reduce<T extends Entity>(
+        {
+            raw,
+            target,
+            metadata,
+            relation,
+            method = 'entity',
+            toSource = false
+        }: ReduceOptions<T>
     ): any[] {
         if (raw.length === 0) return raw
 
-        raw = raw.map(item => this.removeAlias(
-            item, this.firstAlias(raw)
-        ))
+        target ??= relation!.relatedTarget as Constructor<T>
+        metadata ??= MetadataHandler.targetMetadata(target)
 
+        raw = raw.map(item => this.removeAlias(item, this.firstAlias(raw)))
         const reduced: any[] = []
         const mapped = new Set<string>()
-        const pk = metadata.columns.primary.name
 
         for (const data of raw) {
-            const mapKey = data.entityType ?? '' + data[pk]
+            const mapKey = data.entityType ?? '' + data[metadata.PK]
             if (mapped.has(mapKey)) continue
+            mapped.add(mapKey)
 
-            const toMerge = raw.filter(item => (
-                item[pk] === data[pk] &&
-                item.entityType === data.entityType
-            ))
+            const line = raw.filter(
+                item => (
+                    item[metadata.PK] === data[metadata.PK] &&
+                    item.entityType === data.entityType
+                )
+            )
 
             switch (method) {
                 case "json": reduced.push({
-                    ...this.filterColumns(toMerge[0]),
-                    ...this.filterRelations(toMerge, metadata, method)
+                    ...this.filterColumns(line[0]),
+                    ...this.filterRelations({ line, metadata, method })
                 })
                     break
 
                 // ------------------------------------------------------------
 
                 case "entity":
-                    const entity = this.mapToEntity(
-                        mapTo,
-                        this.filterColumns(toMerge[0]),
-                        (relation as any)?.shouldMapToSource ?? this.toSource
+                    const entity = this.buildEntity(
+                        target,
+                        this.filterColumns(line[0]),
+                        (relation as any)?.shouldMapToSource ?? toSource
                     )
 
-                    reduced.push(
-                        entity.fill(
-                            this.filterRelations(
-                                toMerge,
-                                metadata,
-                                method,
-                                entity
-                            )
-                        )
-                    )
+                    reduced.push(entity.fill(this.filterRelations({
+                        line, metadata, method, parent: entity
+                    })))
                     break
             }
-
-            mapped.add(mapKey)
         }
 
         return reduced
@@ -183,24 +204,26 @@ export default class MySQLDataHandler<T extends Entity> {
 
     // ------------------------------------------------------------------------
 
-    private mapToEntity(
-        target: Target,
+    private static buildEntity<T extends Entity>(
+        target: Constructor<T>,
         data: any,
         toSource: boolean
-    ): Entity {
+    ): T {
         switch (true) {
             case target.prototype instanceof BaseEntity: return (
-                (target as StaticEntityTarget).build(data)
+                (target as StaticEntityTarget<any>).build(data)
             )
 
             // ----------------------------------------------------------------
 
             case target.prototype instanceof BasePolymorphicEntity: return (
-                this.mapToPolymorphicEntity(
-                    target as PolymorphicEntityTarget,
-                    data,
-                    toSource
-                )
+                toSource
+                    ? (target as StaticPolymorphicEntityTarget<any>)
+                        .build(data)
+                        .toSourceEntity()
+
+                    : (target as StaticPolymorphicEntityTarget<any>)
+                        .build(data)
             )
 
             // ----------------------------------------------------------------
@@ -213,19 +236,7 @@ export default class MySQLDataHandler<T extends Entity> {
 
     // ------------------------------------------------------------------------
 
-    private mapToPolymorphicEntity(
-        target: any,
-        data: any,
-        toSource: boolean
-    ): Entity {
-        return toSource
-            ? target.build(data).toSourceEntity()
-            : target.build(data)
-    }
-
-    // ------------------------------------------------------------------------
-
-    private filterColumns(raw: any): any {
+    private static filterColumns(raw: any): any {
         return Object.fromEntries(Object.entries(raw).flatMap(
             ([key, value]) => key.includes('_')
                 ? []
@@ -235,37 +246,42 @@ export default class MySQLDataHandler<T extends Entity> {
 
     // ------------------------------------------------------------------------
 
-    private filterRelations(
-        raw: any[],
-        metadata: TargetMetadata<any> = this.metadata,
-        method: 'json' | 'entity' = 'json',
-        parent?: Entity
-    ): { [K: string]: any } {
+    private static filterRelations(
+        {
+            line,
+            metadata,
+            method = 'json',
+            parent
+        }: FilterRelationsOptions
+    ): any {
         return Object.fromEntries(
             Array
-                .from(this.filterRelationsKeys(raw))
+                .from(this.filterRelationsKeys(line))
                 .flatMap(key => {
                     const relation = metadata.relations.findOrThrow(key)
-                    return [[key, this.fillRelation(
-                        method,
-                        this.reduce(
-                            this.filterRelationsByKey(raw, key),
-                            MetadataHandler.targetMetadata(
-                                relation.relatedTarget
-                            ),
+                    return [[
+                        key,
+                        this.fillRelation(
                             method,
-                            relation
-                        ),
-                        relation,
-                        parent
-                    )]]
+                            this.reduce({
+                                raw: this.filterRelationsByKey(line, key),
+                                metadata: MetadataHandler.targetMetadata(
+                                    relation.relatedTarget
+                                ),
+                                relation,
+                                method
+                            }),
+                            relation,
+                            parent
+                        )
+                    ]]
                 })
         )
     }
 
     // ------------------------------------------------------------------------
 
-    private fillRelation(
+    private static fillRelation(
         method: 'json' | 'entity' = 'json',
         data: any,
         relation: RelationMetadataType,
@@ -304,7 +320,7 @@ export default class MySQLDataHandler<T extends Entity> {
 
     // ------------------------------------------------------------------------
 
-    private filterRelationsByKey(
+    private static filterRelationsByKey(
         raw: any[],
         key: string
     ): any[] {
@@ -314,41 +330,44 @@ export default class MySQLDataHandler<T extends Entity> {
                     .entries(item)
                     .filter(([path]) => path.startsWith(`${key}_`))
             ))
-            .filter(item => !this.allNull(item))
+            .filter(item => !this.isNull(item))
     }
 
     // ------------------------------------------------------------------------
 
-    private filterRelationsKeys(raw: any[]): Set<string> {
-        return new Set(raw.flatMap(item => Object.keys(item).flatMap(
-            key => key.includes('_')
-                ? key.split('_')[0]
-                : []
-        )))
+    private static filterRelationsKeys(raw: any[]): Set<string> {
+        return new Set(
+            raw.flatMap(item => Object.keys(item).flatMap(
+                key => key.includes('_')
+                    ? key.split('_')[0]
+                    : []
+            ))
+        )
     }
 
     // ------------------------------------------------------------------------
 
-    private allNull(columns: any): boolean {
-        return Object.entries(columns)
+    private static isNull(columns: any): boolean {
+        return Object
+            .entries(columns)
             .map(([_, value]) => value)
             .every(value => value === null)
     }
 
     // ------------------------------------------------------------------------
 
-    private removeAlias(raw: any, alias: string): any {
+    private static firstAlias(rawData: any): string {
+        return Object.keys(rawData[0])[0].split('_')[0]
+    }
+
+    // ------------------------------------------------------------------------
+
+    private static removeAlias(raw: any, alias: string): any {
         return Object.fromEntries(Object.entries(raw).flatMap(
             ([key, value]) => key.startsWith(`${alias}_`)
                 ? [[key.replace(`${alias}_`, ''), value]]
                 : []
         ))
-    }
-
-    // ------------------------------------------------------------------------
-
-    private firstAlias(rawData: any): string {
-        return Object.keys(rawData[0])[0].split('_')[0]
     }
 }
 

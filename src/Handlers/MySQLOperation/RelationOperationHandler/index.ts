@@ -15,19 +15,20 @@ import type { CreationAttributes } from "../../../SQLBuilders"
 import type { DeleteResult } from "../OperationHandlers"
 
 export default class RelationOperationHandler {
-
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public static async findOne<T extends Entity>(
         target: Constructor<T>,
         sql: string
     ): Promise<T | null> {
-        return new MySQLDataHandler(
+        return MySQLDataHandler.parse({
             target,
-            'One',
-            await this.query(target, sql)
-        )
-            .entity() as T | null
+            raw: await this.query(target, sql),
+            fillMethod: 'One',
+            mapOptions: {
+                mapTo: 'entity'
+            }
+        }) as T | null
     }
 
     // ------------------------------------------------------------------------
@@ -36,12 +37,14 @@ export default class RelationOperationHandler {
         target: Constructor<T>,
         sql: string
     ): Promise<Collection<T>> {
-        return new MySQLDataHandler(
+        return MySQLDataHandler.parse({
             target,
-            'Many',
-            await this.query(target, sql)
-        )
-            .entity() as Collection<T>
+            raw: await this.query(target, sql),
+            fillMethod: 'Many',
+            mapOptions: {
+                mapTo: 'entity'
+            }
+        }) as Collection<T>
     }
 
     // ------------------------------------------------------------------------
