@@ -135,7 +135,7 @@ export default abstract class Entity {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    protected get _wherePK(): ConditionalQueryOptions<any> {
+    protected get _wherePK(): any {
         return this.__wherePK ??= {
             [this._pk]: this[this._pk as keyof this]
         } as any

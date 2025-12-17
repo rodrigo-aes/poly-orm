@@ -31,13 +31,18 @@ export default class CLI {
 
         if (this.shouldHelp) return this.help(command, method)
 
+        const proccess = this.instantiate(command, method)
+        proccess.parseCommand()
+        await proccess.execute()
+    }
+
+    // ------------------------------------------------------------------------
+
+    private instantiate(command: string, method?: string): Command {
         const Command = this.verifyCommand(command)
         this.verifyMethod(Command, command, method)
 
-        const proccess = new (Command as Constructor<Command>)(command, method)
-
-        proccess.parseCommand()
-        await proccess.execute()
+        return new (Command as Constructor<Command>)(command, method)
     }
 
     // ------------------------------------------------------------------------
@@ -53,7 +58,7 @@ export default class CLI {
     private verifyMethod(
         constructor: CommandConstructor,
         command: string,
-        method: string
+        method?: string
     ): void {
         if (method && !constructor.methods.includes(method)) (
             PolyORMException.CLI.throw('UNKNOWN_METHOD', command, method)

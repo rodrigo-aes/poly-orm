@@ -4,23 +4,16 @@ import {
 } from "../../Metadata"
 
 // Types
-import type {
-    EntityTarget,
-    PolymorphicEntityTarget,
-    CollectionTarget
-} from "../../types"
+import type { Entity, Constructor } from "../../types"
+import type { Collection, Pagination } from "../../Entities"
 
 export default function ComputedProperty(fn: ComputedPropertyFunction) {
-    return function <Target extends InstanceType<
-        EntityTarget | PolymorphicEntityTarget | CollectionTarget
-    >>(
-        target: Target,
+    return function <T extends Entity | Collection<any> | Pagination<any>>(
+        target: T,
         name: string
     ) {
         ComputedPropertiesMetadata
-            .findOrBuild(target.constructor as (
-                EntityTarget | PolymorphicEntityTarget | CollectionTarget
-            ))
+            .findOrBuild(target.constructor as Constructor<T>)
             .set(name, fn)
     }
 }

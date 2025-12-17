@@ -5,6 +5,7 @@ import type { JoinTableMetadataJSON } from "./JoinTablesMetadata/JoinTableMetada
 import type { HooksMetadataJSON } from "./HooksMetadata"
 import type { ComputedPropertiesJSON } from "./ComputedPropertiesMetadata"
 import type { CollectionsMetadataJSON } from "./CollectionsMetadata"
+import type { PaginationsMetadataJSON } from "./PaginationsMetadata"
 import type { ScopesMetadataJSON } from "./ScopesMetadata"
 import type Repository from "../../Repositories/Repository"
 import type { Trigger } from "../../Triggers"
@@ -22,5 +23,5 @@ export type EntityMetadataJSON = {
     computedProperties?: ComputedPropertiesJSON
     triggers?: (typeof Trigger)[]
     collections?: CollectionsMetadataJSON
-    paginations?: CollectionsMetadataJSON
+    paginations?: PaginationsMetadataJSON
 }

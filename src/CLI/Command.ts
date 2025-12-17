@@ -20,13 +20,13 @@ export default abstract class Command {
     public static readonly methods: string[] = []
     public static readonly description: string = ''
 
-    private static readonly intRegex = /^-?\d+$/
-    private static readonly floatRegex = (
+    private static readonly intPattern = /^-?\d+$/
+    private static readonly floatPattern = (
         /^[ \t\n\r]*[+-]?(Infinity|(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)/
     )
-    private static readonly literalRegex = /^<["'][^"']*["']>$/
-    private static readonly extractEnumRegex = /([a-zA-Z_][a-zA-Z0-9_]*)/g
-    private static readonly regExpRegex = /^<\/(.+?)\/>$/
+    private static readonly literalPattern = /^<["'][^"']*["']>$/
+    private static readonly extractEnumPattern = /([a-zA-Z_][a-zA-Z0-9_]*)/g
+    private static readonly regexPattern = /^<\/(.+?)\/>$/
 
     private argsMap: PositionalArgsMap = {}
     private optsMap: OptionsMap = {}
@@ -84,13 +84,13 @@ export default abstract class Command {
     // Static Getters =========================================================
     // Privates ---------------------------------------------------------------
     private static get isInt(): Function {
-        return this.regExpTest(this.intRegex)
+        return this.regExpTest(this.intPattern)
     }
 
     // ------------------------------------------------------------------------
 
     private static get isFloat(): Function {
-        return this.regExpTest(this.floatRegex)
+        return this.regExpTest(this.floatPattern)
     }
 
     // ------------------------------------------------------------------------
@@ -104,7 +104,7 @@ export default abstract class Command {
     // ------------------------------------------------------------------------
 
     public parseCommand(): void {
-        this.defineIfNotDefined()
+        this.defineOnce()
 
         for (const [key, arg] of this.commandArgs) {
             if (this.handled.has(key)) continue
@@ -128,7 +128,7 @@ export default abstract class Command {
     // ------------------------------------------------------------------------
 
     public argsHelp(commandLine: boolean = false): string | any[] {
-        this.defineIfNotDefined()
+        this.defineOnce()
 
         const args = Object.values(this.argsMap).map((
             { name, pattern, prefix, required, help }
@@ -151,7 +151,7 @@ export default abstract class Command {
     // ------------------------------------------------------------------------
 
     public optsHelp(): any[] {
-        this.defineIfNotDefined()
+        this.defineOnce()
 
         return Object.entries(this.optsMap).map((
             [opt, { alias, type, defaultValue, help }]
@@ -209,7 +209,7 @@ export default abstract class Command {
     }
 
     // Privates ---------------------------------------------------------------
-    private defineIfNotDefined(): void {
+    private defineOnce(): void {
         if (!this.alreadyDefined) this.define()
     }
 
@@ -263,20 +263,20 @@ export default abstract class Command {
 
                 // ------------------------------------------------------------
 
-                case '<float>': if (Command.isFloat(arg)) return (
-                    parseFloat(arg)
+                case '<float>': if (Command.isFloat(arg)) return parseFloat(
+                    arg
                 )
                     break
 
                 // ------------------------------------------------------------
 
                 default: switch (true) {
-                    case pattern.match(Command.literalRegex)?.[0] === arg:
+                    case pattern.match(Command.literalPattern)?.[0] === arg:
                         return arg
 
                     // --------------------------------------------------------
 
-                    case pattern.match(Command.extractEnumRegex)
+                    case pattern.match(Command.extractEnumPattern)
                         ?.includes(arg): return arg
 
                     // --------------------------------------------------------
@@ -387,7 +387,7 @@ export default abstract class Command {
     // ------------------------------------------------------------------------
 
     private static testRegExpPattern(pattern: string, arg: string): boolean {
-        const regexStr = pattern.match(Command.regExpRegex)?.[0]
+        const regexStr = pattern.match(Command.regexPattern)?.[0]
         return !!regexStr && new RegExp(regexStr).test(arg)
     }
 
@@ -411,10 +411,10 @@ export default abstract class Command {
                 case '<float>': return pattern
 
                 default:
-                    let patt: any = pattern.match(Command.literalRegex)?.[0]
+                    let patt: any = pattern.match(Command.literalPattern)?.[0]
                     if (patt) return `"${patt}"`
 
-                    patt = pattern.match(Command.extractEnumRegex)
+                    patt = pattern.match(Command.extractEnumPattern)
                     if (patt) return `In: (${patt.join(' | ')})`
 
                     return '<?>'

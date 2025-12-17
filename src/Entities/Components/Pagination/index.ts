@@ -10,6 +10,8 @@ export default class Pagination<
     T extends Entity,
     D extends Collection<T> = Collection<T>
 > {
+    public static readonly alias: string = this.name
+
     public page: number = 1
     public perPage: number = 26
     public total: number = 0

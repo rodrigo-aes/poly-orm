@@ -25,7 +25,8 @@ import type {
     AsEntityTarget,
     AsPolymorphicEntityTarget,
 
-    CollectionTarget
+    CollectionTarget,
+    PaginationTarget
 } from "./General"
 
 import type {
@@ -70,6 +71,7 @@ export type {
     AsPolymorphicEntityTarget,
 
     CollectionTarget,
+    PaginationTarget,
 
     Property,
     ForeignKeyProperty,

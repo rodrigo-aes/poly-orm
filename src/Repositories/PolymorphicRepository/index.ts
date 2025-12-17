@@ -60,16 +60,14 @@ export default class PolymorphicRepository<
         ? T
         : ResolveSource<T, S>
     > {
+        const target = this.resolveSource(source)
         return new MySQLOperation.Create(
-            this.resolveSource(source),
-            new CreateSQLBuilder(source, attributes as any),
+            target,
+            new CreateSQLBuilder(target, attributes as any),
             undefined,
             returns === 'source'
         )
-            .exec() as Promise<R extends 'this'
-                ? T
-                : ResolveSource<T, S>
-            >
+            .exec()
     }
 
     // ------------------------------------------------------------------------
@@ -100,18 +98,14 @@ export default class PolymorphicRepository<
         : ResolveSource<T, S>,
         M
     >> {
+        const target = this.resolveSource(source)
         return new MySQLOperation.Create(
-            this.resolveSource(source),
-            new CreateSQLBuilder(source, attributes as any) as any,
+            target,
+            new CreateSQLBuilder(target, attributes as any) as any,
             mapTo,
             returns === 'source'
         )
-            .exec() as Promise<CreateResult<
-                R extends 'this'
-                ? T
-                : ResolveSource<T, S>,
-                M
-            >>
+            .exec()
     }
 
     // ------------------------------------------------------------------------
@@ -132,10 +126,11 @@ export default class PolymorphicRepository<
         attributes: A,
         where?: ConditionalQueryOptions<ResolveSource<T, S>>
     ): Promise<UpdateResult<T, A>> {
+        const target = this.resolveSource(source)
         return new MySQLOperation.Update(
-            this.resolveSource(source),
+            target,
             new UpdateSQLBuilder(
-                source,
+                target,
                 attributes instanceof BasePolymorphicEntity
                     ? attributes.toSourceEntity()
                     : attributes,
@@ -169,17 +164,14 @@ export default class PolymorphicRepository<
         ? T
         : ResolveSource<T, S>
     > {
+        const target = this.resolveSource(source)
         return new MySQLOperation.UpdateOrCreate(
-            this.resolveSource(source),
-            new UpdateOrCreateSQLBuilder<any>(source, attributes),
+            target,
+            new UpdateOrCreateSQLBuilder<any>(target, attributes),
             undefined,
             returns === 'source'
         )
-            .exec() as Promise<
-                R extends 'this'
-                ? T
-                : ResolveSource<T, S>
-            >
+            .exec()
     }
 
     // ------------------------------------------------------------------------
@@ -195,17 +187,18 @@ export default class PolymorphicRepository<
         source: S,
         where: ConditionalQueryOptions<InstanceType<ResolveSource<T, S>>>
     ): Promise<DeleteResult> {
+        const target = this.resolveSource(source)
         return new MySQLOperation.Delete(
-            this.resolveSource(source),
-            new DeleteSQLBuilder(source, where),
+            target,
+            new DeleteSQLBuilder(target, where),
         )
             .exec()
     }
 
     // Privates ---------------------------------------------------------------
     /** @internal */
-    private resolveSource<S extends Source<T>>(source: S): ResolveSource<
-        T, S
+    private resolveSource<S extends Source<T>>(source: S): Constructor<
+        ResolveSource<T, S>
     > {
         return this.metadata.entities[(() => {
             switch (typeof source) {

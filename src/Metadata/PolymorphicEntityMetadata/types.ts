@@ -6,6 +6,7 @@ import type {
     ScopesMetadataJSON,
     ComputedPropertiesJSON,
     CollectionsMetadataJSON,
+    PaginationsMetadataJSON
 } from "../EntityMetadata"
 
 import type {
@@ -33,5 +34,5 @@ export type PolymorphicEntityMetadataJSON = {
     scopes?: ScopesMetadataJSON
     computedProperties?: ComputedPropertiesJSON
     collections?: CollectionsMetadataJSON
-    paginations?: CollectionsMetadataJSON
+    paginations?: PaginationsMetadataJSON
 }

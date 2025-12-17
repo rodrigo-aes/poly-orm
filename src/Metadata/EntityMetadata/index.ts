@@ -150,7 +150,8 @@ import CollectionsMetadata, {
 
 // Pagintions
 import PaginationsMetadata, {
-    PaginationMetadataHandler
+    PaginationMetadataHandler,
+    type PaginationsMetadataJSON
 } from './PaginationsMetadata'
 
 // Processes
@@ -462,6 +463,7 @@ export {
     type ScopesMetadataJSON,
     type ComputedPropertiesJSON,
     type CollectionsMetadataJSON,
+    type PaginationsMetadataJSON,
 
     // Data Type
     DataType,

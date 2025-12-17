@@ -2,7 +2,8 @@
 import { GeneralHelper } from "../Helpers"
 
 // Types
-import type { Target, CollectionTarget, Constructor } from "../types"
+import type { Entity, Target, CollectionTarget, PaginationTarget, Constructor } from "../types"
+import type { Collection, Pagination } from "../Entities"
 
 // Exceptions
 import PolyORMException, { MetadataErrorCode } from "../Errors"
@@ -11,7 +12,9 @@ export default abstract class MetadataMap<
     K extends string | number | symbol = any,
     T extends any = any
 > extends Map<K, T> {
-    constructor(public target?: Target | CollectionTarget) {
+    constructor(public target?: Constructor<
+        Entity | Collection<any> | Pagination<any>
+    >) {
         super()
     }
 
@@ -94,7 +97,7 @@ export default abstract class MetadataMap<
     // Publics ----------------------------------------------------------------
     public static find<T extends Constructor<MetadataMap>>(
         this: T,
-        target?: Target | CollectionTarget
+        target?: Constructor<Entity | Collection<any> | Pagination<any>>
     ): InstanceType<T> | undefined {
         return Reflect.getOwnMetadata(
             (this as T & typeof MetadataMap).KEY,
@@ -106,7 +109,7 @@ export default abstract class MetadataMap<
 
     public static build<T extends Constructor<MetadataMap>>(
         this: T,
-        target?: Target | CollectionTarget,
+        target?: Constructor<Entity | Collection<any> | Pagination<any>>
     ): InstanceType<T> {
         return new this(target) as InstanceType<T>
     }
@@ -115,7 +118,7 @@ export default abstract class MetadataMap<
 
     public static findOrBuild<T extends Constructor<MetadataMap>>(
         this: T,
-        target?: Target | CollectionTarget
+        target?: Constructor<Entity | Collection<any> | Pagination<any>>
     ): InstanceType<T> {
         return (this as T & typeof MetadataMap).find(target)
             ?? (this as T & typeof MetadataMap).build(target)
@@ -124,7 +127,7 @@ export default abstract class MetadataMap<
     // Privates ---------------------------------------------------------------
     private static parents<T extends Constructor<MetadataMap>>(
         this: T,
-        target: Target | CollectionTarget
+        target: Constructor<Entity | Collection<any> | Pagination<any>>
     ): InstanceType<T>[] {
         return GeneralHelper
             .objectParents(target)

@@ -32,10 +32,7 @@ export default abstract class BaseEntity extends Entity {
     declare readonly __name: string
 
     /** @internal */
-    declare readonly __repository: Repository<any>
-
-    /** @internal */
-    declare readonly __defaultCollection: Collection<any>
+    declare readonly __defaultCollection: Collection<this>
 
     public static readonly INHERIT_POLYMORPHIC_RELATIONS = false
 
@@ -50,8 +47,8 @@ export default abstract class BaseEntity extends Entity {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public getRepository<T extends BaseEntity>(this: T): T['__repository'] {
-        return this.getTrueMetadata().getRepository() as T['__repository']
+    public getRepository<T extends Repository<this> = Repository<this>>(): T {
+        return this.getTrueMetadata().getRepository() as T
     }
 
     // ------------------------------------------------------------------------
@@ -89,10 +86,9 @@ export default abstract class BaseEntity extends Entity {
         this: T,
         attributes: UpdateAttributes<T>
     ): Promise<ResultSetHeader> {
-        return this.getRepository().update(
-            attributes,
-            this._wherePK
-        ) as Promise<ResultSetHeader>
+        return this.getRepository().update(attributes, this._wherePK) as (
+            Promise<ResultSetHeader>
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -131,15 +127,11 @@ export default abstract class BaseEntity extends Entity {
      * @param attributes - Entity creation attributes
      * @returns - A entity instance for created register
      */
-    public static create<T extends EntityTarget>(
-        this: T,
-        attributes: CreationAttributes<InstanceType<T>>
-    ): Promise<InstanceType<T>> {
-        return (
-            (this as StaticEntityTarget<T>)
-                .getRepository() as Repository<InstanceType<T>>
-        )
-            .create(attributes)
+    public static create<T extends BaseEntity>(
+        this: Constructor<T>,
+        attributes: CreationAttributes<T>
+    ): Promise<T> {
+        return (this as any).getRepository().create(attributes)
     }
 
     // ------------------------------------------------------------------------
@@ -151,15 +143,11 @@ export default abstract class BaseEntity extends Entity {
      * attributes
      * @returns - A entity instance collection for created registers
      */
-    public static createMany<T extends EntityTarget>(
-        this: T,
-        attributes: CreationAttributes<InstanceType<T>>[]
-    ): Promise<InstanceType<T>[]> {
-        return (
-            (this as StaticEntityTarget<T>)
-                .getRepository() as Repository<InstanceType<T>>
-        )
-            .createMany(attributes)
+    public static createMany<T extends BaseEntity>(
+        this: Constructor<T>,
+        attributes: CreationAttributes<T>[]
+    ): Promise<T[]> {
+        return (this as any).getRepository().createMany(attributes)
     }
 
     // ------------------------------------------------------------------------
@@ -171,16 +159,12 @@ export default abstract class BaseEntity extends Entity {
      * @param where - Conditional where options
      * @returns - A result set header with the count of affected registers
      */
-    public static update<T extends EntityTarget>(
-        this: T,
-        attributes: UpdateAttributes<InstanceType<T>>,
-        where: ConditionalQueryOptions<InstanceType<T>>
+    public static update<T extends BaseEntity>(
+        this: Constructor<T>,
+        attributes: UpdateAttributes<T>,
+        where: ConditionalQueryOptions<T>
     ): Promise<ResultSetHeader> {
-        return (
-            (this as StaticEntityTarget<T>)
-                .getRepository() as Repository<InstanceType<T>>
-        )
-            .update(attributes, where) as Promise<ResultSetHeader>
+        return (this as any).getRepository().update(attributes, where)
     }
 
     // ------------------------------------------------------------------------
@@ -190,15 +174,11 @@ export default abstract class BaseEntity extends Entity {
      * @param attributes - Update or create attributes data 
      * @returns - A entity instance for updated or created register
      */
-    public static updateOrCreate<T extends EntityTarget>(
-        this: T,
-        attributes: UpdateOrCreateAttributes<InstanceType<T>>,
-    ): Promise<InstanceType<T>> {
-        return (
-            (this as StaticEntityTarget<T>)
-                .getRepository() as Repository<InstanceType<T>>
-        )
-            .updateOrCreate(attributes)
+    public static updateOrCreate<T extends BaseEntity>(
+        this: Constructor<T>,
+        attributes: UpdateOrCreateAttributes<T>,
+    ): Promise<T> {
+        return (this as any).getRepository().updateOrCreate(attributes)
     }
 
     // ------------------------------------------------------------------------
@@ -208,10 +188,10 @@ export default abstract class BaseEntity extends Entity {
      * @param where - Conditional where options
      * @returns - A result header containing the count of affected registers
      */
-    public static delete<T extends EntityTarget>(
-        this: T,
-        where: ConditionalQueryOptions<InstanceType<T>>
+    public static delete<T extends BaseEntity>(
+        this: Constructor<T>,
+        where: ConditionalQueryOptions<T>
     ): Promise<DeleteResult> {
-        return (this as StaticEntityTarget<T>).getRepository().delete(where)
+        return (this as any).getRepository().delete(where)
     }
 }

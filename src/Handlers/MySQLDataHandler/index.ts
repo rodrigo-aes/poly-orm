@@ -23,7 +23,6 @@ import type {
     TargetMetadata,
     PolymorphicEntityTarget,
     StaticEntityTarget,
-    StaticPolymorphicEntityTarget,
     Constructor
 } from "../../types"
 
@@ -114,10 +113,7 @@ export default class MySQLDataHandler<T extends Entity> {
             case "Paginate": return PaginationMetadataHandler.build(
                 mapTo,
                 pagination!,
-                CollectionsMetadataHandler.build(
-                    mapTo,
-                    data
-                )
+                data
             )
         }
     }

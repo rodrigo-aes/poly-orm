@@ -22,6 +22,7 @@ import type {
 } from './Entities'
 
 import type { CollectionTarget } from './Collections'
+import type { PaginationTarget } from './Paginations'
 
 export type Constructor<T extends object> = new (...args: any[]) => T
 export type ConstructorsOf<T extends object[]> = {
@@ -55,5 +56,6 @@ export type {
     AsEntityTarget,
     AsPolymorphicEntityTarget,
 
-    CollectionTarget
+    CollectionTarget,
+    PaginationTarget
 }

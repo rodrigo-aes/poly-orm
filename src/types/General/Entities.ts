@@ -21,8 +21,7 @@ import type { EntityProperties, EntityRelations } from "../Properties"
 
 // Bases =============================================================================================================
 export type Entity = BaseEntity | BasePolymorphicEntity<any>
-export type Target = Constructor<BaseEntity | BasePolymorphicEntity<any>>
-
+export type Target = Constructor<Entity>
 
 export type StaticTarget<T extends Target = Target> = T & typeof EntityClass
 

@@ -1,11 +1,9 @@
-import type {
-    EntityTarget,
-    PolymorphicEntityTarget
-} from "../../../types"
+import type { Entity } from "../../../types"
+import type { Collection, Pagination } from "../../../Entities"
 
 export type ComputedPropertyFunction<
-    T extends EntityTarget | PolymorphicEntityTarget = any
-> = (value: any, entity: InstanceType<T>) => any | Promise<any>
+    T extends Entity | Collection<any> | Pagination<any> = any
+> = (instance: T) => any | Promise<any>
 
 export type ComputedPropertiesJSON = {
     [Prop: string]: ComputedPropertyFunction
