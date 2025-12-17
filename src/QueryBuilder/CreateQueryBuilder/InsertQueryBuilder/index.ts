@@ -5,7 +5,7 @@ import { MySQLOperation } from "../../../Handlers"
 
 // Types
 import type { BaseEntity } from "../../../Entities"
-import type { CreationAttributes } from "../../../SQLBuilders"
+import type { CreateSQLBuilder, CreationAttributes } from "../../../SQLBuilders"
 
 /**
  * Build `INSERT` query
@@ -35,13 +35,13 @@ export default class InsertQueryBuilder<
     * Execute defined operation in database
     * @returns - Create result
     */
-    public async exec(): Promise<T> {
+    public exec(): Promise<T> {
         this.sqlBuilder.bulk = false
 
-        return new MySQLOperation.Create<T, never>(
-            this.target,
-            this.sqlBuilder,
-        )
-            .exec()
+        return MySQLOperation.Create.exec({
+            target: this.target,
+            sqlBuilder: this.sqlBuilder,
+            toSource: false
+        })
     }
 }

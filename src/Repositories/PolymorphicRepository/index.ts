@@ -61,13 +61,11 @@ export default class PolymorphicRepository<
         : ResolveSource<T, S>
     > {
         const target = this.resolveSource(source)
-        return new MySQLOperation.Create(
+        return MySQLOperation.Create.exec({
             target,
-            new CreateSQLBuilder(target, attributes as any),
-            undefined,
-            returns === 'source'
-        )
-            .exec()
+            sqlBuilder: new CreateSQLBuilder(target, attributes as any),
+            toSource: returns === 'source'
+        })
     }
 
     // ------------------------------------------------------------------------
@@ -78,7 +76,7 @@ export default class PolymorphicRepository<
      * @param source - Source entity
      * @param attributes - An array list for each register source entity 
      * creation attributes
-     * @param mapTo - Return options map to case `this` returns a collection
+     * @param mapOptions - Return options map to case `this` returns a collection
      * of polymorphic entities instances case `source` returns a 
      * collection of source entities instances 
      * @returns - A collection of source or polymorphic entities instances
@@ -90,7 +88,7 @@ export default class PolymorphicRepository<
     >(
         source: S,
         attributes: CreationAttributes<InstanceType<ResolveSource<T, S>>>[],
-        mapTo?: M,
+        mapOptions?: M,
         returns: R = 'this' as R
     ): Promise<CreateResult<
         R extends 'this'
@@ -99,13 +97,12 @@ export default class PolymorphicRepository<
         M
     >> {
         const target = this.resolveSource(source)
-        return new MySQLOperation.Create(
+        return MySQLOperation.Create.exec({
             target,
-            new CreateSQLBuilder(target, attributes as any) as any,
-            mapTo,
-            returns === 'source'
-        )
-            .exec()
+            sqlBuilder: new CreateSQLBuilder(target, attributes as any),
+            mapOptions: mapOptions,
+            toSource: returns === 'source'
+        })
     }
 
     // ------------------------------------------------------------------------
@@ -127,17 +124,16 @@ export default class PolymorphicRepository<
         where?: ConditionalQueryOptions<ResolveSource<T, S>>
     ): Promise<UpdateResult<T, A>> {
         const target = this.resolveSource(source)
-        return new MySQLOperation.Update(
+        return MySQLOperation.Update.exec<T, A>({
             target,
-            new UpdateSQLBuilder(
+            sqlBuilder: new UpdateSQLBuilder(
                 target,
                 attributes instanceof BasePolymorphicEntity
                     ? attributes.toSourceEntity()
                     : attributes,
                 where
             ),
-        )
-            .exec() as Promise<UpdateResult<T, A>>
+        })
     }
 
     // ------------------------------------------------------------------------
@@ -165,13 +161,11 @@ export default class PolymorphicRepository<
         : ResolveSource<T, S>
     > {
         const target = this.resolveSource(source)
-        return new MySQLOperation.UpdateOrCreate(
+        return MySQLOperation.UpdateOrCreate.exec({
             target,
-            new UpdateOrCreateSQLBuilder<any>(target, attributes),
-            undefined,
-            returns === 'source'
-        )
-            .exec()
+            sqlBuilder: new UpdateOrCreateSQLBuilder<any>(target, attributes),
+            toSource: returns === 'source'
+        })
     }
 
     // ------------------------------------------------------------------------
@@ -188,11 +182,10 @@ export default class PolymorphicRepository<
         where: ConditionalQueryOptions<InstanceType<ResolveSource<T, S>>>
     ): Promise<DeleteResult> {
         const target = this.resolveSource(source)
-        return new MySQLOperation.Delete(
+        return MySQLOperation.Delete.exec({
             target,
-            new DeleteSQLBuilder(target, where),
-        )
-            .exec()
+            sqlBuilder: new DeleteSQLBuilder(target, where),
+        })
     }
 
     // Privates ---------------------------------------------------------------

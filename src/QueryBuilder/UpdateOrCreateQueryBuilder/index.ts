@@ -81,11 +81,10 @@ export default class UpdateOrCreateQueryBuilder<T extends BaseEntity> {
     * @returns - Update or create result
     */
     public exec(): Promise<T> {
-        return new MySQLOperation.UpdateOrCreate(
-            this.target,
-            this.sqlBuilder
-        )
-            .exec()
+        return MySQLOperation.UpdateOrCreate.exec({
+            target: this.target,
+            sqlBuilder: this.sqlBuilder
+        })
     }
 
     // ------------------------------------------------------------------------

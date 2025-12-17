@@ -170,11 +170,10 @@ export default class UpdateQueryBuilder<T extends BaseEntity> {
     * @returns - Update result
     */
     public exec(): Promise<ResultSetHeader> {
-        return new MySQLOperation.Update(
-            this.target,
-            this.sqlBuilder
-        )
-            .exec() as Promise<ResultSetHeader>
+        return MySQLOperation.Update.exec({
+            target: this.target,
+            sqlBuilder: this.sqlBuilder
+        }) as Promise<ResultSetHeader>
     }
 
     // ------------------------------------------------------------------------

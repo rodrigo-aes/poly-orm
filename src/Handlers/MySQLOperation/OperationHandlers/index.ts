@@ -12,7 +12,7 @@ import UpdateOrCreateOperation from "./UpdateOrCreateOperation"
 import DeleteOperation, { type DeleteResult } from "./DeleteOperation"
 
 // Types
-import type { MapOptions, CollectMapOptions } from "./types"
+import type { MapOptions, CollectMapOptions, ExecOptions } from "./types"
 
 export {
     FindByPkOperation,
@@ -27,6 +27,7 @@ export {
 
     type MapOptions,
     type CollectMapOptions,
+    type ExecOptions,
     type FindOneResult,
     type FindResult,
     type CountManyResult,

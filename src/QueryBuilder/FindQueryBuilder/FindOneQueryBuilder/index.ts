@@ -72,12 +72,11 @@ export default class FindOneQueryBuilder<
     public exec<M extends MapOptions>(mapOptions?: M): Promise<
         FindOneResult<T, M>
     > {
-        return new MySQLOperation.FindOne(
-            this.target,
-            this.toSQLBuilder(),
+        return MySQLOperation.FindOne.exec({
+            target: this.target,
+            sqlBuilder: this.toSQLBuilder(),
             mapOptions
-        )
-            .exec()
+        })
     }
 
     // Protecteds -------------------------------------------------------------

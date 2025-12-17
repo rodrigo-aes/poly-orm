@@ -179,11 +179,10 @@ export default class CountManyQueryBuilder<T extends Entity> {
      * @returns - Count result
      */
     public exec<T extends any = any>(): Promise<T> {
-        return new MySQLOperation.Count(
+        return MySQLOperation.Count.execMany(
             this.target,
             this.toSQLBuilder()
-        )
-            .exec()
+        ) as Promise<T>
     }
 
     // ------------------------------------------------------------------------

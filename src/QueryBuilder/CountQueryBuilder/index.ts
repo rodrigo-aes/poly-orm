@@ -201,12 +201,11 @@ export default class CountQueryBuilder<T extends Entity> {
      * Execute defined operation in database
      * @returns - Count result
      */
-    public async exec(): Promise<number> {
-        return await new MySQLOperation.Count(
+    public exec(): Promise<number> {
+        return MySQLOperation.Count.execSingle(
             this.target,
             this.toSQLBuilder()
         )
-            .exec()
     }
 
     // ------------------------------------------------------------------------

@@ -20,7 +20,7 @@ import {
     type CreateResult,
     type CreateCollectMapOptions,
     type UpdateResult,
-    type DeleteResult,
+    type DeleteResult
 } from "../../Handlers"
 
 // Types 
@@ -42,14 +42,13 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
      * @returns - Entity instance
      */
     public create(attributes: CreationAttributes<T>): Promise<T> {
-        return new MySQLOperation.Create<T, never>(
-            this.target,
-            new CreateSQLBuilder(
+        return MySQLOperation.Create.exec({
+            target: this.target,
+            sqlBuilder: new CreateSQLBuilder(
                 this.target,
                 attributes
             )
-        )
-            .exec()
+        })
     }
 
     // ------------------------------------------------------------------------
@@ -63,14 +62,13 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
      */
     public createMany<M extends CreateCollectMapOptions<T>>(
         attributes: CreationAttributes<T>[],
-        mapTo?: M
+        mapOptions?: M
     ): Promise<CreateResult<T, M>> {
-        return new MySQLOperation.Create(
-            this.target,
-            new CreateSQLBuilder(this.target, attributes),
-            mapTo
-        )
-            .exec()
+        return MySQLOperation.Create.exec({
+            target: this.target,
+            sqlBuilder: new CreateSQLBuilder(this.target, attributes),
+            mapOptions
+        })
     }
 
     // ------------------------------------------------------------------------
@@ -86,11 +84,10 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
         attributes: S,
         where?: ConditionalQueryOptions<T>,
     ): Promise<UpdateResult<T, S>> {
-        return new MySQLOperation.Update<T, S>(
-            this.target,
-            new UpdateSQLBuilder(this.target, attributes, where)
-        )
-            .exec()
+        return MySQLOperation.Update.exec({
+            target: this.target,
+            sqlBuilder: new UpdateSQLBuilder(this.target, attributes, where)
+        })
     }
 
     // ------------------------------------------------------------------------
@@ -103,14 +100,13 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
     public updateOrCreate(attributes: UpdateOrCreateAttributes<T>): Promise<
         T
     > {
-        return new MySQLOperation.UpdateOrCreate(
-            this.target,
-            new UpdateOrCreateSQLBuilder(
+        return MySQLOperation.UpdateOrCreate.exec({
+            target: this.target,
+            sqlBuilder: new UpdateOrCreateSQLBuilder(
                 this.target,
                 attributes
             )
-        )
-            .exec()
+        })
     }
 
     // ------------------------------------------------------------------------
@@ -121,10 +117,9 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
      * @returns - A result header containing the count of affected registers
      */
     public delete(where: ConditionalQueryOptions<T>): Promise<DeleteResult> {
-        return new MySQLOperation.Delete(
-            this.target,
-            new DeleteSQLBuilder(this.target, where)
-        )
-            .exec()
+        return MySQLOperation.Delete.exec({
+            target: this.target,
+            sqlBuilder: new DeleteSQLBuilder(this.target, where)
+        })
     }
 }

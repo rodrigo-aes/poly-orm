@@ -8,30 +8,29 @@ import type {
     UpdateSQLBuilder,
     UpdateAttributes
 } from "../../../../SQLBuilders"
+import { ExecOptions } from "../types"
+
 import type { UpdateResult } from "./types"
 
-export default class UpdateOperation<
-    T extends Entity,
-    S extends T | UpdateAttributes<T>
-> extends OperationHandler<T, UpdateSQLBuilder<T>, never> {
+export default class UpdateOperation extends OperationHandler {
     public readonly fillMethod = 'One'
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     @Hooks.Update
-    public exec(): Promise<UpdateResult<T, S>> {
-        return this.execMappedQuery()
-    }
-
-    // Privates ---------------------------------------------------------------
-    protected override async execMappedQuery(): Promise<UpdateResult<T, S>> {
+    public static async exec<
+        T extends Entity,
+        S extends T | UpdateAttributes<T>
+    >(
+        { target, sqlBuilder }: ExecOptions<T, UpdateSQLBuilder<T>, never>
+    ): Promise<UpdateResult<T, S>> {
         return (
-            this.sqlBuilder._attributes instanceof EntityClass
+            sqlBuilder._attributes instanceof EntityClass
                 ? (async () => {
-                    await this.execQuery()
-                    return this.sqlBuilder._attributes
+                    await this.execQuery(target, sqlBuilder)
+                    return sqlBuilder._attributes
                 })()
-                : this.execQuery()
+                : this.execQuery(target, sqlBuilder)
         ) as Promise<UpdateResult<T, S>>
     }
 }

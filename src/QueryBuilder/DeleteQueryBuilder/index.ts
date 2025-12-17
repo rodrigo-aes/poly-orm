@@ -151,11 +151,10 @@ export default class DeleteQueryBuilder<T extends BaseEntity> {
     * @returns - Delete result
     */
     public exec(): Promise<DeleteResult> {
-        return new MySQLOperation.Delete(
-            this.target,
-            this.sqlBuilder
-        )
-            .exec()
+        return MySQLOperation.Delete.exec({
+            target: this.target,
+            sqlBuilder: this.sqlBuilder
+        })
     }
 
     // ------------------------------------------------------------------------

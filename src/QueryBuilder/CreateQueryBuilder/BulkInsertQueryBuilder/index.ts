@@ -45,16 +45,16 @@ export default class BulkInsertQueryBuilder<
     * Execute defined operation in database
     * @returns - Create many result
     */
-    public async exec<M extends CreateCollectMapOptions<T>>(
+    public exec<M extends CreateCollectMapOptions<T>>(
         mapOptions?: M
     ): Promise<CreateResult<T, M>> {
         this.sqlBuilder.bulk = true
 
-        return new MySQLOperation.Create<T, M>(
-            this.target,
-            this.sqlBuilder,
-            mapOptions
-        )
-            .exec()
+        return MySQLOperation.Create.exec({
+            target: this.target,
+            sqlBuilder: this.sqlBuilder,
+            mapOptions,
+            toSource: false
+        })
     }
 }

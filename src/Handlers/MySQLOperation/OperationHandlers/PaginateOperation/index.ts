@@ -1,45 +1,57 @@
 import OperationHandler from "../OperationHandler"
 import Hooks from "../../Hooks"
+import { MetadataHandler } from "../../../../Metadata"
 
 // Types
-import type { Entity } from "../../../../types"
+import type { Constructor, Entity } from "../../../../types"
 import type { PaginationSQLBuilder } from "../../../../SQLBuilders"
 import type {
     Pagination,
     PaginationInitMap
 } from "../../../../Entities"
+import type { ExecOptions, CollectMapOptions } from "../types"
 
-export default class PaginateOperation<
-    T extends Entity
-> extends OperationHandler<T, PaginationSQLBuilder<T>, any> {
+export default class PaginateOperation extends OperationHandler {
     public readonly fillMethod = 'Many'
 
     @Hooks.BulkFind
-    public exec(): Promise<Pagination<T>> {
-        return this.execMappedQuery()
-    }
-
-    // Protecteds -------------------------------------------------------------
-    protected override async execMappedQuery(): Promise<Pagination<T>> {
-        return this.map(
-            await super.execMappedQuery(),
-            await this.paginationInitMap()
-        )
+    public static async exec<T extends Entity, M extends CollectMapOptions<T>>(
+        options: ExecOptions<T, PaginationSQLBuilder<T>, M>
+    ): Promise<Pagination<T>> {
+        return this.execMappedQuery({
+            ...options,
+            pagination: await this.paginationInitMap(
+                options.target, options.sqlBuilder
+            )
+        })
     }
 
     // Privates ---------------------------------------------------------------
-    private async execTotalQuery(): Promise<number> {
-        return (await this.connection.query(this.sqlBuilder.totalSQL()))
-        [0].total
+    private static async paginationInitMap<
+        T extends Entity,
+        B extends PaginationSQLBuilder<T>
+    >(
+        target: Constructor<T>,
+        sqlBuilder: B,
+    ): Promise<PaginationInitMap> {
+        return {
+            page: sqlBuilder.page,
+            perPage: sqlBuilder.perPage,
+            total: await this.execTotalQuery(target, sqlBuilder)
+        }
     }
 
     // ------------------------------------------------------------------------
 
-    private async paginationInitMap(): Promise<PaginationInitMap> {
-        return {
-            page: this.sqlBuilder.page,
-            perPage: this.sqlBuilder.perPage,
-            total: await this.execTotalQuery()
-        }
+    private static async execTotalQuery<
+        T extends Entity,
+        B extends PaginationSQLBuilder<T>
+    >(
+        target: Constructor<T>,
+        sqlBuilder: B,
+    ): Promise<number> {
+        return (await MetadataHandler.targetMetadata(target).connection.query(
+            sqlBuilder.totalSQL()
+        ))[0].total
     }
 }

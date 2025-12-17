@@ -1,5 +1,6 @@
-import type { Entity, Target } from "../../../types"
-import type { Collection } from "../../../Entities"
+import type { Entity, Target, Constructor } from "../../../types"
+import type { Collection, PaginationInitMap } from "../../../Entities"
+import type { FillMethod } from "../../MySQLDataHandler"
 import type {
     FindByPkSQLBuilder,
     FindOneSQLBuilder,
@@ -41,4 +42,16 @@ export interface CollectMapOptions<
     C extends Collection<T> | undefined = undefined
 > extends MapOptions<M> {
     collection?: C
+}
+
+export type ExecOptions<
+    T extends Entity,
+    B extends SQLBuilder,
+    M extends MapOptions | CollectMapOptions<T> | never
+> = {
+    target: Constructor<T>,
+    sqlBuilder: B,
+    mapOptions?: M,
+    toSource?: boolean,
+    pagination?: PaginationInitMap
 }

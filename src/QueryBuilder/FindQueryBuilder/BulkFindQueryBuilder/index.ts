@@ -89,12 +89,11 @@ export default class BulkFindQueryBuilder<
     public override exec<M extends CollectMapOptions<T> = { mapTo: 'entity' }>(
         mapOptions?: M
     ): Promise<FindResult<T, M>> {
-        return new MySQLOperation.Find(
-            this.target,
-            this.toSQLBuilder(),
+        return MySQLOperation.Find.exec({
+            target: this.target,
+            sqlBuilder: this.toSQLBuilder(),
             mapOptions
-        )
-            .exec()
+        })
     }
 
     // ------------------------------------------------------------------------
