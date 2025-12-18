@@ -54,7 +54,7 @@ export default class FindByPkSQLBuilder<T extends Entity> {
 
     public whereSQL(): string {
         return `WHERE ${this.alias}.${(
-            this.metadata.columns.primary.name
+            this.metadata.PK
         )} = ${PropertySQLHelper.valueSQL(this.pk)}`
     }
 }

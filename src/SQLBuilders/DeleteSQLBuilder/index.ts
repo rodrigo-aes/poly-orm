@@ -55,7 +55,7 @@ export default class DeleteSQLBuilder<T extends Entity> {
     // ------------------------------------------------------------------------
 
     protected get primary(): keyof BasePolymorphicEntity<any> {
-        return this.targetMetadata.columns.primary.name as (
+        return this.targetMetadata.PK as (
             keyof BasePolymorphicEntity<any>
         )
     }

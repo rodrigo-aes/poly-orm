@@ -46,14 +46,14 @@ export default class OnSQLBuilder<
     // Getters ================================================================
     // Privates ---------------------------------------------------------------
     private get relatedPrimary(): string {
-        return `${this.alias}.${this.metadata.columns.primary.name}`
+        return `${this.alias}.${this.metadata.PK}`
     }
 
     // ------------------------------------------------------------------------
 
     private get parentPrimary(): string {
         return `${this.parentAlias}.${(
-            this.parentMetadata.columns.primary.name
+            this.parentMetadata.PK
         )}`
     }
 

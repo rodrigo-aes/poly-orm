@@ -128,7 +128,7 @@ export default abstract class Entity {
     /** @internal */
     protected get _pk(): string {
         return this.__pk ??= (
-            (this as any).getTrueMetadata().columns.primary.name
+            (this as any).getTrueMetadata().PK
         )
     }
 
@@ -204,7 +204,7 @@ export default abstract class Entity {
      */
     public fill<T extends EntityT>(
         this: T,
-        data: Partial<EntityProperties<T>>
+        data: Partial<CreationAttributes<T>>
     ): T {
         Object.assign(this, data)
         return this
@@ -517,12 +517,12 @@ export default abstract class Entity {
      * @param args - Scope args
      * @returns - Scoped static entity
      */
-    public static scope<T extends Target>(
-        this: T,
+    public static scope<T extends EntityT>(
+        this: Constructor<T>,
         name: string,
         ...args: any[]
-    ): T {
-        const scoped: T = (this as T & typeof Entity).reply()
+    ): StaticTarget<T> {
+        const scoped = (this as StaticTarget<T>).reply()
 
         TempMetadata
             .reply(scoped, this)
@@ -542,11 +542,11 @@ export default abstract class Entity {
      * @param collection - Collection name or constructor
      * @returns - Scoped static entity
      */
-    public static collection<T extends Target>(
-        this: T,
+    public static collection<T extends EntityT>(
+        this: Constructor<T>,
         collection: string | typeof Collection
-    ): T {
-        const scoped: T = (this as StaticTarget<T>).reply()
+    ): StaticTarget<T> {
+        const scoped = (this as StaticTarget<T>).reply()
 
         TempMetadata.reply(scoped, this).setCollection(
             scoped,
@@ -568,11 +568,11 @@ export default abstract class Entity {
      * @param attributes - Entity attributes
      * @returns - Entity instance
      */
-    public static build<T extends Target>(
-        this: T,
-        attributes: CreationAttributes<InstanceType<T>>
-    ): InstanceType<T> {
-        const instance = new this().fill(attributes) as InstanceType<T>
+    public static build<T extends EntityT>(
+        this: Constructor<T>,
+        attributes: CreationAttributes<T>
+    ): T {
+        const instance = new this().fill(attributes) as T
         instance.getTrueMetadata().computedProperties?.assign(instance)
         ColumnsSnapshots.set(instance, instance.columns())
 
@@ -698,7 +698,9 @@ export default abstract class Entity {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    protected static reply<T extends Target>(this: T): T {
+    protected static reply<T extends Constructor<EntityT>>(
+        this: T
+    ): T {
         const replic = class extends (this as new (...args: any[]) => any) { }
         Object.assign(replic, this)
 

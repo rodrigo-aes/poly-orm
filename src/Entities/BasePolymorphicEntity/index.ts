@@ -22,7 +22,7 @@ import {
 } from "../../Decorators"
 
 // Handlers
-import { PolymorphicEntityBuilder } from "../../Handlers"
+import { EntityBuilder } from "../../Handlers"
 
 // Types
 import type BaseEntity from "../BaseEntity"
@@ -87,7 +87,7 @@ export default abstract class BasePolymorphicEntity<
 
     // Protecteds -------------------------------------------------------------
     protected get _sourcePk(): string {
-        return this.getTrueSourceMetadata().columns.primary.name
+        return this.getTrueSourceMetadata().PK
     }
 
     // ------------------------------------------------------------------------
@@ -127,7 +127,7 @@ export default abstract class BasePolymorphicEntity<
     public toSourceEntity<T extends Source<S>>(): ResolveSource<
         S, T
     > {
-        return PolymorphicEntityBuilder.instantiateSourceEntity(
+        return EntityBuilder.buildPolymorphicSource(
             this.entities[this.entityType],
             this
         ) as ResolveSource<S, T>

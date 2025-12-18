@@ -81,7 +81,7 @@ export default class HasManyThroughMetadata extends RelationMetadata {
 
     public get throughPrimary(): string {
         return (
-            `${this.throughAlias}.${this.throughMetadata.columns.primary.name}`
+            `${this.throughAlias}.${this.throughMetadata.PK}`
         )
     }
 

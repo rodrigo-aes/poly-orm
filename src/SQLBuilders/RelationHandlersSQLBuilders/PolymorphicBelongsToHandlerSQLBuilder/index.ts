@@ -104,7 +104,7 @@ export default class PolymorphicBelongsToHandlerSQLBuilder<
 
     private get sourcePrimary(): string {
         return `${this.sourceAlias}.${(
-            this.sourceMetadata.columns.primary.name
+            this.sourceMetadata.PK
         )}`
     }
     // ------------------------------------------------------------------------

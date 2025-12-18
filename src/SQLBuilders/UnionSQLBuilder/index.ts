@@ -70,7 +70,7 @@ export default class UnionSQLBuilder {
     // ------------------------------------------------------------------------
 
     private primaryKeySQL(source: EntityMetadata): string {
-        return `${source.columns.primary.name} AS primaryKey`
+        return `${source.PK} AS primaryKey`
     }
 
     // ------------------------------------------------------------------------

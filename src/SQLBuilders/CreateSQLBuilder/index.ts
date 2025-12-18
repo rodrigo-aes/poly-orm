@@ -171,9 +171,7 @@ export default class CreateSQLBuilder<T extends BaseEntity> {
     private PKPatternName(): CreationAttributesKey<T>[] {
         switch (this.metadata.columns.primary.pattern) {
             case 'polymorphic-id': return [
-                this.metadata.columns.primary.name as (
-                    CreationAttributesKey<T>
-                )
+                this.metadata.PK as CreationAttributesKey<T>
             ]
 
             default: return []

@@ -54,7 +54,7 @@ export default class PolymorphicRepository<
      */
     public create<S extends Source<T>, R extends 'this' | 'source' = 'this'>(
         source: S,
-        attributes?: CreationAttributes<InstanceType<ResolveSource<T, S>>>,
+        attributes: CreationAttributes<ResolveSource<T, S>>,
         returns: R = 'this' as R
     ): Promise<R extends 'this'
         ? T
@@ -87,7 +87,7 @@ export default class PolymorphicRepository<
         R extends 'this' | 'source' = 'this'
     >(
         source: S,
-        attributes: CreationAttributes<InstanceType<ResolveSource<T, S>>>[],
+        attributes: CreationAttributes<ResolveSource<T, S>>[],
         mapOptions?: M,
         returns: R = 'this' as R
     ): Promise<CreateResult<
@@ -153,7 +153,7 @@ export default class PolymorphicRepository<
         R extends 'this' | 'source' = 'this'
     >(
         source: S,
-        attributes: UpdateOrCreateAttributes<InstanceType<ResolveSource<T, S>>>,
+        attributes: UpdateOrCreateAttributes<ResolveSource<T, S>>,
         returns: R
     ): Promise<
         R extends 'this'
@@ -179,7 +179,7 @@ export default class PolymorphicRepository<
      */
     public delete<S extends Source<T>>(
         source: S,
-        where: ConditionalQueryOptions<InstanceType<ResolveSource<T, S>>>
+        where: ConditionalQueryOptions<ResolveSource<T, S>>
     ): Promise<DeleteResult> {
         const target = this.resolveSource(source)
         return MySQLOperation.Delete.exec({

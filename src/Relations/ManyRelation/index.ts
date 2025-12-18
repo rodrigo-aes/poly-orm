@@ -73,7 +73,7 @@ export default abstract class ManyRelation<
 
     /** @internal */
     protected get relatedPrimary(): keyof R {
-        return this.relatedMetadata.columns.primary.name as keyof R
+        return this.relatedMetadata.PK as keyof R
     }
 
     // Instance Methods =======================================================

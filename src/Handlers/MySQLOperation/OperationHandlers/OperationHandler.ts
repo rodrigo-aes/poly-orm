@@ -50,7 +50,7 @@ export default class OperationHandler {
     protected static async execMappedQuery<
         T extends Entity,
         B extends SQLBuilder,
-        M extends MapOptions | CollectMapOptions<T>
+        M extends MapOptions | CollectMapOptions<T> | never
     >(
         {
             target,

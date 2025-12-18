@@ -42,7 +42,7 @@ export default class BelongsToMetadata extends RelationMetadata {
     // ------------------------------------------------------------------------
 
     public get relatedPK(): string {
-        return this.relatedMetadata.columns.primary.name
+        return this.relatedMetadata.PK
     }
 
     // ------------------------------------------------------------------------

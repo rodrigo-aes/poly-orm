@@ -12,14 +12,12 @@ import MySQLOperation, {
 
 import MySQLDataHandler from "./MySQLDataHandler"
 import EntityBuilder from "./EntityBuilder"
-import PolymorphicEntityBuilder from "./PolymorphicEntityBuilder"
 import ConditionalQueryJoinsHandler from "./ConditionalQueryJoinsHandler"
 
 export {
     MySQLOperation,
     MySQLDataHandler,
     EntityBuilder,
-    PolymorphicEntityBuilder,
     ConditionalQueryJoinsHandler,
 
     type MapOptions,

@@ -64,7 +64,7 @@ export default abstract class RelationHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     protected get targetPrimary(): Extract<keyof T, string> {
-        return this.targetMetadata.columns.primary.name as (
+        return this.targetMetadata.PK as (
             Extract<keyof T, string>
         )
     }
@@ -102,7 +102,7 @@ export default abstract class RelationHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     protected get relatedPrimary(): Extract<keyof R, string> {
-        return this.relatedMetadata.columns.primary.name as Extract<
+        return this.relatedMetadata.PK as Extract<
             keyof R, string
         >
     }

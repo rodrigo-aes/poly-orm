@@ -5,11 +5,7 @@ import { MetadataHandler } from "../../../Metadata"
 
 // Types
 import type { ResultSetHeader } from "mysql2"
-import type {
-    Entity,
-    Target,
-    Constructor,
-} from "../../../types"
+import type { Entity, Target, Constructor } from "../../../types"
 import type { BaseEntity, Collection } from "../../../Entities"
 import type { CreationAttributes } from "../../../SQLBuilders"
 import type { DeleteResult } from "../OperationHandlers"
@@ -54,12 +50,8 @@ export default class RelationOperationHandler {
         sql: string,
         attributes: CreationAttributes<T>
     ): Promise<T> {
-        return new EntityBuilder(
-            target,
-            attributes,
-            (await this.query(target, sql) as any).insertId
-        )
-            .build() as T
+        await this.query(target, sql)
+        return EntityBuilder.build(target, attributes) as T
     }
 
     // ------------------------------------------------------------------------
@@ -69,12 +61,8 @@ export default class RelationOperationHandler {
         sql: string,
         attributes: CreationAttributes<T>[]
     ): Promise<Collection<T>> {
-        return new EntityBuilder(
-            target,
-            attributes,
-            (await this.query(target, sql) as any).insertId
-        )
-            .build() as Collection<T>
+        await this.query(target, sql)
+        return EntityBuilder.build(target, attributes) as Collection<T>
     }
 
     // ------------------------------------------------------------------------
@@ -84,12 +72,8 @@ export default class RelationOperationHandler {
         sql: string,
         attributes: CreationAttributes<T>
     ): Promise<T> {
-        return new EntityBuilder(
-            target,
-            attributes,
-            (await this.query(target, sql))[0]
-        )
-            .build() as T
+        await this.query(target, sql)
+        return EntityBuilder.build(target, attributes) as T
     }
 
     // ------------------------------------------------------------------------

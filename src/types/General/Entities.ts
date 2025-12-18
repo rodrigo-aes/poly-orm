@@ -21,9 +21,15 @@ import type { EntityProperties, EntityRelations } from "../Properties"
 
 // Bases =============================================================================================================
 export type Entity = BaseEntity | BasePolymorphicEntity<any>
-export type Target = Constructor<Entity>
+export type Target<T extends Entity = Entity> = Constructor<T>
 
-export type StaticTarget<T extends Target = Target> = T & typeof EntityClass
+export type StaticTarget<T extends Target | Entity = Target> = (
+    T extends Target
+    ? T
+    : T extends Entity
+    ? Target<T>
+    : never
+) & typeof EntityClass
 
 export type EntityObject<T extends Entity> = (
     EntityProperties<T> &
@@ -35,14 +41,22 @@ export type EntityJSON<T extends Entity, Hidden extends string[]> = Omit<
 >
 
 // Entity Target ==============================================================
-export type EntityTarget = Constructor<BaseEntity>
+export type EntityTarget<T extends BaseEntity = BaseEntity> = Constructor<T>
 export type AsEntityTarget<T> = Extract<T, EntityTarget>
-export type StaticEntityTarget<T extends EntityTarget = EntityTarget> = (
-    T & typeof BaseEntity
-)
+export type StaticEntityTarget<
+    T extends EntityTarget | BaseEntity = EntityTarget
+> = (
+    T extends EntityTarget
+    ? T
+    : T extends BaseEntity
+    ? EntityTarget<T>
+    : never
+) & typeof BaseEntity
 
 // Polymorphic Entity Target ==================================================
-export type PolymorphicEntityTarget = Constructor<BasePolymorphicEntity<any>>
+export type PolymorphicEntityTarget<T
+    extends BasePolymorphicEntity<any> = BasePolymorphicEntity<any>
+> = Constructor<T>
 export type AsPolymorphicEntityTarget<T> = Extract<T, PolymorphicEntityTarget>
 export type StaticPolymorphicEntityTarget<T extends PolymorphicEntityTarget = (
     PolymorphicEntityTarget

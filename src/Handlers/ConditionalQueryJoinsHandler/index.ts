@@ -75,22 +75,22 @@ export default class ConditionalQueryJoinsHandler<T extends Entity> {
     // ------------------------------------------------------------------------
 
     private extractConditionalRelations(): string[] {
-        return Array.from(new Set(
-            Array.isArray(this.conditional)
-                ? this.conditional.flatMap(and => this.extractAndRelations(
-                    and
-                ))
-                : this.extractAndRelations(this.conditional as (
-                    AndQueryOptions<T>
-                ))
-        ))
+        return Array.from(
+            new Set(
+                Array.isArray(this.conditional)
+                    ? this.conditional.flatMap(
+                        and => this.extractAndRelations(and)
+                    )
+                    : this.extractAndRelations(this.conditional as (
+                        AndQueryOptions<T>
+                    ))
+            )
+        )
     }
 
     // ------------------------------------------------------------------------
 
-    private extractAndRelations(and: AndQueryOptions<T>): (
-        string[]
-    ) {
+    private extractAndRelations(and: AndQueryOptions<T>): string[] {
         return Object
             .keys(and)
             .flatMap(key => key.includes('.')

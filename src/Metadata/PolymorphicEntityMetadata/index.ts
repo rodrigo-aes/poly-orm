@@ -29,7 +29,7 @@ import { PolymorphicRepository } from "../../Repositories"
 
 // Handlers
 import MetadataHandler from '../MetadataHandler'
-import { PolymorphicEntityBuilder } from "../../Handlers"
+import { EntityBuilder } from "../../Handlers"
 import { EntityToJSONProcessMetadata } from "../ProcessMetadata"
 
 // Helpers
@@ -68,10 +68,7 @@ export default class PolymorphicEntityMetadata extends Metadata {
         super()
 
         this.tableName = tablename ?? target!.name.toLocaleLowerCase()
-        this.target = target ?? (
-            PolymorphicEntityBuilder.buildInternalPolymorphicEntity(this)
-        )
-
+        this.target = target ?? EntityBuilder.makeInternalPolymorphic(this)
         MetadataHandler.register(this, this.target)
     }
 
