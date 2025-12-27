@@ -7,9 +7,7 @@ import { Exists, Cross } from "./Symbol"
 
 // Handlers
 import { MetadataHandler, type RelationMetadataType } from "../../../Metadata"
-
-// Helpers
-import { SQLStringHelper } from "../../../Helpers"
+import { SQLString } from '../../../Handlers'
 
 // Types
 import type { Entity, Constructor, TargetMetadata } from "../../../types"
@@ -36,7 +34,7 @@ export default class ExistsSQLBuilder<T extends Entity> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return SQLStringHelper.normalizeSQL(this.handleSQL())
+        return SQLString.sanitize(this.handleSQL())
     }
 
     // Privates ---------------------------------------------------------------

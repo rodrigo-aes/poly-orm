@@ -6,6 +6,7 @@ import { MetadataHandler, type EntityMetadata } from "../Metadata"
 // Types
 import type { Constructor } from "../types"
 import type { BaseEntity } from "../Entities"
+import type { Literals } from "../SQLBuilders"
 import type {
     TriggerEvent,
     TriggerTiming,
@@ -46,5 +47,5 @@ export default abstract class Trigger<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public abstract action(): string | TriggerAction<T>[]
+    public abstract action(literals: Literals): string | TriggerAction<T>[]
 }

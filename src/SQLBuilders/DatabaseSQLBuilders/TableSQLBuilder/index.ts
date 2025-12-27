@@ -13,7 +13,7 @@ import ColumnSQLBuilder, {
 } from "./ColumnSQLBuilder"
 
 // Helpers
-import { SQLStringHelper } from "../../../Helpers"
+import { SQLString } from "../../../Handlers"
 
 // Types
 import type { ActionType } from "../../../DatabaseSchema"
@@ -37,7 +37,7 @@ export default class TableSQLBuilder<
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public createSQL() {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             CREATE TABLE ${this.name} (${this.createColumnsSQL()})
         `)
     }
@@ -45,7 +45,7 @@ export default class TableSQLBuilder<
     // ------------------------------------------------------------------------
 
     public createIfNotExistsSQL(): string {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             CREATE TABLE IF NOT EXISTS ${this.name} 
             (${this.createColumnsSQL()})
         `)
@@ -54,7 +54,7 @@ export default class TableSQLBuilder<
     // ------------------------------------------------------------------------
 
     public syncAlterSQL(schema: TableSchema) {
-        return SQLStringHelper.normalizeSQL(`  
+        return SQLString.sanitize(`  
             ALTER TABLE ${this.name} ${this.alterColumnsSQL(schema)}
         `)
     }
@@ -78,7 +78,7 @@ export default class TableSQLBuilder<
 
     public migrateAlterSQL(action: Omit<ActionType, 'CREATE'>): string {
         switch (action) {
-            case 'ALTER': return SQLStringHelper.normalizeSQL(
+            case 'ALTER': return SQLString.sanitize(
                 `ALTER TABLE ${this.name} ${this.migrateAlterChildsSQL()}`
             )
 

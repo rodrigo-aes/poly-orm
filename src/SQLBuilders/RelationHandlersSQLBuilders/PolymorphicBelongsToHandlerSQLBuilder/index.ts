@@ -7,7 +7,7 @@ import UnionSQLBuilder from "../../UnionSQLBuilder"
 import { InternalPolymorphicEntities } from "../../../Entities"
 
 // Helpers
-import { PropertySQLHelper } from "../../../Helpers"
+import { SQLString } from "../../../Handlers"
 
 // Types
 import type { PolymorphicBelongsToMetadata } from "../../../Metadata"
@@ -160,7 +160,7 @@ export default class PolymorphicBelongsToHandlerSQLBuilder<
         return Object
             .entries(this.onlyChangedAttributes(attributes))
             .map(([column, value]) => `${this.sourceAlias}.${column} = ${(
-                PropertySQLHelper.valueSQL(value)
+                SQLString.value(value)
             )}`)
             .join(', ')
     }

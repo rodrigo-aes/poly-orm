@@ -1,5 +1,5 @@
-// Helpers
-import { PropertySQLHelper } from "../../Helpers"
+// Handlers
+import { SQLString } from "../../Handlers"
 
 // Types
 import type { Entity, Constructor } from "../../types"
@@ -21,7 +21,7 @@ export default class GroupSQLBuilder<T extends Entity> {
 
     public propertiesSQL(): string {
         return this.options
-            .map(path => PropertySQLHelper.pathToAlias(path, this.alias))
+            .map(path => SQLString.pathToAlias(path, this.alias))
             .join(', ')
     }
 

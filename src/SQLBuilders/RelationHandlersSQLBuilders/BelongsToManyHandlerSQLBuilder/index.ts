@@ -6,7 +6,7 @@ import { BaseEntity } from "../../../Entities"
 import { SyncManyToMany } from "../../Procedures"
 
 // Helpers
-import { PropertySQLHelper } from "../../../Helpers"
+import { SQLString } from "../../../Handlers"
 
 // Types
 import type { BelongsToManyMetadata } from "../../../Metadata"
@@ -148,7 +148,7 @@ export default class BelongsToManyHandlerSQLBuilder<
 
     private foreignKeysValues(related: R): string {
         return `${this.targetPrimaryValueSQL}, ${(
-            PropertySQLHelper.valueSQL(related[this.relatedPrimary])
+            SQLString.value(related[this.relatedPrimary])
         )}`
     }
 
@@ -172,7 +172,7 @@ export default class BelongsToManyHandlerSQLBuilder<
     private syncInsertValuesSQL(primaryKeys: any[]): string {
         return primaryKeys
             .map(key => `(${this.targetPrimaryValue}, ${(
-                PropertySQLHelper.valueSQL(key)
+                SQLString.value(key)
             )})`)
             .join(', ')
     }
@@ -181,7 +181,7 @@ export default class BelongsToManyHandlerSQLBuilder<
 
     private primaryKeysInSQL(primaryKeys: any[]): string {
         return primaryKeys
-            .map(key => PropertySQLHelper.valueSQL(key))
+            .map(key => SQLString.value(key))
             .join(', ')
     }
 }

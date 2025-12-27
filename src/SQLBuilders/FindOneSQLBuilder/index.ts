@@ -13,9 +13,7 @@ import GroupSQLBuilder from "../GroupSQLBuilder"
 
 // Handlers
 import { MetadataHandler, ScopeMetadataHandler } from "../../Metadata"
-
-// Helpers
-import { SQLStringHelper } from "../../Helpers"
+import { SQLString } from "../../Handlers"
 
 // Types
 import type { Entity, Constructor, TargetMetadata } from "../../types"
@@ -53,7 +51,7 @@ export default class FindOneSQLBuilder<T extends Entity> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return SQLStringHelper.normalizeSQL(
+        return SQLString.sanitize(
             [
                 this.isMain ? this.unionsSQL() : '',
                 this.selectSQL(),

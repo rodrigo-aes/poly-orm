@@ -5,8 +5,8 @@ import {
 
 import type { EntityMetadata } from "../../Metadata"
 
-// Helpers
-import { SQLStringHelper } from "../../Helpers"
+// Handlers
+import { SQLString } from "../../Handlers"
 
 // Types
 import type { PolymorphicEntityTarget } from "../../types"
@@ -38,7 +38,7 @@ export default class UnionSQLBuilder {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return SQLStringHelper.normalizeSQL(
+        return SQLString.sanitize(
             `WITH ${this.name} AS (${this.vitualTablesSQL()})`
         )
     }

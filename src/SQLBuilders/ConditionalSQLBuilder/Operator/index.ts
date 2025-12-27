@@ -1,4 +1,5 @@
-import * as Op from './Symbols'
+import * as Symbols from './Symbols'
+import * as Handlers from './Handlers'
 
 import EqualOperator from "./Equal"
 import NotEqualOperator from "./NotEqual"
@@ -26,42 +27,48 @@ import type {
 } from './types'
 
 export default abstract class Operator {
-    public static [Op.Equal] = EqualOperator
-    public static [Op.NotEqual] = NotEqualOperator
-    public static [Op.Or] = OrOperator
-    public static [Op.LT] = LowerThanOperator
-    public static [Op.LTE] = LowerThanEqualOperator
-    public static [Op.GT] = GreaterThanOpertor
-    public static [Op.GTE] = GreaterThanEqualOpertor
-    public static [Op.Between] = BetweenOperator
-    public static [Op.NotBetween] = NotBetweenOperator
-    public static [Op.In] = InOperator
-    public static [Op.NotIn] = NotInOperator
-    public static [Op.Like] = LikeOperator
-    public static [Op.NotLike] = NotLikeOperator
-    public static [Op.Null] = NullOperator
-    public static [Op.NotNull] = NotNullOperator
-    public static [Op.RegExp] = RegExpOperator
-    public static [Op.NotRegExp] = NotRegExpOperator
+    public static [Symbols.Equal] = EqualOperator
+    public static [Symbols.NotEqual] = NotEqualOperator
+    public static [Symbols.Or] = OrOperator
+    public static [Symbols.LT] = LowerThanOperator
+    public static [Symbols.LTE] = LowerThanEqualOperator
+    public static [Symbols.GT] = GreaterThanOpertor
+    public static [Symbols.GTE] = GreaterThanEqualOpertor
+    public static [Symbols.Between] = BetweenOperator
+    public static [Symbols.NotBetween] = NotBetweenOperator
+    public static [Symbols.In] = InOperator
+    public static [Symbols.NotIn] = NotInOperator
+    public static [Symbols.Like] = LikeOperator
+    public static [Symbols.NotLike] = NotLikeOperator
+    public static [Symbols.Null] = NullOperator
+    public static [Symbols.NotNull] = NotNullOperator
+    public static [Symbols.RegExp] = RegExpOperator
+    public static [Symbols.NotRegExp] = NotRegExpOperator
 
     // Static Methods =========================================================
     // Publics ----------------------------------------------------------------
-    public static isOperator(key: any): boolean {
-        return Object.values(Op).includes(key)
+    public static isOperator(value: any): boolean {
+        return Object
+            .getOwnPropertySymbols(value)
+            .some(key => this.isOperatorKey(key))
+
     }
 
     // ------------------------------------------------------------------------
 
-    public static hasOperator(object: any): boolean {
-        return Object.getOwnPropertySymbols(object).some(
-            key => this.isOperator(key)
-        )
+    public static isOperatorKey(key: any): boolean {
+        return Object.values(Symbols).includes(key as any)
     }
 }
 
-export {
-    Op,
+export const Op = {
+    ...Symbols,
+    ...Handlers,
+    in: Handlers._in,
+    null: Handlers._null,
+}
 
+export {
     type OperatorKey,
     type OperatorType,
     type CompatibleOperators,

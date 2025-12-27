@@ -17,8 +17,8 @@ import {
     type PolymorphicBelongsToMetadata
 } from "../../../Metadata"
 
-// Helpers
-import { SQLStringHelper } from "../../../Helpers"
+// Handlers
+import { SQLString } from '../../../Handlers'
 
 // Types
 import type { Entity, Constructor, TargetMetadata } from "../../../types"
@@ -66,7 +66,7 @@ export default class OnSQLBuilder<
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             ON ${this.fixedConditionalSQL()} ${this.conditionalSQL(true)}
         `)
     }
@@ -245,7 +245,7 @@ export default class OnSQLBuilder<
     private resolvePolymorphicParentType(fixedType: string): string {
         return this.isPolymorphicParent
             ? `${this.parentAlias}.entityType`
-            : `"${fixedType}"`
+            : `'${fixedType}'`
     }
 
     // ------------------------------------------------------------------------

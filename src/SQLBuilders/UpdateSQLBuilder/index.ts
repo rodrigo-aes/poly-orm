@@ -15,11 +15,8 @@ import {
 import ConditionalSQLBuilder from "../ConditionalSQLBuilder"
 
 // Handlers
-import { ConditionalQueryJoinsHandler } from "../../Handlers"
+import { SQLString, ConditionalQueryJoinsHandler } from "../../Handlers"
 import { ScopeMetadataHandler } from "../../Metadata"
-
-// Helpers
-import { SQLStringHelper, PropertySQLHelper } from "../../Helpers"
 
 // Types
 import type { Entity, Constructor, TargetMetadata } from "../../types"
@@ -79,7 +76,7 @@ export default class UpdateSQLBuilder<T extends Entity> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             UPDATE ${this.targetMetadata.tableName} ${this.alias}
             ${this.joinsSQL()}
             ${this.setSQL()}
@@ -126,7 +123,7 @@ export default class UpdateSQLBuilder<T extends Entity> {
     public setValuesSQL(): string {
         return Object.entries(this.attributes)
             .map(([col, val]) => `${this.alias}.${col} = ${(
-                PropertySQLHelper.valueSQL(val)
+                SQLString.value(val)
             )}`)
             .join(', ')
     }

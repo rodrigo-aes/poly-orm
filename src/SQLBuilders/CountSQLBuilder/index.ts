@@ -7,12 +7,10 @@ import UnionSQLBuilder from "../UnionSQLBuilder"
 // Handlers
 import { MetadataHandler } from "../../Metadata"
 import { ConditionalQueryJoinsHandler } from "../../Handlers"
+import { SQLString } from "../../Handlers"
 
 // Symbols
 import { Case } from "../ConditionalSQLBuilder"
-
-// Helpers
-import { SQLStringHelper } from "../../Helpers"
 
 // Types
 import type {
@@ -81,7 +79,7 @@ export default class CountSQLBuilder<T extends Entity> {
     }
     // Privates ---------------------------------------------------------------
     private isolatedCountQuery(): string {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             ${this.unionsSQL()}
             SELECT ${this.countsSQL()}
             ${this.fromSQL()}

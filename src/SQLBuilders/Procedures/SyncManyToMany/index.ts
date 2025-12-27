@@ -17,7 +17,7 @@ class SyncManyToMany extends Procedure<never, In, never> {
 
     // Instance Methods =======================================================
     // Protecteds --------------------------------------------------------------
-    protected proccessSQL(): string {
+    protected action(): string {
         return /*sql*/`
             SET @query = insertSQL;
             PREPARE stmt FROM @query;

@@ -10,7 +10,7 @@ import DeleteSQLBuilder from "../../DeleteSQLBuilder"
 import { Old } from "../../../Triggers"
 
 // Helpers
-import { SQLStringHelper, PropertySQLHelper } from "../../../Helpers"
+import { SQLString } from "../../../Handlers"
 
 // Types
 import type { BaseEntity } from "../../../Entities"
@@ -57,7 +57,7 @@ export default abstract class TriggerSQLBuilder<
     // Protecteds -------------------------------------------------------------
     /** @internal */
     protected createSQL(): string {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             CREATE TRIGGER ${this.name}
             ${this.timing} ${this.event} ON ${this.tableName}
             FOR EACH ${this.orientation}
@@ -182,7 +182,7 @@ export default abstract class TriggerSQLBuilder<
             )
 
                 ? `NEW.${column} = ${value![Old as keyof typeof value]}`
-                : `NEW.${column} = ${PropertySQLHelper.valueSQL(value)}`
+                : `NEW.${column} = ${SQLString.value(value)}`
         )
             .join(', ')
 

@@ -5,12 +5,7 @@ import { EntityMetadata } from "../../Metadata"
 
 // Handlers
 import { MetadataHandler } from "../../Metadata"
-
-// Symbols
-import { Literal } from "../Symbols"
-
-// Helpers
-import { SQLStringHelper, PropertySQLHelper } from "../../Helpers"
+import { SQLString } from "../../Handlers"
 
 // Types
 import type { BaseEntity } from "../../Entities"
@@ -62,7 +57,7 @@ export default class CreateSQLBuilder<T extends BaseEntity> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return SQLStringHelper.normalizeSQL(
+        return SQLString.sanitize(
             `INSERT INTO ${this.metadata.tableName} (${(
                 this.columnsSQL()
             )}) VALUES ${this.valuesSQL()}`
@@ -126,7 +121,7 @@ export default class CreateSQLBuilder<T extends BaseEntity> {
     // ------------------------------------------------------------------------
 
     private valueSetSQL(values: any[]): string {
-        return `(${values.map(v => PropertySQLHelper.valueSQL(v)).join(', ')})`
+        return `(${values.map(v => SQLString.value(v)).join(', ')})`
     }
 
     // ------------------------------------------------------------------------

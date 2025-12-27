@@ -17,7 +17,7 @@ class MoveMigration extends Procedure<never, In, never> {
 
     // Instance Methods =======================================================
     // Protecteds ------------------------------------------------------------- 
-    public proccessSQL(): string {
+    public action(): string {
         return /*sql*/`
             UPDATE __migrations SET \`order\` = 0 WHERE \`order\` = from_order;
 

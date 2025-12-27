@@ -1,5 +1,5 @@
 // SQL Builders
-import { Op } from "../../SQLBuilders"
+import * as Op from "../../SQLBuilders/ConditionalSQLBuilder/Operator/Symbols"
 
 // Types
 import type { OperatorType, CompatibleOperators } from "./types"

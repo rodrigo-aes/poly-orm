@@ -1,12 +1,11 @@
+// SQL Builders
 import ConditionalSQLBuilder, { Case } from "../ConditionalSQLBuilder"
 import CountSQLBuilder from "../CountSQLBuilder"
 import GroupSQLBuilder, { type GroupQueryOptions } from "../GroupSQLBuilder"
 
 // Handlers
 import { MetadataHandler } from "../../Metadata"
-
-// Helpers
-import { PropertySQLHelper } from "../../Helpers"
+import { SQLString } from "../../Handlers"
 
 // Types
 import type { Entity, Constructor, TargetMetadata } from "../../types"
@@ -179,7 +178,7 @@ export default class SelectSQLBuilder<T extends Entity> {
     // ------------------------------------------------------------------------
 
     private groupColumn(column: string): string {
-        return PropertySQLHelper.pathToAlias(column, this.alias)
+        return SQLString.pathToAlias(column, this.alias)
     }
 }
 

@@ -8,9 +8,6 @@ import { UpdateOrCreate } from "../Procedures"
 import CreateSQLBuilder from "../CreateSQLBuilder"
 import FindOneSQLBuilder from "../FindOneSQLBuilder"
 
-// Helpers
-import { SQLStringHelper } from "../../Helpers"
-
 // Types
 import type { Constructor } from "../../types"
 import type { UpdateOrCreateAttributes } from "./types"

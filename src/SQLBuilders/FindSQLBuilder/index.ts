@@ -3,8 +3,8 @@ import FindOneSQLBuilder from "../FindOneSQLBuilder"
 // SQL Builders
 import OrderSQLBuilder from "../OrderSQLBuilder"
 
-// Helpers
-import { SQLStringHelper } from "../../Helpers"
+// Handlers
+import { SQLString } from "../../Handlers"
 
 // Types
 import type { Entity, Constructor } from "../../types"
@@ -33,7 +33,7 @@ export default class FindSQLBuilder<
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public override SQL(): string {
-        return SQLStringHelper.normalizeSQL(
+        return SQLString.sanitize(
             [
                 this.isMain ? this.unionsSQL() : '',
                 this.selectSQL(),

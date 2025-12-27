@@ -1,7 +1,4 @@
-import FindSQLBuilder, { type FindQueryOptions } from "../FindSQLBuilder"
-
-// Query Builders
-import CountSQLBuilder from "../CountSQLBuilder"
+import FindSQLBuilder from "../FindSQLBuilder"
 
 // Types
 import type { Entity, Constructor } from "../../types"

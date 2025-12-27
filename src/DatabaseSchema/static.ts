@@ -1,7 +1,7 @@
-import { SQLStringHelper } from "../Helpers"
+import { SQLString } from "../Handlers"
 
-export const databaseSchemaQuery = (table?: string) => SQLStringHelper
-    .normalizeSQL(`
+export const databaseSchemaQuery = (table?: string) => SQLString
+    .sanitize(`
         SELECT
             cols.tableName,
             JSON_ARRAYAGG(

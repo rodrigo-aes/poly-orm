@@ -13,6 +13,9 @@ import Syncronizer from '../Syncronizer'
 // Handlers
 import { ProceduresHandler } from '../SQLBuilders'
 
+// SQL Builders
+import { li, type Literals, type LiteralHandler } from '../SQLBuilders'
+
 // Utils
 import Log from '../utils/Log'
 
@@ -80,11 +83,15 @@ export default class MySQLConnection implements MySQLConnectionInstance {
      * @param params - Bind params
      * @returns - Query result
      */
-    public async query<T = any>(sql: string, params?: any[]): Promise<T[]> {
-        this.sqlLogging(sql)
+    public async query<T = any>(
+        sql: string | LiteralHandler,
+        params?: any[]
+    ): Promise<T[]> {
+        if (typeof sql === 'function') sql = sql(li)
 
+        this.sqlLogging(sql)
         const [rows] = await this.pool.query(sql, params)
-        return rows as T[];
+        return rows as T[]
     }
 
     // ------------------------------------------------------------------------

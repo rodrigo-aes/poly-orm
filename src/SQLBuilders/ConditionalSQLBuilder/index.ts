@@ -1,6 +1,10 @@
 import WhereSQLBuilder from "./WhereSQLBuilder"
 import OnSQLBuilder from "./OnSQLBuilder"
-import Operator, { Op, type CompatibleOperators } from "./Operator"
+import Operator, {
+    Op,
+    type OperatorKey,
+    type CompatibleOperators
+} from "./Operator"
 import CaseSQLBuilder, {
     Case,
     type CaseQueryOptions,
@@ -94,6 +98,7 @@ export {
 
     Operator,
     Op,
+    type OperatorKey,
     type CompatibleOperators,
 
     Case,

@@ -1,3 +1,4 @@
+import SQLString from "./SQLString"
 import MySQLOperation, {
     type MapOptions,
     type CollectMapOptions,
@@ -15,6 +16,7 @@ import EntityBuilder from "./EntityBuilder"
 import ConditionalQueryJoinsHandler from "./ConditionalQueryJoinsHandler"
 
 export {
+    SQLString,
     MySQLOperation,
     MySQLDataHandler,
     EntityBuilder,

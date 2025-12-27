@@ -1,7 +1,7 @@
-import { SQLStringHelper } from "../../Helpers"
+import { SQLString } from "../../Handlers"
 
-export const triggersSchemaQuery = (database: string) => SQLStringHelper
-    .normalizeSQL(`
+export const triggersSchemaQuery = (database: string) => SQLString
+    .sanitize(`
         SELECT 
             TRIGGER_NAME as name,
             EVENT_MANIPULATION as event,

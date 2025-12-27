@@ -6,7 +6,7 @@ import { v4 as UUIDV4 } from "uuid"
 import { MetadataHandler } from "../../../Metadata"
 
 // Helpers
-import { PropertySQLHelper } from "../../../Helpers"
+import { SQLString } from "../../../Handlers"
 
 // Types
 import type { RelationMetadataType, } from "../../../Metadata"
@@ -78,7 +78,7 @@ export default abstract class RelationHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     protected get targetPrimaryValueSQL(): string {
-        return PropertySQLHelper.valueSQL(this.targetPrimaryValue)
+        return SQLString.value(this.targetPrimaryValue)
     }
 
     // ------------------------------------------------------------------------
@@ -187,7 +187,7 @@ export default abstract class RelationHandlerSQLBuilder<
         return Object
             .entries(attributes)
             .map(([column, value]) => `${this.relatedAlias}.${column} = ${(
-                PropertySQLHelper.valueSQL(value)
+                SQLString.value(value)
             )}`)
             .join(', ')
     }
@@ -234,7 +234,7 @@ export default abstract class RelationHandlerSQLBuilder<
         attributes: RelationCreationAttributes<R>
     ): string {
         return this.attributesValues(attributes)
-            .map(value => PropertySQLHelper.valueSQL(value))
+            .map(value => SQLString.value(value))
             .join(', ')
     }
 }

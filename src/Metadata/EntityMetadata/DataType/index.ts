@@ -39,9 +39,7 @@ export default class DataType extends AbstractDataType {
 
     public buildSQL(): string {
         throw PolyORMException.Common.instantiate(
-            'NOT_CALLABLE_METHOD',
-            this.constructor.name,
-            'buildSQL'
+            'NOT_CALLABLE_METHOD', this.constructor.name, 'buildSQL'
         )
     }
 

@@ -10,7 +10,7 @@ import ForeignKeyConstraintSQLBuilder from "./ForeignKeyConstraintSQLBuilder"
 import { PolymorphicId, CurrentTimestamp } from "./Symbols"
 
 // Helpers
-import { SQLStringHelper, PropertySQLHelper } from "../../../../Helpers"
+import { SQLString } from "../../../../Handlers"
 
 // Types
 import type { ActionType } from "../../../../DatabaseSchema"
@@ -38,7 +38,7 @@ export default class ColumnSQLBuilder extends ColumnSchema {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public createSQL() {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             ${this.columnSQL('CREATE')}${this.createForeignKeySQL()}
         `)
     }
@@ -54,7 +54,7 @@ export default class ColumnSQLBuilder extends ColumnSchema {
     // ------------------------------------------------------------------------
 
     public addSQL() {
-        return SQLStringHelper.normalizeSQL(
+        return SQLString.sanitize(
             `ADD COLUMN ${this.columnSQL('CREATE')}${this.addForeignKeySQL()}`
         )
     }
@@ -70,7 +70,7 @@ export default class ColumnSQLBuilder extends ColumnSchema {
     // ------------------------------------------------------------------------
 
     public alterSQL() {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             MODIFY COLUMN ${this.columnSQL('ALTER')}
         `)
     }
@@ -106,13 +106,13 @@ export default class ColumnSQLBuilder extends ColumnSchema {
         const fkSQL = schema ? this.syncForeignKeyActionSQL(schema) : undefined
         if (fkSQL) sql.push(fkSQL)
 
-        return SQLStringHelper.normalizeSQL(sql.join(', '))
+        return SQLString.sanitize(sql.join(', '))
     }
 
     // ------------------------------------------------------------------------
 
     public dropSQL(): string {
-        return SQLStringHelper.normalizeSQL(
+        return SQLString.sanitize(
             `${this.shouldDropForeignKeySQL()} DROP COLUMN \`${this.name}\``
         )
     }
@@ -276,7 +276,7 @@ export default class ColumnSQLBuilder extends ColumnSchema {
             case "bigint":
             case "boolean":
             case "object": return (
-                `DEFAULT ${PropertySQLHelper.valueSQL(this.map.defaultValue)}`
+                `DEFAULT ${SQLString.value(this.map.defaultValue)}`
             )
 
             case "symbol": switch (this.map.defaultValue) {

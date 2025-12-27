@@ -2,7 +2,7 @@ import Operator from "../Operator"
 import { In } from "../Symbols"
 
 // Hepers
-import { PropertySQLHelper } from "../../../../Helpers"
+import { SQLString } from "../../../../Handlers"
 
 export default class InOperator extends Operator<typeof In> {
     protected readonly operatorSQL: string = 'IN'
@@ -12,7 +12,7 @@ export default class InOperator extends Operator<typeof In> {
     public get valueSQL(): string {
         return `(${(
             this.value
-                .map(val => PropertySQLHelper.valueSQL(val))
+                .map(val => SQLString.value(val))
                 .join(', ')
         )})`
     }

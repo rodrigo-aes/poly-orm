@@ -64,6 +64,7 @@ import {
 import {
     Op,
     Operator,
+    type OperatorKey,
     type CompatibleOperators,
     type CaseQueryOptions,
     type CaseQueryTuple,
@@ -74,8 +75,14 @@ import {
     // type CrossExistsQueryOptions
 } from "./ConditionalSQLBuilder"
 
+import literal, {
+    Literal,
+    li,
+    type Literals,
+    type LiteralHandler
+} from "./Literal"
+
 // Symbols
-import { Literal } from "./Symbols"
 import { Case, Exists, Cross } from "./ConditionalSQLBuilder"
 
 // Types
@@ -156,6 +163,11 @@ export {
     PolymorphicId,
     CurrentTimestamp,
     Literal,
+    literal,
+    li,
+
+    type LiteralHandler,
+    type Literals,
 
     type FindOneQueryOptions,
     type FindQueryOptions,
@@ -190,6 +202,7 @@ export {
     type RelationUpdateOrCreateAttributes,
     type RelationConditionalQueryOptions,
 
+    type OperatorKey,
     type CompatibleOperators,
     type CaseQueryOptions,
     type CaseQueryTuple,

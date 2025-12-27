@@ -7,9 +7,7 @@ import { Case } from "./Symbol"
 
 // Handlers
 import { MetadataHandler } from "../../../Metadata"
-
-// Helpers
-import { SQLStringHelper, PropertySQLHelper } from "../../../Helpers"
+import { SQLString } from '../../../Handlers'
 
 // Types
 import type { Entity, Constructor, TargetMetadata } from "../../../types"
@@ -56,7 +54,7 @@ export default class CaseSQLBuilder<T extends Entity> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             CASE 
             ${this.whenClausesSQL()} 
             ${this.elseClauseSQL()}
@@ -69,7 +67,7 @@ export default class CaseSQLBuilder<T extends Entity> {
         return this.whenClauses.map(
             ([when, then]) => `
                 WHEN ${this.whenSQL(when)} 
-                THEN ${PropertySQLHelper.valueSQL(then)}
+                THEN ${SQLString.value(then)}
             `
         )
             .join(' ')
@@ -79,7 +77,7 @@ export default class CaseSQLBuilder<T extends Entity> {
 
     private elseClauseSQL(): string {
         return this.elseClause
-            ? `ELSE ${PropertySQLHelper.valueSQL(this.elseClause)}`
+            ? `ELSE ${SQLString.value(this.elseClause)}`
             : ''
     }
 

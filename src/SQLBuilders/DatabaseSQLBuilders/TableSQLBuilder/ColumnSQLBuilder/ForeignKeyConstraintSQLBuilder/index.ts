@@ -1,7 +1,7 @@
 import ForeignKeyReferencesSchema from "../../../../../DatabaseSchema/TableSchema/ColumnSchema/ForeignKeyReferencesSchema"
 
 // Helpers
-import { SQLStringHelper } from "../../../../../Helpers"
+import { SQLString } from "../../../../../Handlers"
 
 // Types
 import type { ActionType } from "../../../../../DatabaseSchema"
@@ -46,7 +46,7 @@ export default class ForeignKeyConstraintSQLBuilder extends
 
     // Privates ---------------------------------------------------------------
     private constraintSQL(): string {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             CONSTRAINT ${this.name}
             FOREIGN KEY (${this.columnName}) ${this.referencesSQL()}
         `)

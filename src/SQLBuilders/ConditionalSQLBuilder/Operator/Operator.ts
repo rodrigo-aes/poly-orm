@@ -1,5 +1,5 @@
 // Helpers
-import { PropertySQLHelper } from "../../../Helpers"
+import { SQLString } from "../../../Handlers"
 
 import type { Target } from "../../../types"
 import type { OperatorType } from "./types"
@@ -15,13 +15,13 @@ export default abstract class Operator<T extends keyof OperatorType> {
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     protected get propertySQL(): string {
-        return PropertySQLHelper.pathToAlias(this.columnName, this.alias)
+        return SQLString.pathToAlias(this.columnName, this.alias)
     }
 
     // ------------------------------------------------------------------------
 
     protected get valueSQL(): string {
-        return PropertySQLHelper.valueSQL(this.value)
+        return SQLString.value(this.value)
     }
 
     // ------------------------------------------------------------------------

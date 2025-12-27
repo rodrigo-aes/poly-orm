@@ -1,7 +1,8 @@
 import { ConnectionsMetadata, type PolyORMConnection } from "../../Metadata"
+import { li, type Literals } from "../Literal"
 
-// Helpers
-import { SQLStringHelper, PropertySQLHelper } from "../../Helpers"
+// Handlers
+import { SQLString } from "../../Handlers"
 
 // Types
 import type {
@@ -74,29 +75,29 @@ export default abstract class Procedure<
     // ------------------------------------------------------------------------
 
     public registerSQL(): string {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             CREATE PROCEDURE ${this.name} (${this.defineArgsSQL()})
-            BEGIN ${this.proccessSQL()} END;
+            BEGIN ${this.action(li)} END;
         `)
     }
 
     // ------------------------------------------------------------------------
 
     public callSQL(...args: In[1]): string {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             CALL ${this.name} (${this.callArgsSQL(...args)});
             ${this.out ? `SELECT ${this.callOutArgsSQL().join(', ')}` : ''}    
         `)
     }
 
     // Protecteds -------------------------------------------------------------
-    protected abstract proccessSQL(): string
+    protected abstract action(literals: Literals): string
 
     // ------------------------------------------------------------------------
 
     /** @internal */
     protected callInArgsSQL(...args: In[1]): string[] {
-        return args.map(arg => PropertySQLHelper.valueSQL(arg))
+        return args.map(arg => SQLString.value(arg))
     }
 
     // Privates ---------------------------------------------------------------

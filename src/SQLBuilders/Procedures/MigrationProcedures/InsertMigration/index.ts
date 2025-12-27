@@ -19,7 +19,7 @@ class InsertMigration extends Procedure<MigrationData[], In, never> {
 
     // Instance Methods =======================================================
     // Protecteds ------------------------------------------------------------- 
-    protected proccessSQL(): string {
+    protected action(): string {
         return /* sql */`
             DECLARE last_order INT;
 

@@ -1,8 +1,8 @@
 // Query Builders
 import ConditionalSQLBuilder, { Case } from "../ConditionalSQLBuilder"
 
-// Helpers
-import { SQLStringHelper, PropertySQLHelper } from "../../Helpers"
+// Handlers
+import { SQLString } from "../../Handlers"
 
 // Types
 import type { Entity, Constructor } from "../../types"
@@ -22,7 +22,7 @@ export default class OrderSQLBuilder<T extends Entity> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return SQLStringHelper.normalizeSQL(`ORDER BY ${(
+        return SQLString.sanitize(`ORDER BY ${(
             this.options.map(option => Array.isArray(option)
                 ? this.orderSQL(option)
                 : this.caseSQL(option)
@@ -32,7 +32,7 @@ export default class OrderSQLBuilder<T extends Entity> {
 
     // Privates ---------------------------------------------------------------
     private orderSQL(option: OrderQueryOption<T>): string {
-        return `${PropertySQLHelper.pathToAlias(option[0], this.alias)} ${(
+        return `${SQLString.pathToAlias(option[0], this.alias)} ${(
             option[1]
         )}`
     }

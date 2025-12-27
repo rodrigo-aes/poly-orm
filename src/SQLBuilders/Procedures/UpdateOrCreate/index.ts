@@ -19,7 +19,7 @@ class UpdateOrCreate<T extends any[] = any[]> extends Procedure<
 
     // Instance Methods =======================================================
     // Protecteds -------------------------------------------------------------
-    protected proccessSQL(): string {
+    protected action(): string {
         return `
             SET @query = insertSQL;
             PREPARE stmt FROM @query;

@@ -12,7 +12,7 @@ import {
 } from "../../SQLBuilders"
 
 // Helpers
-import { SQLStringHelper } from "../../Helpers"
+import { SQLString } from "../../Handlers"
 
 // Decorators
 import { Logs } from "../Decorators"
@@ -125,7 +125,7 @@ export default class MigrationsTableHandler {
     // Static Methods =========================================================
     // Privates ---------------------------------------------------------------
     private static findAllSQL(): string {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             SELECT \`order\`, \`name\`, \`fileName\` FROM __migrations;
         `)
     }
@@ -133,7 +133,7 @@ export default class MigrationsTableHandler {
     // ------------------------------------------------------------------------
 
     private static toRollSQL(): string {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             SELECT \`name\`, \`order\`, \`fileName\` FROM __migrations
             WHERE migrated = FALSE
         `)
@@ -142,7 +142,7 @@ export default class MigrationsTableHandler {
     // ------------------------------------------------------------------------
 
     private static toRollbackSQL(): string {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             SELECT \`name\`, \`order\`, \`fileName\` FROM __migrations
             WHERE 
                 migrated = TRUE 
@@ -155,7 +155,7 @@ export default class MigrationsTableHandler {
     // ------------------------------------------------------------------------
 
     private static setMigratedSQL(id: string | number, time: number): string {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             UPDATE __migrations
             SET
                 migrated = TRUE,
@@ -174,7 +174,7 @@ export default class MigrationsTableHandler {
     // ------------------------------------------------------------------------
 
     private static unsetMigratedSQL(id: string | number): string {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             UPDATE __migrations
             SET
                 migrated = 0,
@@ -192,7 +192,7 @@ export default class MigrationsTableHandler {
     // ------------------------------------------------------------------------
 
     private static unsetMigratedAllSQL(): string {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             UPDATE __migrations SET
                 migrated = FALSE,
                 migratedTime = NULL,
@@ -203,7 +203,7 @@ export default class MigrationsTableHandler {
     // ------------------------------------------------------------------------
 
     private static nextMigrationTimeSQL(): string {
-        return SQLStringHelper.normalizeSQL(`
+        return SQLString.sanitize(`
             SELECT COALESCE(MAX(migratedTime), 0) + 1 AS next
             FROM __migrations    
         `)

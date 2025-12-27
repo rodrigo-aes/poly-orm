@@ -6,9 +6,7 @@ import UnionSQLBuilder from "../UnionSQLBuilder"
 
 // Handlers
 import { MetadataHandler } from "../../Metadata"
-
-// Helpers
-import { SQLStringHelper, PropertySQLHelper } from "../../Helpers"
+import { SQLString } from "../../Handlers"
 
 // Types
 import type { Entity, Constructor, TargetMetadata } from "../../types"
@@ -27,7 +25,7 @@ export default class FindByPkSQLBuilder<T extends Entity> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return SQLStringHelper.normalizeSQL(
+        return SQLString.sanitize(
             `${this.unionSQL()} ${this.selectSQL()} ${this.whereSQL()}`
         )
     }
@@ -53,8 +51,8 @@ export default class FindByPkSQLBuilder<T extends Entity> {
     // ------------------------------------------------------------------------
 
     public whereSQL(): string {
-        return `WHERE ${this.alias}.${(
-            this.metadata.PK
-        )} = ${PropertySQLHelper.valueSQL(this.pk)}`
+        return `WHERE ${this.alias}.${this.metadata.PK} = ${(
+            SQLString.value(this.pk)
+        )}`
     }
 }

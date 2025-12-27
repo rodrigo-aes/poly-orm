@@ -26,7 +26,7 @@ class DeleteMigration extends Procedure<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    protected proccessSQL(): string {
+    protected action(): string {
         return /* sql */`
             SELECT \`order\` INTO deleted_order FROM __migrations
                 WHERE \`name\` = unique_identifier
