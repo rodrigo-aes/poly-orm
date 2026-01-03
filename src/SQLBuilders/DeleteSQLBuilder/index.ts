@@ -16,30 +16,32 @@ import type { Entity, Constructor, TargetMetadata } from "../../types"
 
 export default class DeleteSQLBuilder<T extends Entity> {
     protected metadata: TargetMetadata<T>
-    private _isEntity?: boolean
+    private _entity?: boolean
 
     constructor(
         public target: Constructor<T>,
-        public where: ConditionalQueryOptions<T>,
+        public conditional: Entity | ConditionalQueryOptions<T>,
         public alias: string = target.name.toLowerCase()
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
-        if (!this.isEntity) this.where = ScopeMetadataHandler.applyScope(
-            this.target, 'conditional', this.where
+        if (!this.entity) this.conditional = ScopeMetadataHandler.applyScope(
+            this.target,
+            'conditional',
+            this.conditional as ConditionalQueryOptions<T>
         )
     }
 
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
-    protected get isEntity(): boolean {
-        return this._isEntity ??= this.where instanceof EntityBase
+    protected get entity(): boolean {
+        return this._entity ??= this.conditional instanceof EntityBase
     }
 
     // ------------------------------------------------------------------------
 
     protected get targetMetadata(): EntityMetadata {
         return this.metadata instanceof PolymorphicEntityMetadata
-            ? this.metadata.sourcesMetadata[(this.where as any).entityType]
+            ? this.metadata.sourcesMetadata[(this.conditional as any).entityType]
             : this.metadata
     }
 
@@ -51,29 +53,28 @@ export default class DeleteSQLBuilder<T extends Entity> {
 
     // ------------------------------------------------------------------------
 
-    protected get primary(): keyof BasePolymorphicEntity<any> {
-        return this.targetMetadata.PK as (
-            keyof BasePolymorphicEntity<any>
-        )
+    protected get primary(): keyof (
+        BasePolymorphicEntity<any> |
+        ConditionalQueryOptions<T>
+    ) {
+        return this.targetMetadata.PK as any
     }
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return SQLString.sanitize(`
-            DELETE ${this.alias} FROM ${this.tableName} ${this.alias}
-            ${this.joinsSQL()}
-            ${this.whereSQL()}
-        `)
+        return `DELETE ${this.alias} FROM ${this.tableName} ${this.alias} ${(
+            this.joinsSQL()
+        )} ${this.whereSQL()}`
     }
 
     // ------------------------------------------------------------------------
 
     public joinsSQL(): string {
-        return !this.isEntity
+        return !this.entity
             ? new ConditionalQueryJoinsHandler(
                 this.target,
-                this.where as ConditionalQueryOptions<T>,
+                this.conditional as ConditionalQueryOptions<T>,
                 this.alias
             )
                 .joins()
@@ -96,10 +97,8 @@ export default class DeleteSQLBuilder<T extends Entity> {
 
     // Privates ---------------------------------------------------------------
     private whereOptions(): ConditionalQueryOptions<any> {
-        return this.isEntity
-            ? {
-                [this.primary]: (this.where as any)[this.primary]
-            }
-            : this.where
+        return this.entity
+            ? { [this.primary]: this.conditional[this.primary] }
+            : this.conditional
     }
 }

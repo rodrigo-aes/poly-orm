@@ -1,8 +1,8 @@
 export default class GeneralHelper {
     public static objectParents<T extends object>(object: T): T[] {
         const parents: T[] = []
-        let parent = Object.getPrototypeOf(object)
 
+        let parent = Object.getPrototypeOf(object)
         while (parent && parent !== Function.prototype) {
             parents.push(parent)
             parent = Object.getPrototypeOf(parent)

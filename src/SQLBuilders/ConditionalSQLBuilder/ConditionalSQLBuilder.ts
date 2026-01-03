@@ -13,11 +13,9 @@ import type {
 } from "../../types"
 
 import type { ConditionalQueryOptions } from "./types"
-import type UnionSQLBuilder from "../UnionSQLBuilder"
 
 export default abstract class ConditionalSQLBuilder<T extends Entity> {
     protected metadata: TargetMetadata<T>
-    public unions: UnionSQLBuilder[] = []
 
     constructor(
         public target: Constructor<T>,
@@ -44,7 +42,7 @@ export default abstract class ConditionalSQLBuilder<T extends Entity> {
 
     // Privates ---------------------------------------------------------------
     private SQLBuilder(): AndSQLBuilder<T> | OrSQLBuilder<T> {
-        const sqlBuilder = Array.isArray(this.options)
+        return Array.isArray(this.options)
             ? new OrSQLBuilder(
                 this.target,
                 this.options,
@@ -55,8 +53,5 @@ export default abstract class ConditionalSQLBuilder<T extends Entity> {
                 this.options!,
                 this.alias
             )
-
-        this.unions = sqlBuilder.unions()
-        return sqlBuilder
     }
 }

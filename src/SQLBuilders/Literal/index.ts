@@ -1,4 +1,5 @@
 import { Literal } from './Symbols'
+import * as Operations from './Operations'
 import * as General from './General'
 import * as Primitives from "./Primitives"
 import * as Operators from "./Operators"
@@ -10,11 +11,16 @@ import * as Conditional from './Conditional'
 const li = {
     ...General,
     ...Primitives,
+    ...Operations,
     ...Operators,
     ...String,
     ...Math,
     ...Date,
-    ...Conditional
+    ...Conditional,
+
+    delete: Operations._delete,
+    in: Operators._in,
+    null: Operators._null,
 }
 
 export type Literals = typeof li

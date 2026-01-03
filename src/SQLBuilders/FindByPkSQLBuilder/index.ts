@@ -25,9 +25,7 @@ export default class FindByPkSQLBuilder<T extends Entity> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return SQLString.sanitize(
-            `${this.unionSQL()} ${this.selectSQL()} ${this.whereSQL()}`
-        )
+        return `${this.unionSQL()} ${this.selectSQL()} ${this.wherePKSQL()}`
     }
 
     // ------------------------------------------------------------------------
@@ -50,7 +48,7 @@ export default class FindByPkSQLBuilder<T extends Entity> {
 
     // ------------------------------------------------------------------------
 
-    public whereSQL(): string {
+    public wherePKSQL(): string {
         return `WHERE ${this.alias}.${this.metadata.PK} = ${(
             SQLString.value(this.pk)
         )}`

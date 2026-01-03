@@ -61,9 +61,7 @@ export default class CountSQL<T extends Entity> {
     // ------------------------------------------------------------------------
 
     private caseOptionSQL(): string {
-        return this.caseClauseSQL(this.options as (
-            CaseQueryOptions<T>
-        ))
+        return this.caseClauseSQL(this.options as CaseQueryOptions<T>)
     }
 
     // ------------------------------------------------------------------------

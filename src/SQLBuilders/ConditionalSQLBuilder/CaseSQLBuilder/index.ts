@@ -21,6 +21,8 @@ import type {
 export default class CaseSQLBuilder<T extends Entity> {
     protected metadata: TargetMetadata<T>
 
+    private _else?: ElseQueryOption
+
     constructor(
         public target: Constructor<T>,
         public options: CaseQueryOptions<T>,
@@ -32,67 +34,63 @@ export default class CaseSQLBuilder<T extends Entity> {
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get whenClauses(): CaseQueryTuple<T>[] {
-        return Array.isArray(this.lastOption)
-            ? this.options
-            : this.options.slice(0, -1)
+    public get whens(): CaseQueryTuple<T>[] {
+        return this.else ? this.options : this.options.slice(0, -1)
     }
 
     // ------------------------------------------------------------------------
 
-    public get elseClause(): ElseQueryOption | undefined {
-        if (!Array.isArray(this.lastOption)) return this.lastOption
+    public get else(): ElseQueryOption | undefined {
+        return this._else ??= (
+            Array.isArray(this.lastOption) ? undefined : this.lastOption
+        )
     }
 
     // Privates ---------------------------------------------------------------
-    private get lastOption(): (
-        CaseQueryTuple<T> | ElseQueryOption
-    ) {
+    private get lastOption(): CaseQueryTuple<T> | ElseQueryOption {
         return this.options[this.options.length - 1]
     }
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return SQLString.sanitize(`
-            CASE 
-            ${this.whenClausesSQL()} 
-            ${this.elseClauseSQL()}
-            END ${this.asSQL()}
-        `)
+        return `CASE ${this.whenClausesSQL()}${this.elseClauseSQL()} END${(
+            this.asSQL()
+        )}`
     }
 
     // Privates ---------------------------------------------------------------
     private whenClausesSQL(): string {
-        return this.whenClauses.map(
-            ([when, then]) => `
-                WHEN ${this.whenSQL(when)} 
-                THEN ${SQLString.value(then)}
-            `
-        )
+        return this.whens
+            .map(([when, then]) => `WHEN ${this.whenSQL(when)} THEN ${(
+                SQLString.value(then)
+            )}`)
             .join(' ')
     }
 
     // ------------------------------------------------------------------------
 
     private elseClauseSQL(): string {
-        return this.elseClause
-            ? `ELSE ${SQLString.value(this.elseClause)}`
+        return this.else
+            ? ` ELSE ${SQLString.value(this.else)}`
             : ''
     }
 
     // ------------------------------------------------------------------------
 
     private whenSQL(when: WhenQueryOption<T>): string {
-        return Array.isArray(when)
-            ? new OrSQLBuilder(this.target, when, this.alias).SQL()
-            : new AndSQLBuilder(this.target, when, this.alias).SQL()
+        return new (Array.isArray(when) ? OrSQLBuilder : AndSQLBuilder)(
+            this.target,
+            when as any,
+            this.alias
+        )
+            .SQL()
     }
 
     // ------------------------------------------------------------------------
 
     private asSQL(): string {
-        return this.as ? `AS ${this.as}` : ''
+        return this.as ? ` AS ${this.as}` : ''
     }
 }
 

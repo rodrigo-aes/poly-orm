@@ -5,6 +5,7 @@ import TriggerActionBuilder
 import CreateSQLBuilder from "../../CreateSQLBuilder"
 import UpdateSQLBuilder, { type UpdateAttributes } from "../../UpdateSQLBuilder"
 import DeleteSQLBuilder from "../../DeleteSQLBuilder"
+import { li, type Literals } from "../../Literal"
 
 // Symbols
 import { Old } from "../../../Triggers"
@@ -52,7 +53,7 @@ export default abstract class TriggerSQLBuilder<
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------  
     /** @internal */
-    protected abstract action(): string | TriggerAction<T>[]
+    protected abstract action(li: Literals): string | TriggerAction<T>[]
 
     // Protecteds -------------------------------------------------------------
     /** @internal */
@@ -90,7 +91,7 @@ export default abstract class TriggerSQLBuilder<
 
     /** @internal */
     public actionBodySQL(): string {
-        const action = this.action()
+        const action = this.action(li)
         if (typeof action === 'string') return action
 
         return action
@@ -185,6 +186,5 @@ export default abstract class TriggerSQLBuilder<
                 : `NEW.${column} = ${SQLString.value(value)}`
         )
             .join(', ')
-
     }
 }

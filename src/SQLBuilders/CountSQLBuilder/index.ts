@@ -7,7 +7,6 @@ import UnionSQLBuilder from "../UnionSQLBuilder"
 // Handlers
 import { MetadataHandler } from "../../Metadata"
 import { ConditionalQueryJoinsHandler } from "../../Handlers"
-import { SQLString } from "../../Handlers"
 
 // Symbols
 import { Case } from "../ConditionalSQLBuilder"
@@ -18,19 +17,18 @@ import type {
     Constructor,
     TargetMetadata,
     PolymorphicEntityTarget,
-    Target
 } from "../../types"
 import type { AndQueryOptions } from "../ConditionalSQLBuilder"
 import type { CountQueryOptions } from "./types"
 import type { CountQueryOption, CountCaseOptions } from "./CountSQL"
-import JoinSQLBuilder from "../JoinSQLBuilder"
+import type JoinSQLBuilder from "../JoinSQLBuilder"
 
 
 export default class CountSQLBuilder<T extends Entity> {
     protected metadata: TargetMetadata<T>
 
     private _unionSQLBuilders?: UnionSQLBuilder[]
-    private _joinSQLBuilders?: JoinSQLBuilder<any>[]
+    private _joins?: JoinSQLBuilder<any>[]
 
     constructor(
         public target: Constructor<T>,
@@ -43,8 +41,8 @@ export default class CountSQLBuilder<T extends Entity> {
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get joinSQLBuilders(): JoinSQLBuilder<any>[] {
-        return this._joinSQLBuilders = this._joinSQLBuilders ?? (
+    public get joins(): JoinSQLBuilder<any>[] {
+        return this._joins ??= (
             new ConditionalQueryJoinsHandler(this.target).joinsByKeys(
                 this.extractOptionsRelationsKeys()
             )
@@ -53,15 +51,15 @@ export default class CountSQLBuilder<T extends Entity> {
 
     // ------------------------------------------------------------------------
 
-    public get unionsSQLBuilders(): UnionSQLBuilder[] {
-        return this._unionSQLBuilders = this._unionSQLBuilders ?? [
+    public get unions(): UnionSQLBuilder[] {
+        return this._unionSQLBuilders ??= [
             ...this.targetUnion(),
-            ...this.joinSQLBuilders.flatMap(join => join.unionSQLBuilders)
+            ...this.joins.flatMap(join => join.union ?? [])
         ]
     }
 
     // Protecteds -------------------------------------------------------------
-    protected get tableName(): string {
+    protected get table(): string {
         return `${this.metadata.tableName} ${this.alias}`
     }
 
@@ -79,34 +77,27 @@ export default class CountSQLBuilder<T extends Entity> {
     }
     // Privates ---------------------------------------------------------------
     private isolatedCountQuery(): string {
-        return SQLString.sanitize(`
-            ${this.unionsSQL()}
-            SELECT ${this.countsSQL()}
-            ${this.fromSQL()}
-            ${this.joinsSQL()}
-        `)
+        return `${this.unionsSQL()} SELECT ${this.countsSQL()} ${(
+            this.fromSQL()
+        )} ${this.joinsSQL()}`
     }
 
     // ------------------------------------------------------------------------
 
     private countsSQL(): string {
-        return CountSQLBuilder.inline(
-            this.target,
-            this.options,
-            this.alias
-        )
+        return CountSQLBuilder.inline(this.target, this.options, this.alias)
     }
 
     // ------------------------------------------------------------------------
 
     private fromSQL(): string {
-        return `FROM ${this.tableName}`
+        return `FROM ${this.table}`
     }
 
     // ------------------------------------------------------------------------
 
     private joinsSQL(): string {
-        return this.joinSQLBuilders
+        return this.joins
             .map(joinSQLBuilder => joinSQLBuilder.SQL())
             .join(' ')
     }
@@ -114,7 +105,7 @@ export default class CountSQLBuilder<T extends Entity> {
     // ------------------------------------------------------------------------
 
     private unionsSQL(): string {
-        return this.unionsSQLBuilders.map(union => union.SQL()).join(' ')
+        return this.unions.map(union => union.SQL()).join(' ')
     }
 
     // ------------------------------------------------------------------------

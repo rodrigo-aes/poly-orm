@@ -35,10 +35,15 @@ export default class UpdateSQLBuilder<T extends Entity> {
         public alias: string = target.name.toLowerCase()
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
-        this.applyConditionalScope()
+
+        if (this.conditional) this.conditional = (
+            ScopeMetadataHandler.applyScope(
+                this.target, 'conditional', this.conditional
+            )
+        )
 
         if (this._attributes instanceof BasePolymorphicEntity) (
-            this._attributes = (this._attributes as any).toSourceEntity()
+            this._attributes = this._attributes.toSourceEntity()
         )
     }
 
@@ -76,12 +81,9 @@ export default class UpdateSQLBuilder<T extends Entity> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return SQLString.sanitize(`
-            UPDATE ${this.targetMetadata.tableName} ${this.alias}
-            ${this.joinsSQL()}
-            ${this.setSQL()}
-            ${this.whereSQL()}
-        `)
+        return `UPDATE ${this.targetMetadata.tableName} ${this.alias} ${(
+            this.joinsSQL()
+        )} ${this.setSQL()} ${this.whereSQL()}`
     }
 
     // ------------------------------------------------------------------------
@@ -126,17 +128,6 @@ export default class UpdateSQLBuilder<T extends Entity> {
                 SQLString.value(val)
             )}`)
             .join(', ')
-    }
-
-    // Privates ---------------------------------------------------------------
-    private applyConditionalScope(): void {
-        if (this.conditional) this.conditional = (
-            ScopeMetadataHandler.applyScope(
-                this.target,
-                'conditional',
-                this.conditional
-            )
-        )
     }
 }
 

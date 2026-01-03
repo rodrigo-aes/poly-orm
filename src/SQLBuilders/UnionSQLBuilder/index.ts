@@ -5,9 +5,6 @@ import {
 
 import type { EntityMetadata } from "../../Metadata"
 
-// Handlers
-import { SQLString } from "../../Handlers"
-
 // Types
 import type { PolymorphicEntityTarget } from "../../types"
 
@@ -38,44 +35,39 @@ export default class UnionSQLBuilder {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return SQLString.sanitize(
-            `WITH ${this.name} AS (${this.vitualTablesSQL()})`
-        )
+        return `WITH ${this.name} AS (${this.unionsSQL()})`
     }
 
     // Privates ---------------------------------------------------------------
-    private vitualTablesSQL(): string {
+    private unionsSQL(): string {
         return this.sources
-            .map(source => this.tableSQL(source))
+            .map(source => this.vTableSQL(source))
             .join(' UNION ALL ')
     }
 
     // ------------------------------------------------------------------------
 
-    private tableSQL(source: EntityMetadata): string {
+    private vTableSQL(source: EntityMetadata): string {
         return `SELECT ${this.columnsSQL(source)} FROM ${source.tableName}`
     }
 
     // ------------------------------------------------------------------------
 
     private columnsSQL(source: EntityMetadata): string {
-        return [
-            this.primaryKeySQL(source),
-            this.entityTypeSQL(source),
-            ...this.restColumnsSQL(source)
-        ]
-            .join(', ')
+        return `${this.PKSQL(source)}, ${this.ETSQL(source)}, ${(
+            this.restColumnsSQL(source).join(', ')
+        )}`
     }
 
     // ------------------------------------------------------------------------
 
-    private primaryKeySQL(source: EntityMetadata): string {
+    private PKSQL(source: EntityMetadata): string {
         return `${source.PK} AS primaryKey`
     }
 
     // ------------------------------------------------------------------------
 
-    private entityTypeSQL(source: EntityMetadata): string {
+    private ETSQL(source: EntityMetadata): string {
         return `"${source.target.name}" AS entityType`
     }
 

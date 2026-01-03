@@ -33,10 +33,11 @@ export default class SelectSQLBuilder<T extends Entity> {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     public get properties(): string[] {
-        return this._properties ??= this.propertiesSQL().concat(
-            this.countsSQL(),
-            this.merged
-        )
+        return this._properties ??= this.propertiesSQL()
+            .concat(
+                this.countsSQL(),
+                this.merged
+            )
     }
 
     // Privates ---------------------------------------------------------------
@@ -106,7 +107,7 @@ export default class SelectSQLBuilder<T extends Entity> {
 
     // Privates ---------------------------------------------------------------
     private handlePropertiesSQL(): string[] {
-        return this.selectedColumnsSQL().concat(this.casesSQLSelectSQL())
+        return this.selectedColumnsSQL().concat(this.casesSQL())
     }
 
     // ------------------------------------------------------------------------
@@ -125,7 +126,7 @@ export default class SelectSQLBuilder<T extends Entity> {
 
     // ------------------------------------------------------------------------
 
-    private casesSQLSelectSQL(): string[] {
+    private casesSQL(): string[] {
         return this.cases.map(
             caseOpt => ConditionalSQLBuilder.case(
                 this.target,

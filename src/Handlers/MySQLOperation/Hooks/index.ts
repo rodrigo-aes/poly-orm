@@ -258,10 +258,10 @@ export default class Hooks {
         sqlBuilder: DeleteSQLBuilder<T>
     ) {
         await HooksMetadata.find(target)?.[
-            sqlBuilder.where instanceof EntityBase
+            sqlBuilder.conditional instanceof EntityBase
                 ? 'callBeforeDelete'
                 : 'callBeforeBulkDelete'
-        ](sqlBuilder.where as any)
+        ](sqlBuilder.conditional as any)
     }
 
     // ------------------------------------------------------------------------
@@ -272,11 +272,11 @@ export default class Hooks {
         result: DeleteResult,
     ) {
         return HooksMetadata.find(target)?.[
-            sqlBuilder.where instanceof EntityBase
+            sqlBuilder.conditional instanceof EntityBase
                 ? 'callAfterDelete'
                 : 'callAfterBulkDelete'
         ](
-            sqlBuilder.where as any,
+            sqlBuilder.conditional as any,
             result
         )
     }

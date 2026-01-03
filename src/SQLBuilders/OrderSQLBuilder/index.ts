@@ -22,12 +22,12 @@ export default class OrderSQLBuilder<T extends Entity> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return SQLString.sanitize(`ORDER BY ${(
+        return `ORDER BY ${(
             this.options.map(option => Array.isArray(option)
                 ? this.orderSQL(option)
                 : this.caseSQL(option)
             )
-        )}`)
+        )}`
     }
 
     // Privates ---------------------------------------------------------------

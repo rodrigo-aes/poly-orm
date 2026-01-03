@@ -35,7 +35,7 @@ export default class FindSQLBuilder<
     public override SQL(): string {
         return SQLString.sanitize(
             [
-                this.isMain ? this.unionsSQL() : '',
+                this.unionsSQL(),
                 this.selectSQL(),
                 this.joinsSQL(),
                 this.whereSQL(),

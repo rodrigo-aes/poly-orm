@@ -97,8 +97,6 @@ export default class ExistsSQLBuilder<T extends Entity> {
             alias
         )
 
-        this.unions.push(...on.unions)
-
         return `WHERE ${on.fixedConditionalSQL()}${on.conditionalSQL(true)}${(
             options?.relations
                 ? ` AND ${(this.handleSQL(

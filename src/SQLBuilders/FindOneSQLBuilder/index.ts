@@ -51,24 +51,24 @@ export default class FindOneSQLBuilder<T extends Entity> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return SQLString.sanitize(
-            [
-                this.isMain ? this.unionsSQL() : '',
-                this.selectSQL(),
-                this.joinsSQL(),
-                this.whereSQL(),
-                this.groupSQL(),
-                this.limitSQL()
-            ]
-                .join(' ')
-        )
+        return [
+            this.unionsSQL(),
+            this.selectSQL(),
+            this.joinsSQL(),
+            this.whereSQL(),
+            this.groupSQL(),
+            this.limitSQL()
+        ]
+            .join(' ')
+
     }
 
     // ------------------------------------------------------------------------
 
     public unionsSQL(): string {
-        const included = new Set<string>()
+        if (!this.isMain) return ''
 
+        const included = new Set<string>()
         return this.unions
             .filter(
                 ({ name }) => included.has(name) ? false : included.add(name)
@@ -109,8 +109,8 @@ export default class FindOneSQLBuilder<T extends Entity> {
 
     // ------------------------------------------------------------------------
 
-    public addUnions(unions: UnionSQLBuilder[]): void {
-        this.unions.push(...unions)
+    public addUnions(...unions: (UnionSQLBuilder | undefined)[]): void {
+        this.unions.push(...unions.filter(u => !!u))
     }
 
     // Privates ---------------------------------------------------------------
@@ -125,10 +125,7 @@ export default class FindOneSQLBuilder<T extends Entity> {
     // ------------------------------------------------------------------------
 
     private buildSelect(): SelectSQLBuilder<T> {
-        return new SelectSQLBuilder(
-            this.target,
-            this.options.select
-        )
+        return new SelectSQLBuilder(this.target, this.options.select)
     }
 
     // ------------------------------------------------------------------------
@@ -148,8 +145,8 @@ export default class FindOneSQLBuilder<T extends Entity> {
                     alias,
                 )
 
-                this.select.merge(join.selectSQLBuilder)
-                this.unions.push(...join.unionSQLBuilders)
+                this.select.merge(join.select)
+                this.addUnions(join.union)
 
                 return [
                     join,
@@ -162,16 +159,11 @@ export default class FindOneSQLBuilder<T extends Entity> {
     // ------------------------------------------------------------------------
 
     private buildWhere(): WhereSQLBuilder<T> | undefined {
-        if (this.options.where) {
-            const where = ConditionalSQLBuilder.where(
-                this.target,
-                this.options.where as any,
-                this.alias
-            )
-
-            this.unions.push(...where.unions ?? [])
-            return where
-        }
+        if (this.options.where) return ConditionalSQLBuilder.where(
+            this.target,
+            this.options.where,
+            this.alias
+        )
     }
 
     // ------------------------------------------------------------------------

@@ -16,16 +16,14 @@ export default class AndSQLBuilder<T extends Entity> {
         public alias: string = target.name.toLowerCase()
     ) { }
 
+    public get unions(): UnionSQLBuilder[] {
+        return []
+    }
+
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
         return this.conditionalsSQL() + this.conditionalExistsSQL()
-    }
-
-    // ------------------------------------------------------------------------
-
-    public unions(): UnionSQLBuilder[] {
-        return []
     }
 
     // Privates ---------------------------------------------------------------

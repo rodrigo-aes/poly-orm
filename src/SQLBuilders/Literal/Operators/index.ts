@@ -73,13 +73,13 @@ export function notLike(value: string) {
 
 // ----------------------------------------------------------------------------
 
-export function isNull(value: string) {
+export function _null(value: string) {
     return `${value} IS NULL`
 }
 
 // ----------------------------------------------------------------------------
 
-export function isNotNull(value: string) {
+export function notNull(value: string) {
     return `${value} IS NOT NULL`
 }
 

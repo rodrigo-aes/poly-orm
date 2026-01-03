@@ -15,30 +15,21 @@ export default class PaginationSQLBuilder<
         options: PaginationQueryOptions<T>,
         alias?: string
     ) {
-        const { page, perPage, ...opts } = options
+        super(target, options, alias)
 
-        super(target, opts, alias)
+        if (options.page) this.page = options.page
+        if (options.perPage) this.perPage = options.perPage
 
-        if (page) this.page = page
-        if (perPage) this.perPage = perPage
-
-        this.setLimit()
-        this.setOffset()
+        this.limit = this.perPage
+        this.offset = (this.page - 1) * this.perPage
     }
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public totalSQL(): string {
-        return `SELECT COUNT(*) AS total FROM ${this.metadata.tableName}`
-    }
-
-    // Privates ---------------------------------------------------------------
-    private setLimit(): void {
-        this.limit = this.perPage
-    }
-
-    private setOffset(): void {
-        this.offset = (this.page - 1) * this.perPage
+        return `SELECT COUNT(*) AS \`total\` FROM \`${(
+            this.metadata.tableName
+        )}\``
     }
 }
 

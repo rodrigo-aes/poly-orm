@@ -1,5 +1,5 @@
 import TriggerSQLBuilder from "../../../SQLBuilders/DatabaseSQLBuilders/TriggerSQLBuilder"
-import { li } from "../../../SQLBuilders"
+import { li, type Literals } from "../../../SQLBuilders"
 
 // Types
 import type { BaseEntity } from "../../../Entities"
@@ -44,6 +44,12 @@ export default class TriggerSchema<
         super()
         const { action, ...rest } = initMap
         Object.assign(this, { _action: action, ...rest })
+    }
+
+    // Getters ================================================================
+    // Protecteds -------------------------------------------------------------
+    protected get li(): Literals {
+        return li
     }
 
     // Instance Methods =======================================================
@@ -111,13 +117,13 @@ export default class TriggerSchema<
         this._action = action
     }
 
-    // ------------------------------------------------------------------------
-
+    // Protecteds -------------------------------------------------------------
     /** @internal */
     protected action(): string | TriggerAction<T>[] {
-        return typeof this._action === 'string'
-            ? this._action
-            : this._action(this)
+        switch (typeof this._action) {
+            case 'string': return this._action
+            case 'function': return this._action(this)
+        }
     }
 
     // Static Methods =========================================================

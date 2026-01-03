@@ -17,29 +17,23 @@ import {
     type PolymorphicBelongsToMetadata
 } from "../../../Metadata"
 
-// Handlers
-import { SQLString } from '../../../Handlers'
-
 // Types
 import type { Entity, Constructor, TargetMetadata } from "../../../types"
 import type { ConditionalQueryOptions } from "../types"
 
-export default class OnSQLBuilder<
-    Parent extends Entity,
-    Related extends Entity
-> extends ConditionalSQLBuilder<Related> {
-    private parentMetadata: TargetMetadata<Parent>
+export default class OnSQLBuilder<T extends Entity, R extends Entity>
+    extends ConditionalSQLBuilder<R> {
+    private parentMetadata: TargetMetadata<T>
 
     constructor(
-        public parentTarget: Constructor<Parent>,
-        public target: Constructor<Related>,
+        public parentTarget: Constructor<T>,
+        public target: Constructor<R>,
         public relation: RelationMetadataType,
-        options?: ConditionalQueryOptions<Related>,
+        public options?: ConditionalQueryOptions<R>,
         public parentAlias: string = parentTarget.name.toLowerCase(),
-        alias: string = relation.name,
+        public alias: string = relation.name,
     ) {
         super(target, options, alias)
-
         this.parentMetadata = MetadataHandler.targetMetadata(this.parentTarget)
     }
 
@@ -52,9 +46,7 @@ export default class OnSQLBuilder<
     // ------------------------------------------------------------------------
 
     private get parentPrimary(): string {
-        return `${this.parentAlias}.${(
-            this.parentMetadata.PK
-        )}`
+        return `${this.parentAlias}.${this.parentMetadata.PK}`
     }
 
     // ------------------------------------------------------------------------
@@ -66,9 +58,7 @@ export default class OnSQLBuilder<
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return SQLString.sanitize(`
-            ON ${this.fixedConditionalSQL()} ${this.conditionalSQL(true)}
-        `)
+        return `ON ${this.fixedConditionalSQL()} ${this.conditionalSQL(true)}`
     }
 
     // ------------------------------------------------------------------------
@@ -110,12 +100,9 @@ export default class OnSQLBuilder<
 
     // Privates ---------------------------------------------------------------
     private fixedHasSQL(): string {
-        const { FKName } = this.relation as (
-            HasOneMetadata |
-            HasManyMetadata
-        )
-
-        return `${this.relatedCol(FKName)} = ${this.parentPrimary}`
+        return `${this.relatedCol(
+            (this.relation as (HasOneMetadata | HasManyMetadata)).FKName
+        )} = ${this.parentPrimary}`
     }
 
     // ------------------------------------------------------------------------
@@ -132,20 +119,21 @@ export default class OnSQLBuilder<
             HasManyThroughMetadata
         )
 
-        return `EXISTS (
-            SELECT 1 FROM ${relatedTable} ${this.alias} WHERE EXISTS (
-                SELECT 1 FROM ${throughTable}
-                WHERE ${throughFKName} = ${this.parentPrimary}
-                AND ${this.relatedCol(relatedFKName)} = ${throughPrimary}
-            )
-        )`
+        return `EXISTS (SELECT 1 FROM ${relatedTable} ${(
+            this.alias
+        )} WHERE EXISTS (SELECT 1 FROM ${throughTable} WHERE ${(
+            throughFKName
+        )} = ${this.parentPrimary} AND ${this.relatedCol(
+            relatedFKName
+        )} = ${throughPrimary}))`
     }
 
     // ------------------------------------------------------------------------
 
     private fixedBelongsTo(): string {
-        const { FKName } = this.relation as BelongsToMetadata
-        return `${this.relatedPrimary} = ${this.parentCol(FKName)}`
+        return `${this.relatedPrimary} = ${this.parentCol(
+            (this.relation as BelongsToMetadata).FKName
+        )}`
     }
 
     // ------------------------------------------------------------------------
@@ -159,13 +147,13 @@ export default class OnSQLBuilder<
             throughFKName
         } = this.relation as BelongsToThroughMetadata
 
-        return `EXISTS(
-            SELECT 1 FROM ${relatedTable} ${this.alias} WHERE EXISTS(
-                SELECT 1 FROM ${throughTable}
-                WHERE ${throughFKName} = ${this.relatedPrimary}
-                AND ${throughPrimary} = ${this.parentCol(relatedFKName)}
-            )
-        )`
+        return `EXISTS(SELECT 1 FROM ${relatedTable} ${(
+            this.alias
+        )} WHERE EXISTS(SELECT 1 FROM ${throughTable} WHERE ${(
+            throughFKName
+        )} = ${this.relatedPrimary} AND ${(
+            throughPrimary
+        )} = ${this.parentCol(relatedFKName)}))`
     }
 
     // ------------------------------------------------------------------------
@@ -178,13 +166,13 @@ export default class OnSQLBuilder<
             relatedFKName,
         } = this.relation as BelongsToManyMetadata
 
-        return `EXISTS(
-            SELECT 1 FROM ${relatedTable} ${this.alias} WHERE EXISTS(
-                SELECT 1 FROM ${JT}
-                WHERE ${parentFKname} = ${this.parentPrimary}
-                AND ${relatedFKName} = ${this.relatedPrimary}
-            )
-        )`
+        return `EXISTS(SELECT 1 FROM ${relatedTable} ${(
+            this.alias
+        )} WHERE EXISTS(SELECT 1 FROM ${JT} WHERE ${(
+            parentFKname
+        )} = ${this.parentPrimary} AND ${(
+            relatedFKName
+        )} = ${this.relatedPrimary}))`
     }
 
     // ------------------------------------------------------------------------

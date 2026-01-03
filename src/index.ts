@@ -222,6 +222,12 @@ import {
     Exists,
     Cross,
     CurrentTimestamp,
+    Literal,
+    literal,
+    li,
+
+    type LiteralHandler,
+    type Literals,
 
     type FindOneQueryOptions,
     type FindQueryOptions,
@@ -355,6 +361,12 @@ export {
     Exists,
     Cross,
     CurrentTimestamp,
+    Literal,
+    literal,
+    li,
+
+    type LiteralHandler,
+    type Literals,
 
     type EntityTarget,
     type PolymorphicEntityTarget,
@@ -502,4 +514,6 @@ export {
     type ElseQueryOption,
     type ExistsQueryOptions,
     // type CrossExistsQueryOptions,
+
+
 }

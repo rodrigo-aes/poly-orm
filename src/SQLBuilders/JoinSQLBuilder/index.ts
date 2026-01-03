@@ -27,12 +27,12 @@ import type { RelationOptions, RelationsOptions } from "./types"
 export default class JoinSQLBuilder<T extends Entity> {
     private relatedMetadata: TargetMetadata<any>
 
-    public required?: boolean
-    public select?: SelectOptions<any>
-    public on?: ConditionalQueryOptions<any>
+    private required?: boolean
+    private selectOpts?: SelectOptions<any>
+    private onOpts?: ConditionalQueryOptions<any>
 
-    private _selectSQLBuilder?: SelectSQLBuilder<any>
-    private _unionSQLBuilders?: UnionSQLBuilder[]
+    private _select?: SelectSQLBuilder<any>
+    private _union?: UnionSQLBuilder
 
     constructor(
         public target: Constructor<T>,
@@ -56,10 +56,16 @@ export default class JoinSQLBuilder<T extends Entity> {
 
     // ------------------------------------------------------------------------
 
-    public get selectSQLBuilder(): SelectSQLBuilder<any> {
-        return this._selectSQLBuilder ??= new SelectSQLBuilder(
+    public get table(): string {
+        return `${this.relatedMetadata.tableName} ${this.relatedAlias}`
+    }
+
+    // ------------------------------------------------------------------------
+
+    public get select(): SelectSQLBuilder<any> {
+        return this._select ??= new SelectSQLBuilder(
             this.relatedTarget,
-            this.select,
+            this.selectOpts,
             this.relatedAlias
         )
 
@@ -67,35 +73,26 @@ export default class JoinSQLBuilder<T extends Entity> {
 
     // ------------------------------------------------------------------------
 
-    public get unionSQLBuilders(): UnionSQLBuilder[] {
-        return this._unionSQLBuilders = this._unionSQLBuilders ?? (
-            this.handleUnionSQLBuilders()
+    public get union(): UnionSQLBuilder | undefined {
+        return this._union ??= (
+            this.relatedTarget.prototype instanceof BasePolymorphicEntity
+                ? new UnionSQLBuilder(
+                    this.relatedMetadata.tableName,
+                    this.relatedTarget as PolymorphicEntityTarget
+                ) : undefined
         )
     }
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return [
-            this.joinType(),
-            this.tableSQL(),
-            this.onSQL(),
-        ]
-            .join(' ')
+        return `${this.joinSQL()} ${this.table} ${this.onSQL()}`
     }
 
     // ------------------------------------------------------------------------
 
-    public joinType(): string {
-        return this.required
-            ? 'INNER JOIN'
-            : 'LEFT JOIN'
-    }
-
-    // ------------------------------------------------------------------------
-
-    public tableSQL(): string {
-        return `${this.relatedMetadata.tableName} ${this.relatedAlias}`
+    public joinSQL(): string {
+        return this.required ? 'INNER JOIN' : 'LEFT JOIN'
     }
 
     // Privates ---------------------------------------------------------------
@@ -104,24 +101,11 @@ export default class JoinSQLBuilder<T extends Entity> {
             this.target,
             this.relation.relatedTarget,
             this.relation,
-            this.on,
+            this.onOpts,
             this.alias,
             this.relatedAlias,
         )
             .SQL()
-    }
-
-    // ------------------------------------------------------------------------
-
-    private handleUnionSQLBuilders(): UnionSQLBuilder[] {
-        return this.relatedTarget.prototype instanceof BasePolymorphicEntity
-            ? [
-                new UnionSQLBuilder(
-                    this.relatedMetadata.tableName,
-                    this.relatedTarget as PolymorphicEntityTarget
-                )
-            ]
-            : []
     }
 }
 

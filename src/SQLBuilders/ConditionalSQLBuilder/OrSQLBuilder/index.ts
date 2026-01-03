@@ -2,13 +2,10 @@
 import AndSQLBuilder, { type AndQueryOptions } from "../AndSQLBuilder"
 
 // Types
-import type { Entity, Constructor, TargetMetadata } from "../../../types"
+import type { Entity, Constructor } from "../../../types"
 import type { OrQueryOptions } from "./types"
-import type UnionSQLBuilder from "../../UnionSQLBuilder"
 
 export default class OrSQLBuilder<T extends Entity> {
-    private unionSQLBuilders: UnionSQLBuilder[] = []
-
     constructor(
         public target: Constructor<T>,
         public options: OrQueryOptions<T>,
@@ -19,24 +16,10 @@ export default class OrSQLBuilder<T extends Entity> {
     // Publics ----------------------------------------------------------------
     public SQL(): string {
         return this.options
-            .map(option => `(${this.andSQL(option)})`)
+            .map(option => `(${(
+                new AndSQLBuilder(this.target, option, this.alias).SQL()
+            )})`)
             .join(' OR ')
-    }
-
-    // ------------------------------------------------------------------------
-
-    public unions(): UnionSQLBuilder[] {
-        return this.unionSQLBuilders
-    }
-
-    // Privates ---------------------------------------------------------------
-    private andSQL(option: AndQueryOptions<T>): string {
-        const and = new AndSQLBuilder(
-            this.target, option, this.alias
-        )
-        this.unionSQLBuilders.push(...and.unions())
-
-        return and.SQL()
     }
 }
 
