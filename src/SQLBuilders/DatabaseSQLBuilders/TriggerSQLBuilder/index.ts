@@ -58,12 +58,9 @@ export default abstract class TriggerSQLBuilder<
     // Protecteds -------------------------------------------------------------
     /** @internal */
     protected createSQL(): string {
-        return SQLString.sanitize(`
-            CREATE TRIGGER ${this.name}
-            ${this.timing} ${this.event} ON ${this.tableName}
-            FOR EACH ${this.orientation}
-            ${this.actionSQL()}
-        `)
+        return `CREATE TRIGGER ${this.name} ${this.timing} ${this.event} ON ${(
+            this.tableName
+        )} FOR EACH ${this.orientation} ${this.actionSQL()}`
     }
 
     // ------------------------------------------------------------------------
@@ -92,30 +89,34 @@ export default abstract class TriggerSQLBuilder<
     /** @internal */
     public actionBodySQL(): string {
         const action = this.action(li)
-        if (typeof action === 'string') return action
-
-        return action
-            .map((action) => this.handleActionSQL(action)).join('; ')
-            + ';'
+        return typeof action === 'string'
+            ? SQLString.sanitize(action)
+            : action
+                .map((action) => this.handleActionSQL(action))
+                .join('; ') + ';'
     }
 
     // Privates ---------------------------------------------------------------
     /** @internal */
     private handleActionSQL(action: TriggerAction<T>): string {
-        if (typeof action === 'string') return action
+        if (typeof action === 'string') return SQLString.sanitize(action)
 
         switch (action.type) {
-            case "SET": return this.setSQL(action as (
-                SetAction<T>
-            ))
+            case "SET": return this.setSQL(action as SetAction<T>)
+
+            // ----------------------------------------------------------------
 
             case "INSERT INTO": return this.insertIntoSQL(action as (
                 InsertIntoTableAction
             ))
 
+            // ----------------------------------------------------------------
+
             case "UPDATE TABLE": return this.updateTableSQL(action as (
                 UpdateTableAction
             ))
+
+            // ----------------------------------------------------------------
 
             case "DELETE FROM": return this.deleteFromSQL(action as (
                 DeleteFromAction

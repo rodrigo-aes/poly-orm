@@ -13,9 +13,6 @@ import type {
     OptionalizeTuple
 } from "./types"
 
-// Exeptions
-import PolyORMException from "../../Errors"
-
 export default abstract class Procedure<
     Result extends any[] = any[],
     In extends ProcedureArgs = ProcedureArgs,
@@ -52,16 +49,11 @@ export default abstract class Procedure<
 
     // ------------------------------------------------------------------------
 
-    public async call(...args: OptionalizeTuple<In[1]>): (
-        Promise<[
-            Result,
-            ProcedureOutResult<ProcedureArgsObject<Out[0], Out[1]>>
-        ]>
-    ) {
-        const [result, [out]] = await this._conn.query(
-            this.callSQL(...args)
-        )
-
+    public async call(...args: OptionalizeTuple<In[1]>): Promise<[
+        Result,
+        ProcedureOutResult<ProcedureArgsObject<Out[0], Out[1]>>
+    ]> {
+        const [result, [out]] = await this._conn.query(this.callSQL(...args))
         return [result, out]
     }
 
@@ -75,19 +67,19 @@ export default abstract class Procedure<
     // ------------------------------------------------------------------------
 
     public registerSQL(): string {
-        return SQLString.sanitize(`
-            CREATE PROCEDURE ${this.name} (${this.defineArgsSQL()})
-            BEGIN ${this.action(li)} END;
-        `)
+        return `CREATE PROCEDURE ${this.name} (${(
+            this.defineArgsSQL()
+        )}) BEGIN ${SQLString.sanitize(this.action(li))} END;`
     }
 
     // ------------------------------------------------------------------------
 
     public callSQL(...args: In[1]): string {
-        return SQLString.sanitize(`
-            CALL ${this.name} (${this.callArgsSQL(...args)});
-            ${this.out ? `SELECT ${this.callOutArgsSQL().join(', ')}` : ''}    
-        `)
+        return `CALL ${this.name} (${this.callArgsSQL(...args)});${(
+            this.out ?
+                ` SELECT ${this.callOutArgsSQL().join(', ')}`
+                : ''
+        )}`
     }
 
     // Protecteds -------------------------------------------------------------
@@ -109,9 +101,7 @@ export default abstract class Procedure<
 
     private defineArgsSQL(): string {
         return this.defineInArgsSQL()
-            .concat(
-                this.defineOutArgsSQL()
-            )
+            .concat(this.defineOutArgsSQL())
             .join(', ')
     }
 
@@ -119,9 +109,9 @@ export default abstract class Procedure<
 
     private defineInArgsSQL(): string[] {
         return this.in
-            ? Object.entries(this.in).map(
-                ([name, dataType]) => `IN ${name} ${dataType.buildSQL()}`
-            )
+            ? Object
+                .entries(this.in)
+                .map(([name, dataType]) => `IN ${name} ${dataType.buildSQL()}`)
             : []
 
     }
@@ -130,9 +120,11 @@ export default abstract class Procedure<
 
     private defineOutArgsSQL(): string[] {
         return this.out
-            ? Object.entries(this.out).map(
-                ([name, dataType]) => `OUT ${name} ${dataType.buildSQL()}`
-            )
+            ? Object
+                .entries(this.out)
+                .map(([name, dataType]) => `OUT ${name} ${(
+                    dataType.buildSQL()
+                )}`)
             : []
     }
 
@@ -140,9 +132,7 @@ export default abstract class Procedure<
 
     private callArgsSQL(...args: In[1]): string {
         return this.callInArgsSQL(...args)
-            .concat(
-                this.callOutArgsSQL()
-            )
+            .concat(this.callOutArgsSQL())
             .join(', ')
     }
 

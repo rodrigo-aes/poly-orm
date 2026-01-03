@@ -37,26 +37,21 @@ export default class TableSQLBuilder<
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public createSQL() {
-        return SQLString.sanitize(`
-            CREATE TABLE ${this.name} (${this.createColumnsSQL()})
-        `)
+        return `CREATE TABLE ${this.name} (${this.createColumnsSQL()})`
     }
 
     // ------------------------------------------------------------------------
 
     public createIfNotExistsSQL(): string {
-        return SQLString.sanitize(`
-            CREATE TABLE IF NOT EXISTS ${this.name} 
-            (${this.createColumnsSQL()})
-        `)
+        return `CREATE TABLE IF NOT EXISTS ${this.name} (${(
+            this.createColumnsSQL()
+        )})`
     }
 
     // ------------------------------------------------------------------------
 
     public syncAlterSQL(schema: TableSchema) {
-        return SQLString.sanitize(`  
-            ALTER TABLE ${this.name} ${this.alterColumnsSQL(schema)}
-        `)
+        return `ALTER TABLE ${this.name} ${this.alterColumnsSQL(schema)}`
     }
 
     // ------------------------------------------------------------------------
@@ -78,9 +73,9 @@ export default class TableSQLBuilder<
 
     public migrateAlterSQL(action: Omit<ActionType, 'CREATE'>): string {
         switch (action) {
-            case 'ALTER': return SQLString.sanitize(
-                `ALTER TABLE ${this.name} ${this.migrateAlterChildsSQL()}`
-            )
+            case 'ALTER': return `ALTER TABLE ${this.name} ${(
+                this.migrateAlterChildsSQL()
+            )}`
 
             case 'DROP': return this.dropSQL()
         }

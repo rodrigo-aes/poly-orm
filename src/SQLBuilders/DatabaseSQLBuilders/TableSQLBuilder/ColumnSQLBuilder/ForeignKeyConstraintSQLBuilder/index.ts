@@ -22,14 +22,14 @@ export default class ForeignKeyConstraintSQLBuilder extends
 
     // ------------------------------------------------------------------------
 
-    public alterSQL(): string {
-        return `${this.dropSQL()}, ${this.addSQL()}`
+    public dropSQL(): string {
+        return `DROP FOREIGN KEY ${this.name}`
     }
 
     // ------------------------------------------------------------------------
 
-    public dropSQL(): string {
-        return `DROP FOREIGN KEY ${this.name}`
+    public alterSQL(): string {
+        return `${this.dropSQL()}, ${this.addSQL()}`
     }
 
     // ------------------------------------------------------------------------
@@ -46,27 +46,16 @@ export default class ForeignKeyConstraintSQLBuilder extends
 
     // Privates ---------------------------------------------------------------
     private constraintSQL(): string {
-        return SQLString.sanitize(`
-            CONSTRAINT ${this.name}
-            FOREIGN KEY (${this.columnName}) ${this.referencesSQL()}
-        `)
-    }
-
-    // ------------------------------------------------------------------------
-
-    private referencesSQL(): string {
-        const onDelSQL = this.map.onDelete
-            ? `ON DELETE ${this.map.onDelete}`
-            : ''
-
-        const onUpdSQL = this.map.onUpdate
-            ? `ON UPDATE ${this.map.onUpdate}`
-            : ''
-
-        return `
-            REFERENCES ${this.map.tableName}(${this.map.columnName})
-            ${onDelSQL}
-            ${onUpdSQL}
-        `
+        return `CONSTRAINT ${this.name} FOREIGN KEY (${(
+            this.columnName
+        )}) REFERENCES ${this.map.tableName}(${this.map.columnName})${(
+            this.map.onDelete
+                ? ` ON DELETE ${this.map.onDelete}`
+                : ''
+        )} ${(
+            this.map.onUpdate
+                ? ` ON UPDATE ${this.map.onUpdate}`
+                : ''
+        )}`
     }
 }

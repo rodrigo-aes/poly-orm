@@ -38,9 +38,7 @@ export default class ColumnSQLBuilder extends ColumnSchema {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public createSQL() {
-        return SQLString.sanitize(`
-            ${this.columnSQL('CREATE')}${this.createForeignKeySQL()}
-        `)
+        return `${this.columnSQL('CREATE')}${this.createForeignKeySQL()}`
     }
 
     // ------------------------------------------------------------------------
@@ -54,9 +52,9 @@ export default class ColumnSQLBuilder extends ColumnSchema {
     // ------------------------------------------------------------------------
 
     public addSQL() {
-        return SQLString.sanitize(
-            `ADD COLUMN ${this.columnSQL('CREATE')}${this.addForeignKeySQL()}`
-        )
+        return `ADD COLUMN ${this.columnSQL('CREATE')}${(
+            this.addForeignKeySQL()
+        )}`
     }
 
     // ------------------------------------------------------------------------
@@ -70,9 +68,7 @@ export default class ColumnSQLBuilder extends ColumnSchema {
     // ------------------------------------------------------------------------
 
     public alterSQL() {
-        return SQLString.sanitize(`
-            MODIFY COLUMN ${this.columnSQL('ALTER')}
-        `)
+        return `MODIFY COLUMN ${this.columnSQL('ALTER')}`
     }
 
     // ------------------------------------------------------------------------
@@ -112,9 +108,7 @@ export default class ColumnSQLBuilder extends ColumnSchema {
     // ------------------------------------------------------------------------
 
     public dropSQL(): string {
-        return SQLString.sanitize(
-            `${this.shouldDropForeignKeySQL()} DROP COLUMN \`${this.name}\``
-        )
+        return `${this.shouldDropForeignKeySQL()} DROP COLUMN \`${this.name}\``
     }
 
     // ------------------------------------------------------------------------

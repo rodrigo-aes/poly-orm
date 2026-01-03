@@ -10,11 +10,7 @@ import UpdateOrCreateSQLBuilder from "../../UpdateOrCreateSQLBuilder"
 
 // Types
 import type { ManyRelationMetadatatype } from "../../../Metadata"
-
-import type {
-    Entity,
-    EntityTarget
-} from "../../../types"
+import type { Entity, EntityTarget } from "../../../types"
 
 import type {
     RelationCreationAttributes,
