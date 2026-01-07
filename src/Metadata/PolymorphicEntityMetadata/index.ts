@@ -51,6 +51,7 @@ export default class PolymorphicEntityMetadata extends Metadata {
     public target: PolymorphicEntityTarget
     public tableName: string
 
+    private _name?: string
     private _entities?: UnionEntitiesMap
     private _sourcesMetadata?: SourcesMetadata
 
@@ -75,7 +76,7 @@ export default class PolymorphicEntityMetadata extends Metadata {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     public get name(): string {
-        return this.target?.name ?? GeneralHelper.toPascalCase(
+        return this._name ??= this.target?.name ?? GeneralHelper.toPascalCase(
             ...this.tableName.split('_')
         )
     }
@@ -106,10 +107,11 @@ export default class PolymorphicEntityMetadata extends Metadata {
     // ------------------------------------------------------------------------
 
     public get sourcesMetadata(): SourcesMetadata {
-        return this._sourcesMetadata = this._sourcesMetadata
-            ?? Object.fromEntries(this.sources.map(target => [
+        return this._sourcesMetadata ??= Object.fromEntries(
+            this.sources.map(target => [
                 target.name, EntityMetadata.findOrThrow(target)
-            ]))
+            ])
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -131,7 +133,7 @@ export default class PolymorphicEntityMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public get repository(): typeof PolymorphicRepository<any> {
+    public get Repository(): typeof PolymorphicRepository<any> {
         return MetadataHandler.getRepository(this.target)
             ?? PolymorphicRepository
     }
@@ -192,12 +194,14 @@ export default class PolymorphicEntityMetadata extends Metadata {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public getRepository(): PolymorphicRepository<any> {
-        return new this.repository(this.target)
+        return new this.Repository(this.target)
     }
 
     // ------------------------------------------------------------------------
 
-    public defineDefaultConnection(connection: PolyORMConnection | string) {
+    public defineDefaultConnection(
+        connection: PolyORMConnection | string
+    ): void {
         return MetadataHandler.setDefaultConnection(connection, this.target)
     }
 
@@ -209,9 +213,9 @@ export default class PolymorphicEntityMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public defineRepository(repository: typeof PolymorphicRepository<any>): (
-        void
-    ) {
+    public defineRepository(
+        repository: typeof PolymorphicRepository<any>
+    ): void {
         return MetadataHandler.setRepository(repository, this.target)
     }
 
@@ -232,7 +236,7 @@ export default class PolymorphicEntityMetadata extends Metadata {
             tableName: this.tableName,
             columns: this.columns.toJSON(),
             relations: this.relations?.toJSON(),
-            repository: this.repository,
+            repository: this.Repository,
             hooks: this.hooks?.toJSON(),
             scopes: this.scopes?.toJSON(),
             computedProperties: this.computedProperties?.toJSON(),
@@ -246,9 +250,9 @@ export default class PolymorphicEntityMetadata extends Metadata {
     private getConnectionBySources(): PolyORMConnection {
         const [{ connection }, ...rest] = Object.values(this.sourcesMetadata)
 
-        if (rest.every(
-            ({ connection: { name } }) => connection.name === name)
-        ) (
+        if (rest.every(({ connection: { name } }) =>
+            connection.name === name
+        )) (
             this.defineDefaultConnection(connection)
         )
 

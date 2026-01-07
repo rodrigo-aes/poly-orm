@@ -17,14 +17,12 @@ import DATE from "./DATE"
 import TIME from "./TIME"
 import YEAR from "./YEAR"
 import JSON from "./JSON"
-import JSONReference, { type JSONColumnConfig } from "./JSONReference"
+import JSONRef, { type JSONColumnConfig } from "./JSONReference"
 import BIT, { type BitLength } from './BIT'
 import BINARY from "./BINARY"
 import VARBINARY from "./VARBINARY"
 import BLOB, { type BlobLength } from './BLOB'
-import COMPUTED, {
-    type ComputedType
-} from './COMPUTED'
+import COMPUTED, { type ComputedType } from './COMPUTED'
 
 import type { DataTypeMetadataJSON } from './types'
 
@@ -44,6 +42,7 @@ export default class DataType extends AbstractDataType {
     }
 
     // Static Methods =========================================================
+    // Publics ----------------------------------------------------------------
     public static isDataType(object: any): boolean {
         return object instanceof AbstractDataType
     }
@@ -146,8 +145,8 @@ export default class DataType extends AbstractDataType {
 
     // ------------------------------------------------------------------------
 
-    public static JSONReference(type: DataType, config: JSONColumnConfig) {
-        return new JSONReference(type, config)
+    public static JSONRef(type: DataType, config: JSONColumnConfig) {
+        return new JSONRef(type, config)
     }
 
     // ------------------------------------------------------------------------
@@ -181,10 +180,7 @@ export default class DataType extends AbstractDataType {
         as: string,
         type: ComputedType = 'STORED'
     ) {
-        return new COMPUTED(dataType, {
-            as,
-            type
-        })
+        return new COMPUTED(dataType, { as, type })
     }
 }
 
@@ -205,7 +201,7 @@ export {
     TIME,
     YEAR,
     JSON,
-    JSONReference,
+    JSONRef as JSONReference,
     BIT,
     BINARY,
     VARBINARY,

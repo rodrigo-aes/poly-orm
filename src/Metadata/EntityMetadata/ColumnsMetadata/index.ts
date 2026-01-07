@@ -36,8 +36,8 @@ export default class ColumnsMetadata extends MetadataArray<ColumnMetadata> {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     public get primary(): ColumnMetadata {
-        return this._primary = this._primary
-            ?? this.find(({ primary }) => primary)!
+        return this._primary
+            ??= this.find(({ primary }) => primary)!
             ?? PolyORMException.Metadata.throw(
                 'MISSING_PRIMARY_KEY', this.target.name
             )
@@ -46,17 +46,17 @@ export default class ColumnsMetadata extends MetadataArray<ColumnMetadata> {
     // ------------------------------------------------------------------------
 
     public get foreignKeys(): ColumnMetadata[] {
-        return this._foreignKeys = this._foreignKeys
-            ?? this.filter(({ isForeignKey }) => isForeignKey)
+        return this._foreignKeys ??= this.filter(
+            ({ isForeignKey }) => isForeignKey
+        )
     }
 
     // ------------------------------------------------------------------------
 
     public get constrainedForeignKeys(): ColumnMetadata[] {
-        return this._constrainedForeignKeys = this._constrainedForeignKeys
-            ?? this.foreignKeys.filter(
-                ({ references }) => references?.constrained
-            )
+        return this._constrainedForeignKeys ??= this.foreignKeys.filter(
+            ({ references }) => references?.constrained
+        )
     }
 
     // Protecteds -------------------------------------------------------------
@@ -85,10 +85,7 @@ export default class ColumnsMetadata extends MetadataArray<ColumnMetadata> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public registerColumn(name: string, dataType: DataType) {
-        const column = new ColumnMetadata(this.target, name, dataType)
-        this.push(column)
-
-        return column
+        return this.addR(new ColumnMetadata(this.target, name, dataType))[0]
     }
 
     // ------------------------------------------------------------------------
@@ -97,13 +94,10 @@ export default class ColumnsMetadata extends MetadataArray<ColumnMetadata> {
         name: string,
         pattern: ColumnPattern,
         ...rest: any[]
-    ) {
-        const builded = ColumnMetadata.buildPattern(
-            this.target, name, pattern, ...rest
-        )
-        this.push(...(Array.isArray(builded) ? builded : [builded]))
-
-        return builded
+    ): ColumnMetadata {
+        return this.addR(
+            ColumnMetadata.buildPattern(this.target, name, pattern, ...rest)
+        )[0]
     }
 
     // ------------------------------------------------------------------------

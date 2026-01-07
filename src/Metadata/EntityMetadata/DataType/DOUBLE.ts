@@ -8,10 +8,13 @@ export default class DOUBLE extends DataType {
         super('double')
     }
 
+    // Instance Methods =======================================================
+    // Publics ----------------------------------------------------------------
     public override buildSQL(): string {
         return `DOUBLE(${this.arguments()})`
     }
 
+    // Privates ---------------------------------------------------------------
     private arguments() {
         let args = ''
         if (this.M) args += this.M.toString()

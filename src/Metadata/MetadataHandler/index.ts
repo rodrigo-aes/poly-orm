@@ -38,7 +38,7 @@ export default class MetadataHandler {
     // ------------------------------------------------------------------------
 
     public static normalize() {
-        JoinTablesMetadata.makeAllUnique()
+        JoinTablesMetadata.makeUnique()
     }
 
     // ------------------------------------------------------------------------
@@ -56,13 +56,12 @@ export default class MetadataHandler {
 
     // ------------------------------------------------------------------------
 
-    public static targetMetadata<T extends Entity>(target: Constructor<T>): (
-        TargetMetadata<T>
-    ) {
+    public static targetMetadata<T extends Entity>(
+        target: Constructor<T>
+    ): TargetMetadata<T> {
         switch (true) {
             case target.prototype instanceof BaseEntity: return (
-                EntityMetadata.find(target)
-                ?? TempMetadata.getMetadata(target)
+                EntityMetadata.find(target) ?? TempMetadata.getMetadata(target)
             ) as TargetMetadata<T>
 
             // ----------------------------------------------------------------
@@ -82,9 +81,10 @@ export default class MetadataHandler {
 
     // ------------------------------------------------------------------------
 
-    public static getConnection(target: Target, shouldThrow: boolean = true): (
-        PolyORMConnection
-    ) {
+    public static getConnection(
+        target: Target,
+        shouldThrow: boolean = true
+    ): PolyORMConnection {
         return TempMetadata.getConnection(target)
             ?? Reflect.getOwnMetadata('default-connection', target)!
             ?? (
@@ -102,13 +102,12 @@ export default class MetadataHandler {
         connection: PolyORMConnection | string,
         target: Target
     ): void {
-        if (!Reflect.getOwnMetadata('default-connection', target)) (
-            Reflect.defineMetadata(
+        if (!Reflect.getOwnMetadata('default-connection', target)) Reflect
+            .defineMetadata(
                 'default-connection',
                 this.resolveConnection(connection),
                 target
             )
-        )
     }
 
     // ------------------------------------------------------------------------

@@ -1,4 +1,5 @@
 import HookMetadata from "../HookMetadata"
+import type { HookType } from "../types"
 
 // Types
 import type { ConditionalQueryOptions } from "../../../../../SQLBuilders"
@@ -6,8 +7,8 @@ import type { ConditionalQueryOptions } from "../../../../../SQLBuilders"
 export default class BeforeBulkDeleteMetadata extends HookMetadata {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get type(): 'before-bulk-delete' {
-        return 'before-bulk-delete'
+    public get type(): HookType {
+        return 'beforeBulkDelete'
     }
 
     // Instance Methods =======================================================

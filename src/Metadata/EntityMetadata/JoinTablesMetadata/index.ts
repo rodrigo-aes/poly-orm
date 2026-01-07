@@ -26,7 +26,7 @@ export default class JoinTablesMetadata extends MetadataArray<
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     protected override get SEARCH_KEYS(): (keyof JoinTableMetadata)[] {
-        return ['tableName']
+        return ['name']
     }
 
     // ------------------------------------------------------------------------
@@ -62,12 +62,12 @@ export default class JoinTablesMetadata extends MetadataArray<
 
     // ------------------------------------------------------------------------
 
-    public static makeAllUnique(): void {
+    public static makeUnique(): void {
         const uniques = new JoinTablesMetadata()
 
         for (const table of this.all()) {
             const existent = uniques.find(
-                ({ tableName }) => tableName === table.tableName
+                ({ name: tableName }) => tableName === table.name
             )
 
             if (existent) existent.mergeRelateds(table.relateds)

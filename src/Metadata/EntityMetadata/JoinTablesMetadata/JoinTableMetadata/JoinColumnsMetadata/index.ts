@@ -26,7 +26,7 @@ export default class JoinColumnsMetadata extends Array<JoinColumnMetadata> {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public registerColumn(initMap: JoinColumnInitMap) {
+    public registerColumn(initMap: JoinColumnInitMap): void {
         this.push(new JoinColumnMetadata(this.table, initMap))
     }
 
@@ -44,15 +44,13 @@ export default class JoinColumnsMetadata extends Array<JoinColumnMetadata> {
             'No connection',
             'No SQL operation',
             name,
-            this.table.tableName
+            this.table.name
         )
     }
 
     // ------------------------------------------------------------------------
 
-    public getTargetColumn(target: EntityTarget): (
-        JoinColumnMetadata
-    ) {
+    public getTargetColumn(target: EntityTarget): JoinColumnMetadata {
         return this.findOrThrow(`${target.name.toLowerCase()}Id`)
     }
 

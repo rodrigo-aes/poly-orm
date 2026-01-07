@@ -1,10 +1,11 @@
 import HookMetadata from "../HookMetadata"
+import type { HookType } from "../types"
 
 export default class BeforeSyncMetadata extends HookMetadata {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get type(): 'before-sync' {
-        return 'before-sync'
+    public get type(): HookType {
+        return 'beforeSync'
     }
 
     // Instance Methods =======================================================

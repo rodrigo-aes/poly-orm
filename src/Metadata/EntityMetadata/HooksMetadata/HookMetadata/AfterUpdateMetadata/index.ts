@@ -1,11 +1,13 @@
 import HookMetadata from "../HookMetadata"
+import type { HookType } from "../types"
+
 import type { Entity } from "../../../../../types"
 
 export default class AfterUpdateMetadata extends HookMetadata {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get type(): 'after-update' {
-        return 'after-update'
+    public get type(): HookType {
+        return 'afterUpdate'
     }
 
     // Instance Methods =======================================================

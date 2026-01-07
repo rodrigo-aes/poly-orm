@@ -16,15 +16,15 @@ export default class JoinTableMetadata {
 
     constructor(
         public relateds: JoinTableRelatedsGetter,
-        private _tableName?: string
+        private _name?: string
     ) {
         this.buildColumns()
     }
 
     // Gettters ===============================================================
     // Publics ----------------------------------------------------------------
-    public get tableName(): string {
-        return this._tableName = this._tableName ?? this.orderedRelateds
+    public get name(): string {
+        return this._name ??= this.orderedRelateds
             .map(({ target }) => target.name.toLowerCase())
             .join('_')
     }
@@ -45,7 +45,7 @@ export default class JoinTableMetadata {
 
     // Privates ---------------------------------------------------------------
     private get orderedRelateds(): ResolvedJoinTableRelatedsTuple {
-        return this._orderedRelateds = this._orderedRelateds ?? this.relateds()
+        return this._orderedRelateds ??= this.relateds()
             .map(({ target, options }) => ({
                 target: this.resolveRelated(target),
                 options
@@ -66,7 +66,7 @@ export default class JoinTableMetadata {
 
     public toJSON(): JoinTableMetadataJSON {
         return {
-            tableName: this.tableName,
+            tableName: this.name,
             columns: this.columns.toJSON()
         }
     }
@@ -119,7 +119,7 @@ export default class JoinTableMetadata {
 
     private resolveRelated(related: Function): EntityTarget {
         try { return related() }
-        catch (error) { }
+        catch (_) { }
 
         return related as EntityTarget
     }

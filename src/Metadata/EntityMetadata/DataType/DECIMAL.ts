@@ -8,6 +8,8 @@ export default class DECIMAL extends DataType {
         super('decimal')
     }
 
+    // Instance Methods =======================================================
+    // Publics ----------------------------------------------------------------
     public override buildSQL(): string {
         return `DECIMAL(${this.M}, ${this.D})`
     }

@@ -49,17 +49,13 @@ export default class PolymorphicRelationsMetadata extends MetadataArray<
     }
     // Privates ---------------------------------------------------------------
     private get includedCommons(): IncludedCommonRelations {
-        return PolymorphicRelationsMetadata.includedCommons(
-            this.target
-        )
+        return PolymorphicRelationsMetadata.includedCommons(this.target)
     }
 
     // ------------------------------------------------------------------------
 
     private get includedPolymorphics(): IncludedPolymorphicRelations {
-        return PolymorphicRelationsMetadata.includedPolymorphics(
-            this.target
-        )
+        return PolymorphicRelationsMetadata.includedPolymorphics(this.target)
     }
 
     // Static Getters =========================================================
@@ -128,9 +124,9 @@ export default class PolymorphicRelationsMetadata extends MetadataArray<
 
     // ------------------------------------------------------------------------
 
-    private verifyPolymorphicCompatibility(relations: RelationMetadata[]): (
-        RelationMetadata[]
-    ) {
+    private verifyPolymorphicCompatibility(
+        relations: RelationMetadata[]
+    ): RelationMetadata[] {
         const [{ type, relatedTarget, name }] = relations
 
         if (
@@ -156,18 +152,17 @@ export default class PolymorphicRelationsMetadata extends MetadataArray<
 
     // Static Methods =========================================================
     // Publics ----------------------------------------------------------------
-    public static includedCommons(target: PolymorphicEntityTarget): (
-        IncludedCommonRelations
-    ) {
-        return Reflect.getOwnMetadata(this.UNCLUDED_COMMON_KEY, target)
-            ?? {}
+    public static includedCommons(
+        target: PolymorphicEntityTarget
+    ): IncludedCommonRelations {
+        return Reflect.getOwnMetadata(this.UNCLUDED_COMMON_KEY, target) ?? {}
     }
 
     // ------------------------------------------------------------------------
 
-    public static includedPolymorphics(target: PolymorphicEntityTarget): (
-        IncludedPolymorphicRelations
-    ) {
+    public static includedPolymorphics(
+        target: PolymorphicEntityTarget
+    ): IncludedPolymorphicRelations {
         return Reflect.getOwnMetadata(this.UNCLUDED_POLYMORPHIC_KEY, target)
             ?? {}
     }

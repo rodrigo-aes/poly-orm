@@ -58,13 +58,13 @@ export default class PolymorphicForeignKeyReferences {
     // ------------------------------------------------------------------------
 
     public get entity(): EntityMetadata | RelatedEntitiesMap {
-        return this._entity = this._entity ?? this.handleEntity()
+        return this._entity ??= this.handleEntity()
     }
 
     // ------------------------------------------------------------------------
 
     public get column(): ColumnMetadata | RelatedColumnsMap {
-        return this._column = this._column ?? this.handleColumn()
+        return this._column ??= this.handleColumn()
     }
 
 

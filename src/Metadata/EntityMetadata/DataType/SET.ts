@@ -8,10 +8,13 @@ export default class SET extends DataType {
         this.options = options
     }
 
+    // Instance Methods =======================================================
+    // Publics ----------------------------------------------------------------
     public override buildSQL(): string {
         return `SET(${this.buildOptions()})`
     }
 
+    // Privates ---------------------------------------------------------------
     private buildOptions(): string {
         return this.options.map(option => `'${option}'`).join(',')
     }

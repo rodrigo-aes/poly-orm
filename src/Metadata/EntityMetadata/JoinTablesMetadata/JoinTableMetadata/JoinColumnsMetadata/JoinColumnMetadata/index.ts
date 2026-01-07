@@ -18,7 +18,7 @@ export default class JoinColumnMetadata {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     public get tableName(): string {
-        return this.table.tableName
+        return this.table.name
     }
 
     // ------------------------------------------------------------------------

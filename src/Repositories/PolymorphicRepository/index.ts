@@ -56,7 +56,8 @@ export default class PolymorphicRepository<
         source: S,
         attributes: CreationAttributes<ResolveSource<T, S>>,
         returns: R = 'this' as R
-    ): Promise<R extends 'this'
+    ): Promise<
+        R extends 'this'
         ? T
         : ResolveSource<T, S>
     > {

@@ -1,4 +1,5 @@
 import HookMetadata from "../HookMetadata"
+import type { HookType } from "../types"
 
 import type { ResultSetHeader } from "mysql2"
 import type { Entity } from "../../../../../types"
@@ -7,8 +8,8 @@ import type { ConditionalQueryOptions } from "../../../../../SQLBuilders"
 export default class AfterBulkUpdateMetadata extends HookMetadata {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get type(): 'after-bulk-update' {
-        return 'after-bulk-update'
+    public get type(): HookType {
+        return 'afterBulkUpdate'
     }
 
     // Instance Methods =======================================================

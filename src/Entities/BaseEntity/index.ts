@@ -5,11 +5,13 @@ import { EntityQueryBuilder } from "../../QueryBuilder"
 
 // Types
 import type { ResultSetHeader } from "mysql2"
+
 import type {
     EntityTarget,
     Constructor,
     StaticEntityTarget
 } from "../../types"
+
 import type { Collection } from "../Components"
 import type { DeleteResult } from "../../Handlers"
 
@@ -66,13 +68,15 @@ export default abstract class BaseEntity extends Entity {
      * @returns {this} - Same entity instance
      */
     public async save<T extends BaseEntity>(this: T): Promise<T> {
+        const t = await this.getRepository().updateOrCreate(this)
+
         for (const { name } of this.getTrueMetadata().relations) if (
             (this[name as keyof T] as Entity | Collection<any>).shouldUpdate
         ) (
             await (this[name as keyof T] as any).save()
         )
 
-        return this.getRepository().updateOrCreate(this) as Promise<T>
+        return t
     }
 
     // ------------------------------------------------------------------------

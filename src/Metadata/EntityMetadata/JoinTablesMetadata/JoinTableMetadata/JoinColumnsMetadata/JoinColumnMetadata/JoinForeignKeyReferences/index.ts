@@ -40,7 +40,7 @@ export default class JoinForeignKeyReferences {
     // ------------------------------------------------------------------------
 
     public get name(): string {
-        return `fk_${this.table.tableName}_${this.entity.name.toLowerCase()}Id`
+        return `fk_${this.table.name}_${this.entity.name.toLowerCase()}Id`
     }
 
     // Instance Methods =======================================================

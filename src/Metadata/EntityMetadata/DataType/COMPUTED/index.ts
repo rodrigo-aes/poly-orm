@@ -20,10 +20,15 @@ export default class COMPUTED extends DataType {
         )
     }
 
+    // Instance Methods =======================================================
+    // Publics ----------------------------------------------------------------
     public override buildSQL(): string {
-        return `${this.dataType.buildSQL()} ${this.as()} ${this.config.type}`
+        return `${this.dataType.buildSQL()} GENERATED ALWAYS ${this.as()} ${(
+            this.config.type
+        )}`
     }
 
+    // Privates ---------------------------------------------------------------
     private as() {
         return `AS (${this.config.as})`
     }

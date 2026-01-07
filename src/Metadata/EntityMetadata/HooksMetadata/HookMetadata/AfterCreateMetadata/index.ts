@@ -1,4 +1,5 @@
 import HookMetadata from "../HookMetadata"
+import type { HookType } from "../types"
 
 // Types
 import type { Entity } from "../../../../../types"
@@ -6,8 +7,8 @@ import type { Entity } from "../../../../../types"
 export default class AfterCreateMetadata extends HookMetadata {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get type(): 'after-create' {
-        return 'after-create'
+    public get type(): HookType {
+        return 'afterCreate'
     }
 
     // Instance Methods =======================================================

@@ -13,7 +13,7 @@ import ForeignKeyReferences, {
 
 
 // Symbols
-import { PolymorphicId, CurrentTimestamp } from "../../../../SQLBuilders"
+import { CurrentTimestamp } from "../../../../SQLBuilders"
 
 // Types
 import type { EntityTarget } from "../../../../types"
@@ -102,9 +102,10 @@ export default class ColumnMetadata {
     // ------------------------------------------------------------------------
 
     private syncLength(dataType: any): void {
-        this.length = this.length ?? (typeof dataType.length === 'number'
-            ? dataType.length
-            : undefined
+        this.length = this.length ?? (
+            typeof dataType.length === 'number'
+                ? dataType.length
+                : undefined
         )
     }
 
@@ -115,7 +116,7 @@ export default class ColumnMetadata {
         name: string,
         pattern: ColumnPattern,
         ...rest: any[]
-    ): ColumnMetadata | ColumnMetadata[] {
+    ): ColumnMetadata {
         switch (pattern) {
             case 'id': return this.buildIdColumn(target, name)
 
@@ -164,13 +165,18 @@ export default class ColumnMetadata {
     // ------------------------------------------------------------------------
 
     public static buildIdColumn(target: EntityTarget, name: string) {
-        return new ColumnMetadata(target, name, DataType.INT('BIG'), {
-            primary: true,
-            unsigned: true,
-            autoIncrement: true,
-            nullable: false,
-            pattern: 'id'
-        })
+        return new ColumnMetadata(
+            target,
+            name,
+            DataType.INT('BIG'),
+            {
+                primary: true,
+                unsigned: true,
+                autoIncrement: true,
+                nullable: false,
+                pattern: 'id'
+            }
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -200,15 +206,17 @@ export default class ColumnMetadata {
         name: string,
         config: ForeignIdConfig
     ) {
-        return new ColumnMetadata(target, name, DataType.INT('BIG'), {
-            isForeignKey: true,
-            unsigned: true,
-            pattern: 'foreign-id'
-        })
-            .defineForeignKey({
-                constrained: true,
-                ...config
-            })
+        return new ColumnMetadata(
+            target,
+            name,
+            DataType.INT('BIG'),
+            {
+                isForeignKey: true,
+                unsigned: true,
+                pattern: 'foreign-id'
+            }
+        )
+            .defineForeignKey({ constrained: true, ...config })
     }
 
     // ------------------------------------------------------------------------
@@ -218,10 +226,15 @@ export default class ColumnMetadata {
         name: string,
         config: PolymorphicForeignIdConfig
     ) {
-        return new ColumnMetadata(target, name, DataType.VARCHAR(), {
-            isForeignKey: true,
-            pattern: 'polymorphic-foreign-id'
-        })
+        return new ColumnMetadata(
+            target,
+            name,
+            DataType.VARCHAR(),
+            {
+                isForeignKey: true,
+                pattern: 'polymorphic-foreign-id'
+            }
+        )
             .defineForeignKey({ constrained: false, ...config })
     }
 
@@ -245,11 +258,16 @@ export default class ColumnMetadata {
     // ------------------------------------------------------------------------
 
     public static buildCreateDateColumn(target: EntityTarget, name: string) {
-        return new ColumnMetadata(target, name, DataType.TIMESTAMP(), {
-            nullable: false,
-            defaultValue: CurrentTimestamp,
-            pattern: 'created-timestamp',
-        })
+        return new ColumnMetadata(
+            target,
+            name,
+            DataType.TIMESTAMP(),
+            {
+                nullable: false,
+                defaultValue: CurrentTimestamp,
+                pattern: 'created-timestamp',
+            }
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -257,11 +275,16 @@ export default class ColumnMetadata {
     public static buildUpdateDateColumn(target: EntityTarget, name: string) {
         HooksMetadata.findOrBuild(target).addUpdatedTimestampMetadata()
 
-        return new ColumnMetadata(target, name, DataType.TIMESTAMP(), {
-            nullable: false,
-            defaultValue: CurrentTimestamp,
-            pattern: 'updated-timestamp',
-        })
+        return new ColumnMetadata(
+            target,
+            name,
+            DataType.TIMESTAMP(),
+            {
+                nullable: false,
+                defaultValue: CurrentTimestamp,
+                pattern: 'updated-timestamp',
+            }
+        )
     }
 }
 

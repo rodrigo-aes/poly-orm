@@ -1,10 +1,11 @@
 import HookMetadata from "../HookMetadata"
+import type { HookType } from "../types"
 
 export default class AfterBulkFindMetadata extends HookMetadata {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get type(): 'after-bulk-find' {
-        return 'after-bulk-find'
+    public get type(): HookType {
+        return 'afterBulkFind'
     }
 
     // Instance Methods =======================================================

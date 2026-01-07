@@ -5,6 +5,5 @@ import type { ModuleExtension } from "./types"
 
 export {
     MigrationTemplate,
-
     type ModuleExtension
 }

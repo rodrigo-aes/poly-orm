@@ -1,6 +1,3 @@
-import { DataType } from "../../../EntityMetadata"
-import PolymorphicForeignKeyReferences from "./PolymorphicForeignKeyReferences"
-
 // Types
 import type {
     EntityTarget,

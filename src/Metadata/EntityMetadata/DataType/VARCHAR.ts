@@ -5,6 +5,8 @@ export default class VARCHAR extends DataType {
         super('varchar')
     }
 
+    // Instance Methods =======================================================
+    // Publics ----------------------------------------------------------------
     public override buildSQL(): string {
         return `VARCHAR(${this.length})`
     }

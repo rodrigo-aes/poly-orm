@@ -1,4 +1,5 @@
 import HookMetadata from "../HookMetadata"
+import type { HookType } from "../types"
 
 // Types
 import type { Entity } from "../../../../../types"
@@ -6,8 +7,8 @@ import type { Entity } from "../../../../../types"
 export default class BeforeDeleteMetadata extends HookMetadata {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get type(): 'before-delete' {
-        return 'before-delete'
+    public get type(): HookType {
+        return 'beforeDelete'
     }
 
     // Instance Methods =======================================================

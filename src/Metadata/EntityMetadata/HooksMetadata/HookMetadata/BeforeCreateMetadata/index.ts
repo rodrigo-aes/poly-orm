@@ -1,4 +1,5 @@
 import HookMetadata from "../HookMetadata"
+import type { HookType } from "../types"
 
 // Types
 import type { CreationAttributes } from "../../../../../SQLBuilders"
@@ -6,8 +7,8 @@ import type { CreationAttributes } from "../../../../../SQLBuilders"
 export default class BeforeCreateMetadata extends HookMetadata {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get type(): 'before-create' {
-        return 'before-create'
+    public get type(): HookType {
+        return 'beforeCreate'
     }
 
     // Instance Methods =======================================================

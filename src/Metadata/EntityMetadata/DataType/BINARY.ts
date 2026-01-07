@@ -5,6 +5,8 @@ export default class BINARY extends DataType {
         super('binary')
     }
 
+    // Instance Methods =======================================================
+    // Publics ----------------------------------------------------------------
     public override buildSQL(): string {
         return `BINARY(${this.length})`
     }

@@ -8,10 +8,13 @@ export default class FLOAT extends DataType {
         super('float')
     }
 
+    // Instance Methods =======================================================
+    // Publics ----------------------------------------------------------------
     public override buildSQL(): string {
         return `FLOAT(${this.arguments()})`
     }
 
+    // Privates ---------------------------------------------------------------
     private arguments() {
         let args = ''
         if (this.M) args += this.M.toString()

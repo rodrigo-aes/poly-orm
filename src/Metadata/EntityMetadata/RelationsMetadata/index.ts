@@ -64,9 +64,8 @@ export default class RelationsMetadata extends MetadataArray<
         super(target)
         this.init()
 
-        if (
-            (this.target as StaticEntityTarget).INHERIT_POLYMORPHIC_RELATIONS
-        ) this.mergeParentPolymorphicRelations()
+        if ((this.target as StaticEntityTarget).INHERIT_POLYMORPHIC_RELATIONS)
+            this.mergeParentPolymorphics()
 
     }
 
@@ -159,9 +158,9 @@ export default class RelationsMetadata extends MetadataArray<
     }
 
     // Privates ---------------------------------------------------------------
-    private mergeParentPolymorphicRelations(): void {
-        for (const poly of this.getParentPolymorphicRelations()) (
-            this.addPolymorphicRelation(poly.type)(
+    private mergeParentPolymorphics(): void {
+        for (const poly of this.getParentPolymorphics()) (
+            this.addPolymorphic(poly.type)(
                 this.extractPolymorphicRelationOptions(poly)
             )
         )
@@ -169,7 +168,7 @@ export default class RelationsMetadata extends MetadataArray<
 
     // ------------------------------------------------------------------------
 
-    private getParentPolymorphicRelations(): PolymorphicRelation[] {
+    private getParentPolymorphics(): PolymorphicRelation[] {
         const types = [
             'PolymorphicHasOne',
             'PolymorphicHasMany',
@@ -184,7 +183,7 @@ export default class RelationsMetadata extends MetadataArray<
 
     // ------------------------------------------------------------------------
 
-    private addPolymorphicRelation(type: string) {
+    private addPolymorphic(type: string) {
         switch (type) {
             case "PolymorphicHasOne": return this.addPolymorphicHasOne
             case "PolymorphicHasMany": return this.addPolymorphicHasMany
@@ -196,9 +195,9 @@ export default class RelationsMetadata extends MetadataArray<
 
     // ------------------------------------------------------------------------
 
-    private extractPolymorphicRelationOptions(relation: PolymorphicRelation): (
-        any
-    ) {
+    private extractPolymorphicRelationOptions(
+        relation: PolymorphicRelation
+    ): any {
         const keys = ['name', 'related', 'foreignKey', 'typeKey', 'scope']
         return Object.fromEntries(Object.entries(relation).filter(
             ([key]) => keys.includes(key))

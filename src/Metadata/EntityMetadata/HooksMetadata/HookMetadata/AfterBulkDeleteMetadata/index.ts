@@ -1,4 +1,5 @@
 import HookMetadata from "../HookMetadata"
+import type { HookType } from "../types"
 
 import type { DeleteResult } from "../../../../../Handlers"
 import type { ConditionalQueryOptions } from "../../../../../SQLBuilders"
@@ -6,8 +7,8 @@ import type { ConditionalQueryOptions } from "../../../../../SQLBuilders"
 export default class AfterBulkDeleteMetadata extends HookMetadata {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get type(): 'after-bulk-delete' {
-        return 'after-bulk-delete'
+    public get type(): HookType {
+        return 'afterBulkDelete'
     }
 
     // Instance Methods =======================================================

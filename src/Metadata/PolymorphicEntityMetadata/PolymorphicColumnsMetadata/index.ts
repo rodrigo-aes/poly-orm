@@ -1,6 +1,7 @@
 import MetadataArray from '../../MetadataArray'
 import PolymorphicEntityMetadata from '..'
 import EntityMetadata from '../../EntityMetadata'
+
 import PolymorphicColumnMetadata, {
     type PolymorphicColumnMetadataJSON
 } from './PolymorphicColumnMetadata'

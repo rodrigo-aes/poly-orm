@@ -1,12 +1,14 @@
 import HookMetadata from "../HookMetadata"
+import type { HookType } from "../types"
+
 import type { Entity } from "../../../../../types"
 import type { DeleteResult } from "../../../../../Handlers"
 
 export default class AfterDeleteMetadata extends HookMetadata {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get type(): 'after-delete' {
-        return 'after-delete'
+    public get type(): HookType {
+        return 'afterDelete'
     }
 
     // Instance Methods =======================================================

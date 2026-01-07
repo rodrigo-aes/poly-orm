@@ -1,4 +1,4 @@
-import type { EntityTarget, Target } from "../../../types"
+import type { EntityTarget } from "../../../types"
 
 export type IncludedCommonRelationOptions = {
     target: EntityTarget,

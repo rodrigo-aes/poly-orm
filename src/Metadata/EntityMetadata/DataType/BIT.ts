@@ -7,6 +7,8 @@ export default class BIT extends DataType {
         super('bit')
     }
 
+    // Instance Methods =======================================================
+    // Publics ----------------------------------------------------------------
     public override buildSQL(): string {
         return `BIT(${this.length})`
     }

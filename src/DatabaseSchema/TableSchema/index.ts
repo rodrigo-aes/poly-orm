@@ -448,7 +448,7 @@ export default class TableSchema<
         dataType: DataType,
         config: JSONColumnConfig
     ): T {
-        return this.buildColumn(name, DataType.JSONReference(dataType, config))
+        return this.buildColumn(name, DataType.JSONRef(dataType, config))
     }
 
     // ------------------------------------------------------------------------
@@ -730,7 +730,7 @@ export default class TableSchema<
         source: EntityMetadata | EntityTarget
     ): TableSchema[] {
         return this.metadataFromSource(source).joinTables?.map(
-            ({ tableName, columns }) => new this(
+            ({ name: tableName, columns }) => new this(
                 database,
                 tableName,
                 ...columns.map(column => this.ColumnConstructor

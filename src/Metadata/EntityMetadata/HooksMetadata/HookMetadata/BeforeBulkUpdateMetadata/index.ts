@@ -1,4 +1,5 @@
 import HookMetadata from "../HookMetadata"
+import type { HookType } from "../types"
 
 // Types
 import type {
@@ -9,8 +10,8 @@ import type {
 export default class BeforeBulkUpdateMetadata extends HookMetadata {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get type(): 'before-bulk-update' {
-        return 'before-bulk-update'
+    public get type(): HookType {
+        return 'beforeBulkUpdate'
     }
 
     // Instance Methods =======================================================

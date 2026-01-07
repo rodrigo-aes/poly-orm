@@ -1,13 +1,8 @@
 import MetadataMap from "../../MetadataMap"
-import {
-    Entity as EntityBase,
-    Collection,
-    Pagination
-} from "../../../Entities"
+import { Collection, Pagination } from "../../../Entities"
 
 // Types
 import type { Entity, Constructor } from "../../../types"
-
 import type { ComputedPropertyFunction, ComputedPropertiesJSON } from "./types"
 
 // Exceptions

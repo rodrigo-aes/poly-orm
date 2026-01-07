@@ -44,7 +44,7 @@ export default class BelongsToManyMetadata extends RelationMetadata {
     // ------------------------------------------------------------------------
 
     public get JTName(): string {
-        return this.joinTableMetadata.tableName
+        return this.joinTableMetadata.name
     }
 
     // ------------------------------------------------------------------------

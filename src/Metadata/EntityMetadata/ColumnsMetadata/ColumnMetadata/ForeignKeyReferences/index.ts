@@ -1,8 +1,10 @@
 import EntityMetadata from "../../.."
-
-import type { EntityTarget } from "../../../../../types"
 import ColumnMetadata from '..'
+
+// Types
+import type { EntityTarget } from "../../../../../types"
 import type { RelatedEntitiesMap } from "../../../RelationsMetadata"
+
 import type {
     ForeignKeyReferencesInitMap,
     ForeignKeyReferencedGetter,
@@ -78,7 +80,6 @@ export default class ForeignKeyReferences {
     // Privates ---------------------------------------------------------------
     private handleEntity(): EntityMetadata | RelatedEntitiesMap {
         const referenced = this.referenced()
-
         return Array.isArray(referenced)
             ? Object.fromEntries(referenced.map(
                 ref => [ref.name, EntityMetadata.findOrBuild(ref)]

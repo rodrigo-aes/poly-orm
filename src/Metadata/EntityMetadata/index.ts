@@ -295,7 +295,9 @@ export default class EntityMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public defineDefaultConnection(connection: PolyORMConnection | string) {
+    public defineDefaultConnection(
+        connection: PolyORMConnection | string
+    ): void {
         return MetadataHandler.setDefaultConnection(connection, this.target)
     }
 
@@ -313,9 +315,10 @@ export default class EntityMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public addJoinTable(relateds: JoinTableRelatedsGetter, name?: string): (
-        JoinTableMetadata
-    ) {
+    public addJoinTable(
+        relateds: JoinTableRelatedsGetter,
+        name?: string
+    ): JoinTableMetadata {
         const joinTable = new JoinTableMetadata(relateds, name)
         this.joinTables.push(joinTable)
 

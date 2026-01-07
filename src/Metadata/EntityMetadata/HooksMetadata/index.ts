@@ -72,9 +72,7 @@ export default class HooksMetadata extends Metadata {
         super()
         this.register()
 
-        if ((this.target as StaticTarget).INHERIT_HOOKS) (
-            this.mergeParentsHooks()
-        )
+        if ((this.target as StaticTarget).INHERIT_HOOKS) this.mergeParents()
     }
 
     // Static Getters =========================================================
@@ -91,14 +89,14 @@ export default class HooksMetadata extends Metadata {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public async callBeforeSync() {
-        if (this.toCall.has('before-sync'))
+        if (this.toCall.has('beforeSync'))
             for (const hook of this.beforeSync) await hook.call()
     }
 
     // ------------------------------------------------------------------------
 
     public async callAfterSync() {
-        if (this.toCall.has('after-sync'))
+        if (this.toCall.has('afterSync'))
             for (const hook of this.afterSync) await hook.call()
     }
 
@@ -107,14 +105,14 @@ export default class HooksMetadata extends Metadata {
     public async callBeforeFind<T extends Entity>(
         options: FindQueryOptions<T>
     ) {
-        if (this.toCall.has('before-find'))
+        if (this.toCall.has('beforeFind'))
             for (const hook of this.beforeFind) await hook.call(options)
     }
 
     // ------------------------------------------------------------------------
 
     public async callAfterFind(entity: any) {
-        if (this.toCall.has('after-find'))
+        if (this.toCall.has('afterFind'))
             for (const hook of this.afterFind) await hook.call(entity)
     }
 
@@ -123,14 +121,14 @@ export default class HooksMetadata extends Metadata {
     public async callBeforeBulkFind<T extends Entity>(
         options: FindQueryOptions<T>
     ) {
-        if (this.toCall.has('before-bulk-find'))
+        if (this.toCall.has('beforeBulkFind'))
             for (const hook of this.beforeBulkFind) await hook.call(options)
     }
 
     // ------------------------------------------------------------------------
 
     public async callAfterBulkFind(entities: any[]) {
-        if (this.toCall.has('after-bulk-find'))
+        if (this.toCall.has('afterBulkFind'))
             for (const hook of this.afterBulkFind) await hook.call(entities)
     }
 
@@ -139,14 +137,14 @@ export default class HooksMetadata extends Metadata {
     public async callBeforeCreate<T extends Entity>(
         attributes: CreationAttributes<T>
     ) {
-        if (this.toCall.has('before-create'))
+        if (this.toCall.has('beforeCreate'))
             for (const hook of this.beforeCreate) await hook.call(attributes)
     }
 
     // ------------------------------------------------------------------------
 
     public async callAfterCreate<T extends Entity>(entity: T) {
-        if (this.toCall.has('after-create'))
+        if (this.toCall.has('afterCreate'))
             for (const hook of this.afterCreate) await hook.call(entity)
     }
 
@@ -155,7 +153,7 @@ export default class HooksMetadata extends Metadata {
     public async callBeforeBulkCreate<T extends Entity>(
         attributes: CreationAttributes<T>[]
     ) {
-        if (this.toCall.has('before-bulk-create'))
+        if (this.toCall.has('beforeBulkCreate'))
             for (const hook of this.beforeBulkCreate) (
                 await hook.call(attributes)
             )
@@ -164,7 +162,7 @@ export default class HooksMetadata extends Metadata {
     // ------------------------------------------------------------------------
 
     public async callAfterBulkCreate(result: any[]) {
-        if (this.toCall.has('after-bulk-create'))
+        if (this.toCall.has('afterBulkCreate'))
             for (const hook of this.afterBulkCreate) await hook.call(result)
     }
 
@@ -174,7 +172,7 @@ export default class HooksMetadata extends Metadata {
         attributes: T | UpdateAttributes<T>,
         where?: ConditionalQueryOptions<T>
     ) {
-        if (this.toCall.has('before-update'))
+        if (this.toCall.has('beforeUpdate'))
             for (const hook of this.beforeUpdate) await hook.call(
                 attributes,
                 where
@@ -184,7 +182,7 @@ export default class HooksMetadata extends Metadata {
     // ------------------------------------------------------------------------
 
     public async callAfterUpdate<T extends Entity>(entity: T) {
-        if (this.toCall.has('after-update'))
+        if (this.toCall.has('afterUpdate'))
             for (const hook of this.afterUpdate) await hook.call(entity)
     }
 
@@ -194,7 +192,7 @@ export default class HooksMetadata extends Metadata {
         attributes: UpdateAttributes<T>,
         where?: ConditionalQueryOptions<T>
     ) {
-        if (this.toCall.has('before-bulk-update'))
+        if (this.toCall.has('beforeBulkUpdate'))
             for (const hook of this.beforeBulkUpdate) await hook.call(
                 attributes,
                 where
@@ -207,7 +205,7 @@ export default class HooksMetadata extends Metadata {
         where: ConditionalQueryOptions<T> | undefined,
         result: ResultSetHeader
     ) {
-        if (this.toCall.has('after-bulk-update'))
+        if (this.toCall.has('afterBulkUpdate'))
             for (const hook of this.afterBulkUpdate) await hook.call(
                 where,
                 result
@@ -219,7 +217,7 @@ export default class HooksMetadata extends Metadata {
     public async callBeforeDelete<T extends Entity>(
         entity: T
     ) {
-        if (this.toCall.has('before-delete'))
+        if (this.toCall.has('beforeDelete'))
             for (const hook of this.beforeDelete) await hook.call(entity)
     }
 
@@ -229,7 +227,7 @@ export default class HooksMetadata extends Metadata {
         entity: T,
         result: DeleteResult
     ) {
-        if (this.toCall.has('after-delete'))
+        if (this.toCall.has('afterDelete'))
             for (const hook of this.afterDelete) await hook.call(
                 entity,
                 result
@@ -241,7 +239,7 @@ export default class HooksMetadata extends Metadata {
     public async callBeforeBulkDelete<T extends Entity>(
         where: ConditionalQueryOptions<T>
     ) {
-        if (this.toCall.has('before-bulk-delete'))
+        if (this.toCall.has('beforeBulkDelete'))
             for (const hook of this.beforeBulkDelete) await hook.call(where)
     }
 
@@ -251,7 +249,7 @@ export default class HooksMetadata extends Metadata {
         where: ConditionalQueryOptions<T>,
         result: DeleteResult
     ) {
-        if (this.toCall.has('after-bulk-delete'))
+        if (this.toCall.has('afterBulkDelete'))
             for (const hook of this.afterBulkDelete) await hook.call(
                 where,
                 result
@@ -265,7 +263,7 @@ export default class HooksMetadata extends Metadata {
             new HookMetadata.BeforeSync(this.target, propertyName)
         )
 
-        this.toCall.add('before-sync')
+        this.toCall.add('beforeSync')
     }
 
     // ------------------------------------------------------------------------
@@ -275,7 +273,7 @@ export default class HooksMetadata extends Metadata {
             new HookMetadata.AfterSync(this.target, propertyName)
         )
 
-        this.toCall.add('after-sync')
+        this.toCall.add('afterSync')
     }
 
     // ------------------------------------------------------------------------
@@ -285,7 +283,7 @@ export default class HooksMetadata extends Metadata {
             new HookMetadata.BeforeFind(this.target, propertyName)
         )
 
-        this.toCall.add('before-find')
+        this.toCall.add('beforeFind')
     }
 
     // ------------------------------------------------------------------------
@@ -295,7 +293,7 @@ export default class HooksMetadata extends Metadata {
             new HookMetadata.AfterFind(this.target, propertyName)
         )
 
-        this.toCall.add('after-find')
+        this.toCall.add('afterFind')
     }
 
     // ------------------------------------------------------------------------
@@ -305,7 +303,7 @@ export default class HooksMetadata extends Metadata {
             new HookMetadata.BeforeBulkFind(this.target, propertyName)
         )
 
-        this.toCall.add('before-bulk-find')
+        this.toCall.add('beforeBulkFind')
     }
 
     // ------------------------------------------------------------------------
@@ -315,7 +313,7 @@ export default class HooksMetadata extends Metadata {
             new HookMetadata.AfterBulkFind(this.target, propertyName)
         )
 
-        this.toCall.add('after-bulk-find')
+        this.toCall.add('afterBulkFind')
     }
 
     // ------------------------------------------------------------------------
@@ -325,7 +323,7 @@ export default class HooksMetadata extends Metadata {
             new HookMetadata.BeforeCreateMetadata(this.target, propertyName)
         )
 
-        this.toCall.add('before-create')
+        this.toCall.add('beforeCreate')
     }
 
     // ------------------------------------------------------------------------
@@ -335,7 +333,7 @@ export default class HooksMetadata extends Metadata {
             new HookMetadata.AfterCreateMetadata(this.target, propertyName)
         )
 
-        this.toCall.add('after-create')
+        this.toCall.add('afterCreate')
     }
 
     // ------------------------------------------------------------------------
@@ -347,7 +345,7 @@ export default class HooksMetadata extends Metadata {
             )
         )
 
-        this.toCall.add('before-bulk-create')
+        this.toCall.add('beforeBulkCreate')
     }
 
     // ------------------------------------------------------------------------
@@ -357,7 +355,7 @@ export default class HooksMetadata extends Metadata {
             new HookMetadata.AfterBulkCreateMetadata(this.target, propertyName)
         )
 
-        this.toCall.add('after-bulk-create')
+        this.toCall.add('afterBulkCreate')
     }
 
     // ------------------------------------------------------------------------
@@ -367,7 +365,7 @@ export default class HooksMetadata extends Metadata {
             new HookMetadata.BeforeUpdateMetadata(this.target, propertyName)
         )
 
-        this.toCall.add('before-update')
+        this.toCall.add('beforeUpdate')
     }
 
 
@@ -376,7 +374,7 @@ export default class HooksMetadata extends Metadata {
 
     public addUpdatedTimestampMetadata() {
         this.beforeUpdate.push(new UpdatedTimestampMetadata(this.target))
-        this.toCall.add('before-update')
+        this.toCall.add('beforeUpdate')
     }
 
     // ------------------------------------------------------------------------
@@ -386,7 +384,7 @@ export default class HooksMetadata extends Metadata {
             new HookMetadata.AfterUpdateMetadata(this.target, propertyName)
         )
 
-        this.toCall.add('after-update')
+        this.toCall.add('afterUpdate')
     }
 
     // ------------------------------------------------------------------------
@@ -398,7 +396,7 @@ export default class HooksMetadata extends Metadata {
             )
         )
 
-        this.toCall.add('before-bulk-update')
+        this.toCall.add('beforeBulkUpdate')
     }
 
     // ------------------------------------------------------------------------
@@ -408,7 +406,7 @@ export default class HooksMetadata extends Metadata {
             new HookMetadata.AfterBulkUpdateMetadata(this.target, propertyName)
         )
 
-        this.toCall.add('after-bulk-update')
+        this.toCall.add('afterBulkUpdate')
     }
 
     // ------------------------------------------------------------------------
@@ -418,7 +416,7 @@ export default class HooksMetadata extends Metadata {
             new HookMetadata.BeforeDeleteMetadata(this.target, propertyName)
         )
 
-        this.toCall.add('before-delete')
+        this.toCall.add('beforeDelete')
     }
 
     // ------------------------------------------------------------------------
@@ -428,7 +426,7 @@ export default class HooksMetadata extends Metadata {
             new HookMetadata.AfterDeleteMetadata(this.target, propertyName)
         )
 
-        this.toCall.add('after-delete')
+        this.toCall.add('afterDelete')
     }
 
     // ------------------------------------------------------------------------
@@ -440,7 +438,7 @@ export default class HooksMetadata extends Metadata {
             )
         )
 
-        this.toCall.add('before-bulk-delete')
+        this.toCall.add('beforeBulkDelete')
     }
 
     // ------------------------------------------------------------------------
@@ -450,7 +448,7 @@ export default class HooksMetadata extends Metadata {
             new HookMetadata.AfterBulkDeleteMetadata(this.target, propertyName)
         )
 
-        this.toCall.add('after-bulk-delete')
+        this.toCall.add('afterBulkDelete')
     }
 
     // ------------------------------------------------------------------------
@@ -485,153 +483,16 @@ export default class HooksMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    private mergeParentsHooks(): void {
+    private mergeParents(): void {
         for (const parentHooks of GeneralHelper.objectParents(this.target)
             .flatMap(parent => HooksMetadata.find(parent) ?? [])
             .reverse()
-        ) {
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('before-sync') ?? true
+        )
+            for (const inherit of
+                (this.target as StaticTarget).INHERIT_ONLY_HOOKS ?? []
             ) (
-                this.beforeSync.push(...parentHooks.beforeSync)
+                this[inherit].push(...parentHooks[inherit] as any)
             )
-
-            // ----------------------------------------------------------------
-
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('after-sync') ?? true
-            ) (
-                this.afterSync.push(...parentHooks.afterSync)
-            )
-
-            // ----------------------------------------------------------------
-
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('before-find') ?? true
-            ) (
-                this.beforeFind.push(...parentHooks.beforeFind)
-            )
-
-            // ----------------------------------------------------------------
-
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('after-find') ?? true
-            ) (
-                this.afterFind.push(...parentHooks.afterFind)
-            )
-
-            // ----------------------------------------------------------------
-
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('before-bulk-find') ?? true
-            ) (
-                this.beforeBulkFind.push(...parentHooks.beforeBulkFind)
-            )
-
-            // ----------------------------------------------------------------
-
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('after-bulk-find') ?? true
-            ) (
-                this.afterBulkFind.push(...parentHooks.afterBulkFind)
-            )
-
-            // ----------------------------------------------------------------
-
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('before-create') ?? true
-            ) (
-                this.beforeCreate.push(...parentHooks.beforeCreate)
-            )
-
-            // ----------------------------------------------------------------
-
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('after-create') ?? true
-            ) (
-                this.afterCreate.push(...parentHooks.afterCreate)
-            )
-
-            // ----------------------------------------------------------------
-
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('before-bulk-create') ?? true
-            ) (
-                this.beforeBulkCreate.push(...parentHooks.beforeBulkCreate)
-            )
-
-            // ----------------------------------------------------------------
-
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('after-bulk-create') ?? true
-            ) (
-                this.afterBulkCreate.push(...parentHooks.afterBulkCreate)
-            )
-
-            // ----------------------------------------------------------------
-
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('before-update') ?? true
-            ) (
-                this.beforeUpdate.push(...parentHooks.beforeUpdate)
-            )
-
-            // ----------------------------------------------------------------
-
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('after-update') ?? true
-            ) (
-                this.afterUpdate.push(...parentHooks.afterUpdate)
-            )
-
-            // ----------------------------------------------------------------
-
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('before-bulk-update') ?? true
-            ) (
-                this.beforeBulkUpdate.push(...parentHooks.beforeBulkUpdate)
-            )
-
-            // ----------------------------------------------------------------
-
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('after-bulk-update') ?? true
-            ) (
-                this.afterBulkUpdate.push(...parentHooks.afterBulkUpdate)
-            )
-
-            // ----------------------------------------------------------------
-
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('before-delete') ?? true
-            ) (
-                this.beforeDelete.push(...parentHooks.beforeDelete)
-            )
-
-            // ----------------------------------------------------------------
-
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('after-delete') ?? true
-            ) (
-                this.afterDelete.push(...parentHooks.afterDelete)
-            )
-
-            // ----------------------------------------------------------------
-
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('before-bulk-delete') ?? true
-            ) (
-                this.beforeBulkDelete.push(...parentHooks.beforeBulkDelete)
-            )
-
-            // ----------------------------------------------------------------
-
-            if ((this.target as StaticTarget).INHERIT_ONLY_HOOKS
-                ?.includes('after-bulk-delete') ?? true
-            ) (
-                this.afterBulkDelete.push(...parentHooks.afterBulkDelete)
-            )
-        }
     }
 }
 

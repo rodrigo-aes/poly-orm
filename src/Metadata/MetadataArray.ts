@@ -83,6 +83,13 @@ export default abstract class MetadataArray<
 
     // ------------------------------------------------------------------------
 
+    public addR(...childs: T[]): T[] {
+        this.add(...childs)
+        return childs
+    }
+
+    // ------------------------------------------------------------------------
+
     public set(search: any, data: Partial<{ [K in keyof T]: T[K] }>): void {
         const child = this.search(search)
         Object.assign(child as any, data)

@@ -4,7 +4,7 @@ import type { JSONColumnConfig } from "./types"
 // Exceptions
 import PolyORMException from "../../../../Errors"
 
-export default class JSONReference extends DataType {
+export default class JSONRef extends DataType {
     constructor(public dataType: DataType, public config: JSONColumnConfig) {
         super('json-ref')
 
@@ -12,23 +12,24 @@ export default class JSONReference extends DataType {
             PolyORMException.Metadata.instantiate(
                 'INVALID_GENERATED_COLUMN_DATATYPE',
                 dataType.constructor.name,
-                'JSONReference',
+                'JSONRef',
             )
         )
     }
 
+    // Instance Methods =======================================================
+    // Publics ----------------------------------------------------------------
     public override buildSQL(): string {
-        return `
-            ${this.dataType.buildSQL()} GENERATED ALWAYS 
-            ${this.as()} 
-            ${this.config.type}
-        `
+        return `${this.dataType.buildSQL()} GENERATED ALWAYS ${this.as()} ${(
+            this.config.type
+        )}`
     }
 
+    // Privates ---------------------------------------------------------------
     private as() {
-        return `AS (JSON_UNQUOTE(
-            JSON_EXTRACT(${this.config.json}, '$.${this.config.path}')
-        ))`
+        return `AS (JSON_UNQUOTE(JSON_EXTRACT(${this.config.json}, '$.${(
+            this.config.path
+        )}'))`
     }
 }
 

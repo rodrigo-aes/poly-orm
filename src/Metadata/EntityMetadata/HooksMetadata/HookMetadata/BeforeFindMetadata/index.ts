@@ -1,4 +1,5 @@
 import HookMetadata from "../HookMetadata"
+import type { HookType } from "../types"
 
 // Types
 import type { FindQueryOptions } from "../../../../../SQLBuilders"
@@ -6,8 +7,8 @@ import type { FindQueryOptions } from "../../../../../SQLBuilders"
 export default class BeforeFindMetadata extends HookMetadata {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get type(): 'before-find' {
-        return 'before-find'
+    public get type(): HookType {
+        return 'beforeFind'
     }
 
     // Instance Methods =======================================================

@@ -25,7 +25,6 @@ import {
 import { EntityBuilder } from "../../Handlers"
 
 // Types
-import type BaseEntity from "../BaseEntity"
 import type {
     PolymorphicEntityTarget,
     StaticPolymorphicEntityTarget,
@@ -33,6 +32,7 @@ import type {
     Constructor,
 } from "../../types"
 
+import type BaseEntity from "../BaseEntity"
 import type { ResultSetHeader } from "mysql2"
 import type { DeleteResult } from "../../Handlers"
 
@@ -80,21 +80,21 @@ export default abstract class BasePolymorphicEntity<
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get entities(): EntitiesMap<S> {
+    public get sources(): EntitiesMap<S> {
         return (this.getTrueMetadata() as PolymorphicEntityMetadata)
             .entities as EntitiesMap<S>
     }
 
     // Protecteds -------------------------------------------------------------
+    /** @internal */
     protected get _sourcePk(): string {
         return this.getTrueSourceMetadata().PK
     }
 
     // ------------------------------------------------------------------------
 
-    protected get _whereSourcePk(): ConditionalQueryOptions<
-        SourceEntity<S>
-    > {
+    /** @internal */
+    protected get _whereSourcePk(): ConditionalQueryOptions<SourceEntity<S>> {
         return { [this._sourcePk]: this[this._pk as keyof this] } as (
             ConditionalQueryOptions<SourceEntity<S>>
         )
@@ -110,9 +110,9 @@ export default abstract class BasePolymorphicEntity<
 
     // ------------------------------------------------------------------------
 
-    public getQueryBuilder<T extends BasePolymorphicEntity<any>>(this: T): (
-        PolymorphicEntityQueryBuilder<T>
-    ) {
+    public getQueryBuilder<T extends BasePolymorphicEntity<any>>(
+        this: T
+    ): PolymorphicEntityQueryBuilder<T> {
         return new PolymorphicEntityQueryBuilder(
             this.constructor as Constructor<T>
         )
@@ -124,11 +124,9 @@ export default abstract class BasePolymorphicEntity<
      * Convert current polymorphic instance to source entity instance
      * @returns - A original entity instance
      */
-    public toSourceEntity<T extends Source<S>>(): ResolveSource<
-        S, T
-    > {
+    public toSourceEntity<T extends Source<S>>(): ResolveSource<S, T> {
         return EntityBuilder.buildPolymorphicSource(
-            this.entities[this.entityType],
+            this.sources[this.entityType],
             this
         ) as ResolveSource<S, T>
     }
@@ -143,17 +141,19 @@ export default abstract class BasePolymorphicEntity<
     public async save<T extends BasePolymorphicEntity<any>>(this: T): Promise<
         T
     > {
+        const t = await this.getRepository().updateOrCreate(
+            this.entityType,
+            this.toSourceEntity(),
+            'this'
+        )
+
         for (const { name } of this.getTrueMetadata().relations) if (
             (this[name as keyof T] as Entity | Collection<any>).shouldUpdate
         ) (
             await (this[name as keyof T] as any).save()
         )
 
-        return this.getRepository().updateOrCreate(
-            this.entityType,
-            this.toSourceEntity(),
-            'this'
-        ) as Promise<T>
+        return t
     }
 
     // ------------------------------------------------------------------------
@@ -169,7 +169,7 @@ export default abstract class BasePolymorphicEntity<
         attributes: UpdateAttributes<T>
     ): Promise<ResultSetHeader> {
         return this.getRepository().update(
-            this.entities[this.entityType],
+            this.sources[this.entityType],
             (this.fill(attributes).toSourceEntity() as BaseEntity)
                 .toObject(),
             this._whereSourcePk as any
@@ -181,11 +181,11 @@ export default abstract class BasePolymorphicEntity<
     /**
      * Delete the register of the source entity in database
      */
-    public async delete<T extends BasePolymorphicEntity<any>>(this: T): (
-        Promise<void>
-    ) {
+    public async delete<T extends BasePolymorphicEntity<any>>(
+        this: T
+    ): Promise<void> {
         await this.getRepository().delete(
-            this.entities[this.entityType],
+            this.sources[this.entityType],
             this._whereSourcePk as any
         )
     }
@@ -194,7 +194,7 @@ export default abstract class BasePolymorphicEntity<
     /** @internal */
     private getTrueSourceMetadata(): EntityMetadata {
         return MetadataHandler.targetMetadata(
-            this.entities[this.entityType] as EntityTarget
+            this.sources[this.entityType] as EntityTarget
         )
     }
 

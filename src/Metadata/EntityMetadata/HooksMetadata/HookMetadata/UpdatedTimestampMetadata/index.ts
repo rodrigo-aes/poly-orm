@@ -2,7 +2,7 @@ import BeforeUpdateMetadata from "../BeforeUpdateMetadata"
 
 // Types
 import type { Target } from "../../../../../types"
-import type { HookFunction } from "../types"
+import type { HookFunction, HookType } from "../types"
 
 // Exceptions
 import PolyORMException from "../../../../../Errors"
@@ -16,8 +16,8 @@ export default class UpdatedTimestampMetadata extends BeforeUpdateMetadata {
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get type(): 'before-update' {
-        return 'before-update'
+    public get type(): HookType {
+        return 'beforeUpdate'
     }
 
     // ------------------------------------------------------------------------

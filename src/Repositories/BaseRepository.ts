@@ -29,7 +29,7 @@ import {
 
 // Types
 import type { Collection, Pagination } from "../Entities"
-import type { Constructor, Target, Entity, TargetMetadata } from "../types"
+import type { Constructor, Entity, TargetMetadata } from "../types"
 
 export default abstract class BaseRepository<T extends Entity> {
     /** @internal */
@@ -84,7 +84,7 @@ export default abstract class BaseRepository<T extends Entity> {
     // ------------------------------------------------------------------------
 
     /**
-     *  Search all register matched by options in database
+     * Search all register matched by options in database
      * @param options - Find options
      * @param mapTo @param mapTo - Switch data mapped return
      * @default 'entity'
