@@ -8,9 +8,7 @@ import ConditionalQueryBuilder from "../ConditionalQueryBuilder"
 import type {
     Entity,
     Constructor,
-    Target,
     TargetMetadata,
-    EntityTarget,
 } from "../../types"
 
 import type {
@@ -29,9 +27,6 @@ import type {
     JoinQueryHandler
 } from "../types"
 
-// Exceptions
-import PolyORMException from "../../Errors"
-
 /**
  * Build `JOIN` options
  */
@@ -40,7 +35,7 @@ export default class JoinQueryBuilder<T extends Entity> {
     protected metadata: TargetMetadata<T>
 
     /** @internal */
-    private _options: JoinQueryClause<T> = {
+    private options: JoinQueryClause<T> = {
         relations: {}
     }
 
@@ -55,7 +50,7 @@ export default class JoinQueryBuilder<T extends Entity> {
         required?: boolean
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
-        this._options.required = required
+        this.options.required = required
     }
 
     // Instace Methods ========================================================
@@ -63,18 +58,18 @@ export default class JoinQueryBuilder<T extends Entity> {
     /**
      * Add required to current entity `INNER JOIN` to query options
      * @param relation - Related entity target
-     * @param joinClause - Join query handler
+     * @param handler - Join query handler
      * @returns {this} - `this`
      */
     public innerJoin<T extends Entity>(
         relation: Constructor<T> | string,
-        joinClause?: JoinQueryHandler<T>
+        handler?: JoinQueryHandler<T>
     ): this {
         JoinQueryBuilder.build(
             this.metadata,
             relation,
-            this._options.relations!,
-            joinClause,
+            this.options.relations!,
+            handler,
             this.alias
         )
 
@@ -86,18 +81,18 @@ export default class JoinQueryBuilder<T extends Entity> {
     /**
      * Add optional to current entity `LEFT JOIN` to query options
      * @param relation - Related entity target
-     * @param joinClause - Join query handler
+     * @param handler - Join query handler
      * @returns {this} - `this`
      */
     public leftJoin<T extends Entity>(
         relation: Constructor<T> | string,
-        joinClause?: JoinQueryHandler<T>
+        handler?: JoinQueryHandler<T>
     ): this {
         JoinQueryBuilder.build(
             this.metadata,
             relation,
-            this._options.relations!,
-            joinClause,
+            this.options.relations!,
+            handler,
             this.alias,
             false
         )
@@ -109,16 +104,13 @@ export default class JoinQueryBuilder<T extends Entity> {
 
     /**
      * Handle select options to related join entity
-     * @param selectClause - Select query handler
+     * @param handler - Select query handler
      * @returns {this} - `this`
      */
-    public select(selectClause: SelectQueryHandler<T>): this {
-        this._options.select = new SelectQueryBuilder(
-            this.target,
-            this.alias
-        )
-
-        selectClause(this._options.select)
+    public select(handler: SelectQueryHandler<T>): this {
+        handler(this.options.select ??= new SelectQueryBuilder(
+            this.target, this.alias
+        ))
 
         return this
     }
@@ -127,16 +119,13 @@ export default class JoinQueryBuilder<T extends Entity> {
 
     /**
      * Define conditional `ON` clause to options
-     * @param onClause - On query handler
+     * @param handler - On query handler
      * @returns {this} - `this`
      */
-    public on(onClause: ConditionalQueryHandler<T>): this {
-        this._options.on = new ConditionalQueryBuilder(
-            this.target,
-            this.alias
-        )
-
-        onClause(this._options.on)
+    public on(handler: ConditionalQueryHandler<T>): this {
+        handler(this.options.on ??= new ConditionalQueryBuilder(
+            this.target, this.alias
+        ))
 
         return this
     }
@@ -148,25 +137,19 @@ export default class JoinQueryBuilder<T extends Entity> {
     * @returns - A object with relation options
     */
     public toQueryOptions(): RelationOptions<T> {
-        const { required, select, on } = this._options
-
         return {
-            required,
-            select: select?.toQueryOptions(),
-            on: on?.toQueryOptions(),
+            required: this.options.required,
+            select: this.options.select?.toQueryOptions(),
+            on: this.options.on?.toQueryOptions(),
             relations: this.relationsToOptions()
         }
     }
 
     // Privates ---------------------------------------------------------------
     /** @internal */
-    private relationsToOptions(): (
-        RelationsOptions<T> | undefined
-    ) {
-        if (!this._options.relations) return
-
-        return Object.fromEntries(
-            Object.entries(this._options.relations).map(
+    private relationsToOptions(): RelationsOptions<T> | undefined {
+        if (this.options.relations) return Object.fromEntries(
+            Object.entries(this.options.relations).map(
                 ([name, value]) => [
                     name,
                     typeof value === 'boolean'
@@ -186,21 +169,17 @@ export default class JoinQueryBuilder<T extends Entity> {
         metadata: TargetMetadata<any>,
         relation: Constructor<Related> | string,
         options: JoinQueryOptions<Parent>,
-        joinClause?: JoinQueryHandler<Related>,
+        handler?: JoinQueryHandler<Related>,
         alias?: string,
         required: boolean = true
     ) {
-        if (joinClause) joinClause(this.instantiate(
-            metadata,
-            relation,
-            options,
-            alias,
-            required
+        if (handler) handler(this.instantiate(
+            metadata, relation, options, alias, required
         ))
-
-        else options[(typeof relation === 'string'
-            ? relation
-            : this.findRelation(metadata, relation).name
+        else options[(
+            typeof relation === 'string'
+                ? relation
+                : this.findRelation(metadata, relation).name
         ) as keyof JoinQueryOptions<Parent>] = true
 
     }
@@ -216,11 +195,8 @@ export default class JoinQueryBuilder<T extends Entity> {
         alias?: string,
         required: boolean = true
     ): JoinQueryBuilder<Related> {
-        const [key, join] = JoinQueryBuilder.buildJoin<Parent, Related>(
-            metadata,
-            relation,
-            alias,
-            required
+        const [key, join] = JoinQueryBuilder.addJoin<Parent, Related>(
+            metadata, relation, alias, required
         )
 
         options[key] = join
@@ -230,7 +206,7 @@ export default class JoinQueryBuilder<T extends Entity> {
 
     // ------------------------------------------------------------------------
 
-    private static buildJoin<
+    private static addJoin<
         Parent extends Entity = Entity,
         Related extends Entity = Entity
     >(
@@ -262,9 +238,13 @@ export default class JoinQueryBuilder<T extends Entity> {
                 metadata.relations.findOrThrow(relation as string)
             )
 
+            // ----------------------------------------------------------------
+
             case "function": return (
                 metadata.relations?.findOrThrow(relation)
             )
+
+            // ----------------------------------------------------------------
 
             default: throw new Error('Unreacheable Exception')
         }

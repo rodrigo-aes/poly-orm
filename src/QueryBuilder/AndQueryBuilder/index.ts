@@ -1,7 +1,12 @@
 import { MetadataHandler } from "../../Metadata"
 
 // SQL Builders
-import { Op } from "../../SQLBuilders"
+import {
+    Op,
+    AndSQLBuilder,
+    type AndQueryOptions
+} from "../../SQLBuilders"
+
 
 // Query Builders
 import OperatorQueryBuilder from "../OperatorQueryBuilder"
@@ -18,7 +23,6 @@ import type {
     EntityPropertiesKeys
 } from "../../types"
 
-import type { AndQueryOptions } from "../../SQLBuilders"
 
 import type {
     CompatibleOperators,
@@ -36,7 +40,7 @@ export default class AndQueryBuilder<T extends Entity> {
     private _options: AndQueryOptions<T> = {}
 
     /** @internal */
-    private exists?: ExistsQueryBuilder<T>
+    private _exists?: ExistsQueryBuilder<T>
 
     /** @internal */
     constructor(
@@ -55,15 +59,20 @@ export default class AndQueryBuilder<T extends Entity> {
     public get options(): AndQueryOptions<T> {
         return {
             ...this._options,
-            ...this.exists?.toQueryOptions()
+            ...this._exists?.toQueryOptions()
         }
+    }
+
+    // Privates ---------------------------------------------------------------
+    private get exists(): ExistsQueryBuilder<T> {
+        return this._exists ??= new ExistsQueryBuilder(this.target, this.alias)
     }
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     /**
      * Add a conditional where option to match
-     * @param propertie - Entity propertie
+     * @param property - Entity propertie
      * @param conditional - Value or operator
      * @param value - Value case operator included
      * @returns {this} - `this`
@@ -75,24 +84,22 @@ export default class AndQueryBuilder<T extends Entity> {
             CompatibleOperators<EntityProperties<T>[K]>
         )
     >(
-        propertie: K | string,
+        property: K | string,
         conditional: Cond,
-        value?: typeof conditional extends keyof OperatorType
-            ? OperatorType[typeof conditional]
+        value?: Cond extends keyof OperatorType
+            ? OperatorType[Cond]
             : never
     ): this {
-        this._options[propertie] = (
+        this._options[property] = (
             OperatorQueryBuilder.isOperator(conditional as string)
                 ? {
                     [
                         OperatorQueryBuilder[conditional as (
-                            CompatibleOperators<
-                                EntityProperties<T>[K]
-                            >
+                            CompatibleOperators<EntityProperties<T>[K]>
                         )]
                     ]: value
                 }
-                : conditional as any
+                : conditional
         )
 
         return this
@@ -107,13 +114,7 @@ export default class AndQueryBuilder<T extends Entity> {
      * @returns {this} - `this`
      */
     public whereExists(options: ExistsQueryOptions<T>): this {
-        this.exists = this.exists ?? new ExistsQueryBuilder(
-            this.target,
-            this.alias
-        )
-
         this.exists.add(options)
-
         return this
     }
 
@@ -125,7 +126,7 @@ export default class AndQueryBuilder<T extends Entity> {
      * @param conditional - Conditinal query options array to match one or many
      * @returns {this} - `this`
      */
-    public andOr<
+    public whereOr<
         K extends EntityPropertiesKeys<T>,
         Cond extends (
             EntityProperties<T>[K] |
@@ -134,11 +135,8 @@ export default class AndQueryBuilder<T extends Entity> {
                 EntityProperties<T>[K]
             ]
         )[]
-    >(
-        propertie: K,
-        conditional: Cond
-    ): this {
-        this._options[propertie] = {
+    >(property: K, conditional: Cond): this {
+        this._options[property] = {
             [Op.Or]: conditional.map(cond => Array.isArray(cond)
                 ? { [OperatorQueryBuilder[cond[0]]]: cond[1] }
                 : cond
@@ -150,17 +148,9 @@ export default class AndQueryBuilder<T extends Entity> {
 
     // ------------------------------------------------------------------------
 
-    /**
-     * Add a and where conditional option
-     */
-    public and = this.where
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Add a and exists contional option
-     */
-    public andExists = this.whereExists
+    public SQL(): string {
+        return new AndSQLBuilder(this.target, this.options, this.alias).SQL()
+    }
 
     // ------------------------------------------------------------------------
 

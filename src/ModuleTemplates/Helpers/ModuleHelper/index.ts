@@ -1,4 +1,4 @@
-export default class ModuleStringHelper {
+export default class ModuleHelper {
     // Static Methods =========================================================
     // Publics ----------------------------------------------------------------
     public static indent(line: string, spaces: number = 4): string {

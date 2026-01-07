@@ -34,7 +34,7 @@ export default class PaginateQueryBuilder<
             perPage: this.perPage,
             select: select?.toQueryOptions(),
             where: where?.toQueryOptions(),
-            relations: this.relationsToOptions(),
+            relations: this.relationsOptions(),
             group: group?.toQueryOptions(),
             order: order?.toQueryOptions(),
         }

@@ -24,8 +24,8 @@ import type {
     OperatorType
 } from "../OperatorQueryBuilder"
 import type { ExistsQueryOptions } from "../ExistsQueryBuilder"
-import type { CaseQueryHandler, ConditionalQueryHandler } from "../types"
-import type { WhereMethods, CaseMethods, CountMethods } from "./types"
+import type { CaseQueryHandler, conditionalMethods } from "../types"
+import type { CaseMethods, CountMethods } from "./types"
 
 // Exceptions
 import PolyORMException from "../../Errors"
@@ -35,12 +35,18 @@ import PolyORMException from "../../Errors"
  */
 export default class CountManyQueryBuilder<T extends Entity> {
     /** @internal */
-    protected _options: CountQueryBuilder<T>[] = []
+    private options: CountQueryBuilder<T>[] = []
 
     /** @internal */
-    protected _count?: CountQueryBuilder<T>
+    private _count?: CountQueryBuilder<T>
 
     constructor(public target: Constructor<T>, public alias?: string) { }
+
+    // Getters ================================================================
+    // Protected --------------------------------------------------------------
+    private get count(): CountQueryBuilder<T> {
+        return this._count ??= new CountQueryBuilder(this.target, this.alias)
+    }
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
@@ -49,10 +55,8 @@ export default class CountManyQueryBuilder<T extends Entity> {
      * @param name 
      * @returns 
      */
-    public property(name: string): Omit<this, WhereMethods | CaseMethods> {
-        this.handleCurrentCount()
-        this._count!.property(name)
-
+    public property(name: string): Omit<this, conditionalMethods | CaseMethods> {
+        this.count.property(name)
         return this
     }
 
@@ -78,9 +82,7 @@ export default class CountManyQueryBuilder<T extends Entity> {
             ? OperatorType[typeof conditional]
             : never
     ): Omit<this, CaseMethods | CountMethods> {
-        this.handleCurrentCount()
-        this._count!.where(propertie, conditional, value)
-
+        this.count.where(propertie, conditional, value)
         return this
     }
 
@@ -93,25 +95,9 @@ export default class CountManyQueryBuilder<T extends Entity> {
      * @returns {this} - `this`
      */
     public whereExists(options: ExistsQueryOptions<T>): this {
-        this.handleCurrentCount()
-        this._count!.whereExists(options)
-
+        this.count.whereExists(options)
         return this
     }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Add a and where conditional option
-     */
-    public and = this.where
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Add a and exists contional option
-     */
-    public andExists = this.whereExists
 
     // ------------------------------------------------------------------------
 
@@ -135,9 +121,7 @@ export default class CountManyQueryBuilder<T extends Entity> {
             ? OperatorType[typeof conditional]
             : never
     ): Omit<this, CaseMethods | CountMethods> {
-        this.handleCurrentCount()
-        this.orWhere(propertie, conditional, value)
-
+        this.count.orWhere(propertie, conditional, value)
         return this
     }
 
@@ -148,12 +132,10 @@ export default class CountManyQueryBuilder<T extends Entity> {
      * @param caseClause - Case query handler
      * @returns {this} - `this`
      */
-    public case(caseClause: CaseQueryHandler<T>): (
-        Omit<this, WhereMethods | CountMethods>
-    ) {
-        this.handleCurrentCount()
-        this.case(caseClause)
-
+    public case(caseClause: CaseQueryHandler<T>): Omit<
+        this, conditionalMethods | CountMethods
+    > {
+        this.count.case(caseClause)
         return this
     }
 
@@ -164,10 +146,8 @@ export default class CountManyQueryBuilder<T extends Entity> {
      * @param name - Alias/Name
      */
     public as(name: string): this {
-        this.handleCurrentCount()
-        this._count!.as(name)
-
-        this._options.push(this._count!)
+        this.count.as(name)
+        this.options.push(this.count)
 
         return this
     }
@@ -213,22 +193,13 @@ export default class CountManyQueryBuilder<T extends Entity> {
     */
     public toQueryOptions(): CountQueryOptions<T> {
         return Object.fromEntries(
-            this._options.map(count => {
+            this.options.map(count => {
                 if (!count._as) PolyORMException.QueryBuilder.throw(
                     'MISSING_AS_ALIAS_ON_CLAUSE', 'count'
                 )
 
                 return [count._as, count.toQueryOptions()]
             })
-        )
-    }
-
-    // Protecteds -------------------------------------------------------------
-    /** @internal */
-    protected handleCurrentCount(): void {
-        this._count ??= new CountQueryBuilder(
-            this.target,
-            this.alias
         )
     }
 }

@@ -1,10 +1,7 @@
+
 import WhereSQLBuilder from "./WhereSQLBuilder"
 import OnSQLBuilder from "./OnSQLBuilder"
-import Operator, {
-    Op,
-    type OperatorKey,
-    type CompatibleOperators
-} from "./Operator"
+
 import CaseSQLBuilder, {
     Case,
     type CaseQueryOptions,
@@ -12,6 +9,15 @@ import CaseSQLBuilder, {
     type WhenQueryOption,
     type ElseQueryOption,
 } from "./CaseSQLBuilder"
+
+import Operator, {
+    Op,
+    type OperatorKey,
+    type CompatibleOperators
+} from "./Operator"
+
+import AndSQLBuilder from "./AndSQLBuilder"
+import OrSQLBuilder from "./OrSQLBuilder"
 
 import {
     Exists,
@@ -43,6 +49,16 @@ export default class ConditionalSQLBuilder {
 
     // Static Methods =========================================================
     // Publics ----------------------------------------------------------------
+    public static conditional<T extends Entity>(
+        target: Constructor<T>,
+        options: ConditionalQueryOptions<T>,
+        alias?: string,
+    ): string {
+        return new WhereSQLBuilder(target, options, alias).conditionalSQL()
+    }
+
+    // ------------------------------------------------------------------------
+
     public static where<T extends Entity>(
         target: Constructor<T>,
         options: ConditionalQueryOptions<T>,
@@ -92,6 +108,8 @@ export {
     WhereSQLBuilder,
     OnSQLBuilder,
     CaseSQLBuilder,
+    AndSQLBuilder,
+    OrSQLBuilder,
     type ConditionalQueryOptions,
     type AndQueryOptions,
     type OrQueryOptions,

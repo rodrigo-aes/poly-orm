@@ -45,7 +45,7 @@ import PolyORMException from "../Errors"
 export default class Migrator extends Array<Constructor<Migration>> {
     private database!: DatabaseSchema | DatabaseMigrator
 
-    private _metadatas?: EntityMetadata[]
+    private _metas?: EntityMetadata[]
 
     private _tableHandler?: MigrationsTableHandler
     private _fileHandler?: MigrationFileHandler
@@ -60,9 +60,7 @@ export default class Migrator extends Array<Constructor<Migration>> {
     // Getters ================================================================
     // Privates ---------------------------------------------------------------
     private get metadatas(): EntityMetadata[] {
-        if (this._metadatas) return this._metadatas
-
-        return this._metadatas = this.connection.entities.map(
+        return this._metas ??= this.connection.entities.map(
             entity => EntityMetadata.findOrThrow(entity)
         )
     }
@@ -79,15 +77,17 @@ export default class Migrator extends Array<Constructor<Migration>> {
     // ------------------------------------------------------------------------
 
     private get tableHandler(): MigrationsTableHandler {
-        if (this._tableHandler) return this._tableHandler
-        return this._tableHandler = new MigrationsTableHandler(this.connection)
+        return this._tableHandler ??= new MigrationsTableHandler(
+            this.connection
+        )
     }
 
     // ------------------------------------------------------------------------
 
     private get fileHandler(): MigrationFileHandler {
-        if (this._fileHandler) return this._fileHandler
-        return this._fileHandler = new MigrationFileHandler(this.connection)
+        return this._fileHandler ??= new MigrationFileHandler(
+            this.connection
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -99,9 +99,7 @@ export default class Migrator extends Array<Constructor<Migration>> {
     // ------------------------------------------------------------------------
 
     private get files(): string[] {
-        if (this._files) return this._files
-
-        return this._files = readdirSync(this.dir)
+        return this._files ??= readdirSync(this.dir)
             .filter(name => MigrationFileHandler.extensions.some(
                 ext => name.endsWith(ext)
             ))
@@ -190,16 +188,13 @@ export default class Migrator extends Array<Constructor<Migration>> {
         className?: string,
         at?: number
     ) {
-        const [props] = await this.tableHandler.insert(
-            className ?? MigrationFileHandler.buildClassName(
-                action,
-                tableName
-            ),
-            at
-        )
-
         this.fileHandler.create(this.connection.name, action, {
-            ...props,
+            ...(await this.tableHandler.insert(
+                className ?? MigrationFileHandler.buildClassName(
+                    action, tableName
+                ),
+                at
+            ))[0],
             tableName
         })
     }
@@ -264,10 +259,8 @@ export default class Migrator extends Array<Constructor<Migration>> {
     // ------------------------------------------------------------------------
 
     private async registered(): Promise<string[]> {
-        if (this._registers) return this._registers
-        return this._registers = (await this.tableHandler.findAll()).map(
-            ({ fileName }) => fileName
-        )
+        return this._registers ??= (await this.tableHandler.findAll())
+            .map(({ fileName }) => fileName)
     }
 
     // ------------------------------------------------------------------------
@@ -303,9 +296,9 @@ export default class Migrator extends Array<Constructor<Migration>> {
     // ------------------------------------------------------------------------
 
     @Logs.NothingToRegister
-    private async unknownMigrationFiles(silent: boolean = true): (
-        Promise<string[]>
-    ) {
+    private async unknownMigrationFiles(silent: boolean = true): Promise<
+        string[]
+    > {
         const registered = await this.registered()
         return this.files.filter(file => !registered.includes(
             file.split('.')[0]
@@ -318,9 +311,12 @@ export default class Migrator extends Array<Constructor<Migration>> {
         const files = method ? await this.filterFiles(method) : undefined
         if (method) this.splice(0, this.length)
 
-        this.push(...await Promise.all((files ?? this.files).map(async file =>
-            (await import(pathToFileURL(join(this.dir, file)).href)).default
-        )))
+        this.push(...await Promise.all(
+            (files ?? this.files)
+                .map(async file =>
+                    (await import(pathToFileURL(join(this.dir, file)).href))
+                        .default
+                )))
     }
 
     // ------------------------------------------------------------------------
@@ -395,7 +391,7 @@ export default class Migrator extends Array<Constructor<Migration>> {
         }
     }
 
-    // ------------------------------------------------------------------------
+    // ---------------------------------------------------'---------------------
 
     private async syncMigrations(schema: DatabaseSchema): Promise<void> {
         for (const [action, [table, prev]] of

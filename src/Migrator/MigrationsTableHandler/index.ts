@@ -8,7 +8,7 @@ import { TableMigrator, ColumnMigrator } from "../DatabaseMigrator"
 import {
     InsertMigration,
     DeleteMigration,
-    MoveMigration,
+    MoveMigration
 } from "../../SQLBuilders"
 
 // Helpers

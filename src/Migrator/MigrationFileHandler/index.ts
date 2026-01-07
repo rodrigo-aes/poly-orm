@@ -191,9 +191,10 @@ export default class MigrationFileHandler {
 
     // Static Methods =========================================================
     // Publics ----------------------------------------------------------------
-    public static buildClassName(action: ActionType, tableName: string): (
-        string
-    ) {
+    public static buildClassName(
+        action: ActionType,
+        tableName: string
+    ): string {
         return MigrationTemplate.buildClassName(action, tableName)
     }
 

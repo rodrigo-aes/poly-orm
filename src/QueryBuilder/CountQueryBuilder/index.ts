@@ -3,8 +3,7 @@ import {
     CountSQLBuilder,
     Case,
 
-    type CountQueryOption,
-    type CaseQueryOptions
+    type CountQueryOption
 } from "../../SQLBuilders"
 
 // Query Builders
@@ -18,11 +17,10 @@ import { MySQLOperation } from "../../Handlers"
 import type {
     Entity,
     Constructor,
-    Target,
     EntityProperties,
     EntityPropertiesKeys
 } from "../../types"
-import type { CaseQueryHandler, ConditionalQueryHandler } from "../types"
+import type { CaseQueryHandler, CountQueryHandler } from "../types"
 import type {
     CompatibleOperators,
     OperatorType
@@ -44,7 +42,7 @@ export default class CountQueryBuilder<T extends Entity> {
     public _as?: string
 
     /** @internal */
-    private _conditional?: (
+    private conditional?: (
         string |
         ConditionalQueryBuilder<T> |
         CaseQueryBuilder<T>
@@ -58,6 +56,46 @@ export default class CountQueryBuilder<T extends Entity> {
         public alias?: string
     ) { }
 
+    // Getters ================================================================
+    // Privates ---------------------------------------------------------------
+    /** @internal */
+    private get conditionalQB(): ConditionalQueryBuilder<T> {
+        this.type = 'where'
+        return ((this.conditional ??= (
+            new ConditionalQueryBuilder(this.target, this.alias)
+        )) instanceof ConditionalQueryBuilder)
+            ? this.conditional
+            : (() => {
+                throw PolyORMException.QueryBuilder.instantiate(
+                    'MIXED_IMCOMPATIBLE_CLAUSES_OPERATIONS',
+                    'conditional: "OR"',
+                    this.conditional instanceof CaseQueryBuilder
+                        ? 'CASE'
+                        : `property count (${this.conditional})`
+                )
+            })()
+    }
+
+    // ------------------------------------------------------------------------
+
+    /** @internal */
+    private get caseQB(): CaseQueryBuilder<T> {
+        this.type = 'case'
+        return ((this.conditional ??= (
+            new CaseQueryBuilder(this.target, this.alias)
+        )) instanceof CaseQueryBuilder)
+            ? this.conditional
+            : (() => {
+                throw PolyORMException.QueryBuilder.instantiate(
+                    'MIXED_IMCOMPATIBLE_CLAUSES_OPERATIONS',
+                    'conditional: "OR"',
+                    this.conditional instanceof ConditionalQueryBuilder
+                        ? 'WHERE'
+                        : `property count (${this.conditional})`
+                )
+            })()
+    }
+
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     /**
@@ -66,7 +104,7 @@ export default class CountQueryBuilder<T extends Entity> {
      * @returns 
      */
     public property(name: string): Omit<this, WhereMethods | CaseMethods> {
-        this._conditional = name
+        this.conditional = name
         this.type = 'prop'
 
         return this
@@ -93,15 +131,7 @@ export default class CountQueryBuilder<T extends Entity> {
             ? OperatorType[typeof conditional]
             : never
     ): Omit<this, CaseMethods | CountMethods> {
-        this.verifyWhere();
-        (this._conditional as ConditionalQueryBuilder<T>).where(
-            propertie,
-            conditional,
-            value
-        )
-
-        this.type = 'where'
-
+        this.conditionalQB.where(propertie, conditional, value)
         return this
     }
 
@@ -113,26 +143,10 @@ export default class CountQueryBuilder<T extends Entity> {
      * @param conditional - Where query case another table entity included
      * @returns {this} - `this`
      */
-    public whereExists(
-        options: ExistsQueryOptions<T>
-    ): this {
-        (this._conditional as ConditionalQueryBuilder<T>).whereExists(options)
+    public whereExists(options: ExistsQueryOptions<T>): this {
+        this.conditionalQB.whereExists(options)
         return this
     }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Add a and where conditional option
-     */
-    public and = this.where
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Add a and exists contional option
-     */
-    public andExists = this.whereExists
 
     // ------------------------------------------------------------------------
 
@@ -156,13 +170,7 @@ export default class CountQueryBuilder<T extends Entity> {
             ? OperatorType[typeof conditional]
             : never
     ): Omit<this, CaseMethods | CountMethods> {
-        this.verifyWhere();
-        (this._conditional as ConditionalQueryBuilder<T>).orWhere(
-            propertie,
-            conditional,
-            value
-        )
-
+        this.conditionalQB.orWhere(propertie, conditional, value)
         return this
     }
 
@@ -170,18 +178,13 @@ export default class CountQueryBuilder<T extends Entity> {
 
     /**
      * Define a CASE clause conditional option
-     * @param caseClause - Case query handler
+     * @param handler - Case query handler
      * @returns {this} - `this`
      */
-    public case(caseClause: CaseQueryHandler<T>): (
-        Omit<this, WhereMethods | CountMethods>
-    ) {
-        const handler = new CaseQueryBuilder(this.target, this.alias)
-
-        caseClause(handler)
-        this._conditional = handler
-        this.type = 'case'
-
+    public case(handler: CaseQueryHandler<T>): Omit<
+        this, WhereMethods | CountMethods
+    > {
+        this.caseQB.handle(handler)
         return this
     }
 
@@ -191,8 +194,11 @@ export default class CountQueryBuilder<T extends Entity> {
      * Define a AS alias/name to count result
      * @param name - Alias/Name
      */
-    public as(name: string): void {
+    public as(name: string): Omit<
+        this, WhereMethods | CaseMethods | CountMethods | 'as'
+    > {
         this._as = name
+        return this
     }
 
     // ------------------------------------------------------------------------
@@ -236,38 +242,29 @@ export default class CountQueryBuilder<T extends Entity> {
     */
     public toQueryOptions(): CountQueryOption<T> | string {
         switch (this.type) {
-            case "prop": return this._conditional as string
+            case "prop": return this.conditional as string
 
-            case "where": return (
-                this._conditional as ConditionalQueryBuilder<T>
-            )
+            // ----------------------------------------------------------------
+
+            case "where": return (this.conditional as (
+                ConditionalQueryBuilder<T>
+            ))
                 .toQueryOptions()
 
+            // ----------------------------------------------------------------
+
             case "case": return {
-                [Case]: (this._conditional as CaseQueryBuilder<T>)
+                [Case]: (this.conditional as CaseQueryBuilder<T>)
                     .toQueryOptions()
             }
         }
     }
 
-    // Privates ---------------------------------------------------------------
-    /** @internal */
-    private verifyWhere(): void {
-        if (!this._conditional) this._conditional = (
-            new ConditionalQueryBuilder(
-                this.target,
-                this.alias
-            )
-        )
+    // ------------------------------------------------------------------------
 
-        else if (!(this._conditional instanceof ConditionalQueryBuilder)) (
-            PolyORMException.QueryBuilder.throw(
-                'MIXED_IMCOMPATIBLE_CLAUSES_OPERATIONS',
-                'conditional: "OR"',
-                this._conditional instanceof CaseQueryBuilder
-                    ? 'CASE'
-                    : `property count (${this._conditional})`
-            )
-        )
+    /** @internal */
+    public handle(handler: CountQueryHandler<T>): this {
+        handler(this)
+        return this
     }
 }

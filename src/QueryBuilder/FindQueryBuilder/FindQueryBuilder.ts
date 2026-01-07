@@ -80,39 +80,33 @@ export default abstract class FindQueryBuilder<T extends Entity> {
 
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
-    protected get selectOptions(): SelectQueryBuilder<T> {
-        if (!this._options.select) this._options.select = (
-            new SelectQueryBuilder(
-                this.target,
-                this.alias
-            )
+    /** @internal */
+    protected get selectQB(): SelectQueryBuilder<T> {
+        return this._options.select ??= new SelectQueryBuilder(
+            this.target,
+            this.alias
         )
-
-        return this._options.select
     }
 
     // ------------------------------------------------------------------------
 
-    protected get whereOptions(): ConditionalQueryBuilder<T> {
-        if (!this._options.where) this._options.where = (
-            new ConditionalQueryBuilder(
-                this.target,
-                this.alias
-            )
+    /** @internal */
+    protected get whereQB(): ConditionalQueryBuilder<T> {
+        return this._options.where ??= new ConditionalQueryBuilder(
+            this.target,
+            this.alias
         )
-
-        return this._options.where
     }
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     /**
      * Define `SELECT` options
-     * @param selectClause - Select query handler
+     * @param handler - Select query handler
      * @returns {this} - `this`
      */
-    public select(selectClause: SelectQueryHandler<T>): this {
-        selectClause(this.selectOptions)
+    public select(handler: SelectQueryHandler<T>): this {
+        handler(this.selectQB)
         return this
     }
 
@@ -123,7 +117,7 @@ export default abstract class FindQueryBuilder<T extends Entity> {
      * @returns {this} - `this`
      */
     public properties(...properties: SelectPropertiesOptions<T>[]): this {
-        this.selectOptions.properties(...properties)
+        this.selectQB.properties(...properties)
         return this
     }
 
@@ -131,15 +125,15 @@ export default abstract class FindQueryBuilder<T extends Entity> {
 
     /**
      * Define to select a inline `COUNT` with entity properties
-     * @param count - Entity property name to count or count query handler
+     * @param option - Entity property name to count or count query handler
      * @param as - Alias/Name to count result
      * @returns {this} - `this`
      */
     public count(
-        countClause: CountQueryHandler<T> | string,
+        option: CountQueryHandler<T> | string,
         as?: string
     ): this {
-        this.selectOptions.count(countClause, as)
+        this.selectQB.count(option, as)
         return this
     }
 
@@ -165,7 +159,7 @@ export default abstract class FindQueryBuilder<T extends Entity> {
             ? OperatorType[typeof conditional]
             : never
     ): this {
-        this.whereOptions.where(propertie, conditional, value)
+        this.whereQB.where(propertie, conditional, value)
         return this
     }
 
@@ -178,34 +172,7 @@ export default abstract class FindQueryBuilder<T extends Entity> {
      * @returns {this} - `this`
      */
     public whereExists(options: ExistsQueryOptions<T>): this {
-        this.whereOptions.whereExists(options)
-        return this
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Add a and where conditional option
-     */
-    public and = this.where
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Add a and exists contional option
-     */
-    public andExists = this.whereExists
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Initialize a new OR where condtional options
-     * @returns 
-     */
-    public or(): this {
-        this.verifyWhere()
-        this.whereOptions.or()
-
+        this.whereQB.whereExists(options)
         return this
     }
 
@@ -231,14 +198,7 @@ export default abstract class FindQueryBuilder<T extends Entity> {
             ? OperatorType[typeof conditional]
             : never
     ): this {
-        this.verifyWhere()
-
-        this._options.where!.orWhere(
-            propertie,
-            conditional,
-            value
-        )
-
+        this.whereQB.orWhere(propertie, conditional, value)
         return this
     }
 
@@ -247,18 +207,18 @@ export default abstract class FindQueryBuilder<T extends Entity> {
     /**
      * Add required to current entity `INNER JOIN` to query options
      * @param relation - Related entity target
-     * @param joinClause - Join query handler
+     * @param handler - Join query handler
      * @returns {this} - `this`
      */
     public innerJoin<R extends Entity>(
         relation: Constructor<R> | string,
-        joinClause?: JoinQueryHandler<R>
+        handler?: JoinQueryHandler<R>
     ): this {
         JoinQueryBuilder.build<T, R>(
             this.metadata,
             relation,
             this._options.relations!,
-            joinClause,
+            handler,
             this.alias,
         )
 
@@ -270,18 +230,18 @@ export default abstract class FindQueryBuilder<T extends Entity> {
     /**
      * Add optional to current entity `LEFT JOIN` to query options
      * @param relation - Related entity target
-     * @param joinClause - Join query handler
+     * @param handler - Join query handler
      * @returns {this} - `this`
      */
     public leftJoin<R extends Entity>(
         relation: Constructor<R> | string,
-        joinClause?: JoinQueryHandler<R>
+        handler?: JoinQueryHandler<R>
     ): this {
         JoinQueryBuilder.build<T, R>(
             this.metadata,
             relation,
             this._options.relations!,
-            joinClause,
+            handler,
             this.alias,
             false
         )
@@ -297,7 +257,9 @@ export default abstract class FindQueryBuilder<T extends Entity> {
      * @returns {this} - `this`
      */
     public groupBy(...columns: GroupQueryOptions<T>): this {
-        this._options.group = new GroupQueryBuilder(this.target, this.alias)
+        this._options.group = new GroupQueryBuilder(
+            this.target, this.alias
+        )
             .groupBy(...columns)
 
         return this
@@ -336,7 +298,7 @@ export default abstract class FindQueryBuilder<T extends Entity> {
         return {
             select: select?.toQueryOptions(),
             where: where?.toQueryOptions(),
-            relations: this.relationsToOptions(),
+            relations: this.relationsOptions(),
             group: group?.toQueryOptions(),
         }
     }
@@ -348,12 +310,8 @@ export default abstract class FindQueryBuilder<T extends Entity> {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    protected relationsToOptions(): (
-        RelationsOptions<T> | undefined
-    ) {
-        if (!this._options.relations) return
-
-        return Object.fromEntries(
+    protected relationsOptions(): RelationsOptions<T> | undefined {
+        if (this._options.relations) return Object.fromEntries(
             Object.entries(this._options.relations).map(
                 ([name, value]) => [
                     name,
@@ -363,14 +321,6 @@ export default abstract class FindQueryBuilder<T extends Entity> {
                 ]
             )
         ) as RelationsOptions<T>
-    }
-
-    // Privates ---------------------------------------------------------------
-    /** @internal */
-    private verifyWhere(): void {
-        if (!this._options.where) PolyORMException.QueryBuilder.throw(
-            'EMPTY_AND_CLAUSE'
-        )
     }
 }
 

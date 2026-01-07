@@ -8,9 +8,6 @@ import CaseQueryBuilder from "../CaseQueryBuilder"
 // Symbols
 import { Case } from "../../SQLBuilders"
 
-// Handlers
-import QueryBuilderHandler from "../QueryBuilderHandler"
-
 // Types
 import type { Entity, Constructor } from "../../types"
 import type { OrderQueryOptions } from "./types"
@@ -31,15 +28,13 @@ export default class OrderQueryBuilder<T extends Entity> {
             case "object": this._options.push(option)
                 break
 
-            case "function":
-                this._options.push({
-                    [Case]: QueryBuilderHandler
-                        .handle(
-                            new CaseQueryBuilder(this.target, this.alias),
-                            option
-                        )
-                        .toQueryOptions()
-                })
+            // ----------------------------------------------------------------
+
+            case "function": this._options.push({
+                [Case]: new CaseQueryBuilder(this.target, this.alias)
+                    .handle(option)
+                    .toQueryOptions()
+            })
         }
 
         return this

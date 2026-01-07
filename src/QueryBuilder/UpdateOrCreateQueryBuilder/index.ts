@@ -1,7 +1,6 @@
 // SQL Builder
 import {
     UpdateOrCreateSQLBuilder,
-
     type UpdateOrCreateAttributes,
 } from "../../SQLBuilders"
 
@@ -9,31 +8,21 @@ import {
 import { MySQLOperation } from "../../Handlers"
 
 // Types
-import type {
-    Constructor,
-    EntityPropertiesKeys
-} from "../../types"
+import type { Constructor, EntityPropertiesKeys } from "../../types"
 import type { BaseEntity } from "../../Entities"
 
 /**
  * Build a Update or Create query
  */
 export default class UpdateOrCreateQueryBuilder<T extends BaseEntity> {
-    /**
-     * @internal
-     */
-    private sqlBuilder: UpdateOrCreateSQLBuilder<T>
+    /** @internal */
+    private cols: EntityPropertiesKeys<T>[] = []
+    private vals: any[] = []
 
     constructor(
         public target: Constructor<T>,
         public alias?: string
-    ) {
-        this.sqlBuilder = new UpdateOrCreateSQLBuilder(
-            this.target,
-            {} as any,
-            this.alias
-        )
-    }
+    ) { }
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
@@ -42,10 +31,10 @@ export default class UpdateOrCreateQueryBuilder<T extends BaseEntity> {
      * @param names - Properties names
      * @returns {this} - `this`
      */
-    public properties(...names: EntityPropertiesKeys<T>[]): (
-        Omit<this, 'data'>
-    ) {
-        this.sqlBuilder.fields(...names)
+    public properties(...names: EntityPropertiesKeys<T>[]): Omit<
+        this, 'data'
+    > {
+        this.cols.push(...names)
         return this
     }
 
@@ -56,7 +45,7 @@ export default class UpdateOrCreateQueryBuilder<T extends BaseEntity> {
      * @returns {this} - `this`
      */
     public values(...values: any[]): Omit<this, 'data'> {
-        this.sqlBuilder.values(...values)
+        this.vals.push(...values)
         return this
     }
 
@@ -70,7 +59,8 @@ export default class UpdateOrCreateQueryBuilder<T extends BaseEntity> {
     public data(attributes: UpdateOrCreateAttributes<T>): (
         Omit<this, 'fields' | 'values'>
     ) {
-        this.sqlBuilder.setData(attributes)
+        this.cols.push(...Object.keys(attributes) as EntityPropertiesKeys<T>[])
+        this.vals.push(...Object.values(attributes))
         return this
     }
 
@@ -83,7 +73,7 @@ export default class UpdateOrCreateQueryBuilder<T extends BaseEntity> {
     public exec(): Promise<T> {
         return MySQLOperation.UpdateOrCreate.exec({
             target: this.target,
-            sqlBuilder: this.sqlBuilder
+            sqlBuilder: this.toSQLBuilder()
         })
     }
 
@@ -93,6 +83,23 @@ export default class UpdateOrCreateQueryBuilder<T extends BaseEntity> {
      * Convert `this` to operation SQL string
      */
     public SQL(): string {
-        return this.sqlBuilder.SQL()
+        return this.toSQLBuilder().SQL()
+    }
+
+    // ------------------------------------------------------------------------
+
+    public toQueryOptions(): UpdateOrCreateAttributes<T> {
+        return Object.fromEntries(
+            this.cols.map((col, index) => [col, this.vals[index]])
+        ) as UpdateOrCreateAttributes<T>
+    }
+
+    // Privates ---------------------------------------------------------------
+    private toSQLBuilder(): UpdateOrCreateSQLBuilder<T> {
+        return new UpdateOrCreateSQLBuilder(
+            this.target,
+            this.toQueryOptions(),
+            this.alias
+        )
     }
 }

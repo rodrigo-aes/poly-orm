@@ -1,7 +1,13 @@
 import { MetadataHandler } from "../../Metadata"
 
-// Query Handlers
+// SQL Builders
+import { ConditionalSQLBuilder } from "../../SQLBuilders"
+
+// Query Builders
 import AndQueryBuilder from "../AndQueryBuilder"
+
+// Utils
+import ProxyMerge from "../../utils/ProxyMerge"
 
 // Types
 import type {
@@ -19,6 +25,7 @@ import type {
     CompatibleOperators,
     OperatorType
 } from "../OperatorQueryBuilder"
+import type { ConditionalQueryHandler } from "../types"
 
 // Exceptions
 import PolyORMException from "../../Errors"
@@ -31,21 +38,17 @@ export default class ConditionalQueryBuilder<T extends Entity> {
     protected metadata: TargetMetadata<T>
 
     /** @internal */
-    private _and!: AndQueryBuilder<T>
+    private and!: AndQueryBuilder<T>
 
     /** @internal */
-    private _or?: AndQueryBuilder<T>[]
+    private or?: AndQueryBuilder<T>[]
 
-    /** @internal */
     constructor(
-        /** @internal */
         public target: Constructor<T>,
-
-        /** @internal */
         public alias?: string,
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
-        this.addAnd()
+        this.newAndQB()
     }
 
     // Instance Methods =======================================================
@@ -70,7 +73,7 @@ export default class ConditionalQueryBuilder<T extends Entity> {
             ? OperatorType[typeof conditional]
             : never
     ): this {
-        this._and.where(propertie, conditional, value)
+        this.and.where(propertie, conditional, value)
         return this
     }
 
@@ -83,36 +86,7 @@ export default class ConditionalQueryBuilder<T extends Entity> {
      * @returns {this} - `this`
      */
     public whereExists(options: ExistsQueryOptions<T>): this {
-        this._and.whereExists(options)
-        return this
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Add a and where conditional option
-     */
-    public and = this.where
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Add a and exists contional option
-     */
-    public andExists = this.whereExists
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Initialize a new OR where condtional options
-     * @returns 
-     */
-    public or(): this {
-        this.throwIfEmptyAnd()
-        this._or = this._or ?? []
-        this._or.push(this._and)
-        this._or.push(this.addAnd())
-
+        this.and.whereExists(options)
         return this
     }
 
@@ -138,10 +112,18 @@ export default class ConditionalQueryBuilder<T extends Entity> {
             ? OperatorType[typeof conditional]
             : never
     ): this {
-        this.or()
-        this._and.where(propertie, conditional, value)
-
+        this.newOrClause().where(propertie, conditional, value)
         return this
+    }
+
+    // ------------------------------------------------------------------------
+
+    public SQL(clause?: 'WHERE' | 'ON'): string {
+        return clause ? `${clause} ` : '' + ConditionalSQLBuilder.conditional(
+            this.target,
+            this.toQueryOptions(),
+            this.alias
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -151,24 +133,40 @@ export default class ConditionalQueryBuilder<T extends Entity> {
     * @returns - A object with conditional options
     */
     public toQueryOptions(): ConditionalQueryOptions<T> {
-        return this._or?.map(opt => opt.toQueryOptions())
-            ?? this._and.toQueryOptions()
-    }
-
-    // Privates ---------------------------------------------------------------
-    /** @internal */
-    private addAnd(): AndQueryBuilder<T> {
-        return this._and = new AndQueryBuilder(
-            this.target,
-            this.alias
+        return this.or?.map(opt => opt.toQueryOptions()) ?? (
+            this.and.toQueryOptions()
         )
     }
 
     // ------------------------------------------------------------------------
 
     /** @internal */
+    public handle(handler: ConditionalQueryHandler<T>): this {
+        handler(this)
+        return this
+    }
+
+    // Privates ---------------------------------------------------------------
+    /** @internal */
+    private newAndQB(): AndQueryBuilder<T> {
+        return this.and = new AndQueryBuilder(
+            this.target,
+            this.alias
+        )
+    }
+
+    // ------------------------------------------------------------------------
+    private newOrClause(): AndQueryBuilder<T> {
+        this.throwIfEmptyAnd();
+        (this.or ??= []).push(this.and, this.newAndQB())
+        return this.and
+    }
+
+    // ------------------------------------------------------------------------
+
+    /** @internal */
     private throwIfEmptyAnd(): void {
-        if (Object.keys(this._and.toQueryOptions()).length === 0) (
+        if (Object.keys(this.and.toQueryOptions()).length === 0) (
             PolyORMException.QueryBuilder.throw('EMPTY_AND_CLAUSE')
         )
     }

@@ -1,5 +1,5 @@
-import ModuleStringHelper from "./ModuleStringHelper"
+import ModuleHelper from "./ModuleHelper"
 
 export {
-    ModuleStringHelper
+    ModuleHelper
 }

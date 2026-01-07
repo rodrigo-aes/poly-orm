@@ -25,7 +25,7 @@ import type {
     CompatibleOperators
 } from "../OperatorQueryBuilder"
 import type { ExistsQueryOptions } from "../ExistsQueryBuilder"
-import type { ConditionalQueryHandler } from "../types"
+import type { conditionalMethods } from "../types"
 
 /**
  * Build `UPDATE` query
@@ -37,28 +37,18 @@ export default class UpdateQueryBuilder<T extends BaseEntity> {
     /** @internal */
     private attributes: UpdateAttributes<T> = {}
 
-    /** @internal */
-    private _sqlBuilder?: UpdateSQLBuilder<T>
-
     constructor(
         public target: Constructor<T>,
         public alias?: string
     ) { }
 
     // Getters ================================================================
-    // Protecteds -------------------------------------------------------------
+    // Privates ---------------------------------------------------------------
     /** @internal */
-    protected get whereOptions(): ConditionalQueryBuilder<T> {
-        return this._where = this._where ?? new ConditionalQueryBuilder(
-            this.target,
-            this.alias
+    private get whereQB(): ConditionalQueryBuilder<T> {
+        return this._where ??= new ConditionalQueryBuilder(
+            this.target, this.alias
         )
-    }
-
-    // privates ---------------------------------------------------------------
-    /** @internal */
-    private get sqlBuilder(): UpdateSQLBuilder<T> {
-        return this._sqlBuilder ?? this.instantiateSQLBuilder()
     }
 
     // Instance Methods =======================================================
@@ -68,8 +58,8 @@ export default class UpdateQueryBuilder<T extends BaseEntity> {
      * @param attributes - Attributes data
      * @returns {this} - `this`
      */
-    public set(attributes: UpdateAttributes<T>): this {
-        this.attributes = { ...this.attributes, ...attributes }
+    public set(attributes: UpdateAttributes<T>): Omit<this, 'set'> {
+        this.attributes = attributes
         return this
     }
 
@@ -95,7 +85,7 @@ export default class UpdateQueryBuilder<T extends BaseEntity> {
             ? OperatorType[typeof conditional]
             : never
     ): this {
-        this.whereOptions.where(propertie, conditional, value)
+        this.whereQB.where(propertie, conditional, value)
         return this
     }
 
@@ -108,32 +98,7 @@ export default class UpdateQueryBuilder<T extends BaseEntity> {
      * @returns {this} - `this`
      */
     public whereExists(options: ExistsQueryOptions<T>): this {
-        this.whereOptions.whereExists(options)
-        return this
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Add a and where conditional option
-     */
-    public and = this.where
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Add a and exists contional option
-     */
-    public andExists = this.whereExists
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Initialize a new OR where condtional options
-     * @returns 
-     */
-    public or(): this {
-        this.whereOptions.or()
+        this.whereQB.whereExists(options)
         return this
     }
 
@@ -158,8 +123,8 @@ export default class UpdateQueryBuilder<T extends BaseEntity> {
         value?: typeof conditional extends keyof OperatorType
             ? OperatorType[typeof conditional]
             : never
-    ) {
-        this.whereOptions.orWhere(propertie, conditional, value)
+    ): this {
+        this.whereQB.orWhere(propertie, conditional, value)
         return this
     }
 
@@ -172,7 +137,7 @@ export default class UpdateQueryBuilder<T extends BaseEntity> {
     public exec(): Promise<ResultSetHeader> {
         return MySQLOperation.Update.exec({
             target: this.target,
-            sqlBuilder: this.sqlBuilder
+            sqlBuilder: this.toSQLBuilder()
         }) as Promise<ResultSetHeader>
     }
 
@@ -182,19 +147,17 @@ export default class UpdateQueryBuilder<T extends BaseEntity> {
      * Convert `this` to operation SQL string
      */
     public SQL(): string {
-        return this.sqlBuilder.SQL()
+        return this.toSQLBuilder().SQL()
     }
 
     // Privates ---------------------------------------------------------------
     /** @internal */
-    private instantiateSQLBuilder(): UpdateSQLBuilder<T> {
-        this._sqlBuilder = new UpdateSQLBuilder(
+    private toSQLBuilder(): UpdateSQLBuilder<T> {
+        return new UpdateSQLBuilder(
             this.target,
             this.attributes,
             this._where?.toQueryOptions() ?? {},
             this.alias
         )
-
-        return this._sqlBuilder
     }
 }

@@ -22,9 +22,9 @@ export default class InsertQueryBuilder<
 
     // ------------------------------------------------------------------------
 
-    public data(attributes: CreationAttributes<T>): (
-        Omit<this, 'fields' | 'values'>
-    ) {
+    public data(attributes: CreationAttributes<T>): Omit<
+        this, 'fields' | 'values'
+    > {
         this.sqlBuilder.setData(attributes)
         return this
     }

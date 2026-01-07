@@ -63,3 +63,5 @@ export type QueryHandler<
     : QB extends JoinQueryBuilder<T>
     ? JoinQueryHandler<T>
     : never
+
+export type conditionalMethods = 'where' | 'whereExists' | 'orWhere'

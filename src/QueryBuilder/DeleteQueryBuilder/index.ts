@@ -28,9 +28,6 @@ import type { ExistsQueryOptions } from "../ExistsQueryBuilder"
  */
 export default class DeleteQueryBuilder<T extends BaseEntity> {
     /** @internal */
-    private _sqlBuilder?: DeleteSQLBuilder<T>
-
-    /** @internal */
     private _where?: ConditionalQueryBuilder<T>
 
     constructor(
@@ -41,19 +38,10 @@ export default class DeleteQueryBuilder<T extends BaseEntity> {
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected get whereOptions(): ConditionalQueryBuilder<T> {
-        if (!this._where) this._where = new ConditionalQueryBuilder(
-            this.target,
-            this.alias
+    protected get whereQB(): ConditionalQueryBuilder<T> {
+        return this._where ??= new ConditionalQueryBuilder(
+            this.target, this.alias
         )
-
-        return this._where
-    }
-
-    // Privates ---------------------------------------------------------------
-    /** @internal */
-    private get sqlBuilder(): DeleteSQLBuilder<T> {
-        return this._sqlBuilder ?? this.instantiateSQLBuilder()
     }
 
     // Instance Methods =======================================================
@@ -78,7 +66,7 @@ export default class DeleteQueryBuilder<T extends BaseEntity> {
             ? OperatorType[typeof conditional]
             : never
     ): this {
-        this.whereOptions.where(propertie, conditional, value)
+        this.whereQB.where(propertie, conditional, value)
         return this
     }
 
@@ -89,32 +77,7 @@ export default class DeleteQueryBuilder<T extends BaseEntity> {
      * @returns {this} - `this`
      */
     public whereExists(options: ExistsQueryOptions<T>): this {
-        this.whereOptions.whereExists(options)
-        return this
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Add a and where conditional option
-     */
-    public and = this.where
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Add a and exists contional option
-     */
-    public andExists = this.whereExists
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Initialize a new OR where condtional options
-     * @returns 
-     */
-    public or(): this {
-        this.whereOptions.or()
+        this.whereQB.whereExists(options)
         return this
     }
 
@@ -139,8 +102,8 @@ export default class DeleteQueryBuilder<T extends BaseEntity> {
         value?: typeof conditional extends keyof OperatorType
             ? OperatorType[typeof conditional]
             : never
-    ) {
-        this.whereOptions.orWhere(propertie, conditional, value)
+    ): this {
+        this.whereQB.orWhere(propertie, conditional, value)
         return this
     }
 
@@ -153,7 +116,11 @@ export default class DeleteQueryBuilder<T extends BaseEntity> {
     public exec(): Promise<DeleteResult> {
         return MySQLOperation.Delete.exec({
             target: this.target,
-            sqlBuilder: this.sqlBuilder
+            sqlBuilder: new DeleteSQLBuilder(
+                this.target,
+                this._where?.toQueryOptions() ?? {},
+                this.alias
+            )
         })
     }
 
@@ -163,18 +130,11 @@ export default class DeleteQueryBuilder<T extends BaseEntity> {
      * Convert `this` to operation SQL string
      */
     public SQL(): string {
-        return this.sqlBuilder.SQL()
-    }
-
-    // Privates ---------------------------------------------------------------
-    /** @internal */
-    private instantiateSQLBuilder(): DeleteSQLBuilder<T> {
-        this._sqlBuilder = new DeleteSQLBuilder(
+        return new DeleteSQLBuilder(
             this.target,
             this._where?.toQueryOptions() ?? {},
             this.alias
         )
-
-        return this._sqlBuilder
+            .SQL()
     }
 }

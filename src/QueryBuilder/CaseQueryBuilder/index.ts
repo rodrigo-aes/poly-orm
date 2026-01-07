@@ -1,5 +1,8 @@
 import { MetadataHandler } from "../../Metadata"
 
+// SQL Builders
+import { CaseSQLBuilder } from "../../SQLBuilders"
+
 // Query Handlers
 import ConditionalQueryBuilder from "../ConditionalQueryBuilder"
 
@@ -7,7 +10,7 @@ import ConditionalQueryBuilder from "../ConditionalQueryBuilder"
 import type { Constructor, Entity, TargetMetadata } from "../../types"
 import type { CaseQueryOptions, ElseQueryOption } from "../../SQLBuilders"
 import type { CaseQueryTuple } from "./types"
-import type { ConditionalQueryHandler } from "../types"
+import type { CaseQueryHandler, ConditionalQueryHandler } from "../types"
 
 /**
  * Build a `CASE` conditional options
@@ -17,7 +20,7 @@ export default class CaseQueryBuilder<T extends Entity> {
     protected metadata: TargetMetadata<T>
 
     /** @internal */
-    private _whens!: CaseQueryTuple<T>[]
+    private whens!: CaseQueryTuple<T>[]
 
     /** @internal */
     private _else?: ElseQueryOption
@@ -40,22 +43,17 @@ export default class CaseQueryBuilder<T extends Entity> {
     // Publics ----------------------------------------------------------------
     /**
      * Add a CASE WHEN clause and THEN value
-     * @param caseClause - Where query handler to define WHEN caluse
+     * @param handler - Where query handler to define WHEN caluse
      * @param then - THEN value
      * @returns {this} - `this`
      */
-    public when(caseClause: ConditionalQueryHandler<T>, then: any): this {
-        const where = new ConditionalQueryBuilder(
-            this.target,
-            this.alias
-        )
-
-        caseClause(where)
-
-        const tuple: CaseQueryTuple<T> = [where, then]
-
-        if (this._whens) this._whens.push(tuple)
-        else this._whens = [tuple]
+    public when(handler: ConditionalQueryHandler<T>, then: any): this {
+        (this.whens ??= []).push([
+            new ConditionalQueryBuilder(this.target, this.alias).handle(
+                handler
+            ),
+            then
+        ])
 
         return this
     }
@@ -84,17 +82,37 @@ export default class CaseQueryBuilder<T extends Entity> {
 
     // ------------------------------------------------------------------------
 
+    public SQL(): string {
+        return new CaseSQLBuilder(
+            this.target,
+            this.toQueryOptions(),
+            this._as,
+            this.alias
+        )
+            .SQL()
+    }
+
+    // ------------------------------------------------------------------------
+
     /**
      * Convert `this` to `CaseQueryOptions` object
      * @returns - A object with case options
      */
     public toQueryOptions(): CaseQueryOptions<T> {
         return [
-            ...this._whens.map(([when, then]) => [
+            ...this.whens.map(([when, then]) => [
                 when.toQueryOptions(),
                 then
             ]),
             this._else
         ] as CaseQueryOptions<T>
+    }
+
+    // ------------------------------------------------------------------------
+
+    /** @internal */
+    public handle(handler: CaseQueryHandler<T>): this {
+        handler(this)
+        return this
     }
 }

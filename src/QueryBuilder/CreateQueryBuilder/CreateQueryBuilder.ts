@@ -40,9 +40,9 @@ export default abstract class CreateQueryBuilder<T extends BaseEntity> {
      * @param names - Properties names
      * @returns {this} - `this`
      */
-    public properties(...names: CreationAttibutesKey<T>[]): (
-        Omit<this, 'data'>
-    ) {
+    public properties(...names: CreationAttibutesKey<T>[]): Omit<
+        this, 'data'
+    > {
         this.sqlBuilder.fields(...names)
         return this
     }

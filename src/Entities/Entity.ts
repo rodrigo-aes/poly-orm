@@ -127,9 +127,7 @@ export default abstract class Entity {
     // Protecteds -------------------------------------------------------------
     /** @internal */
     protected get _pk(): string {
-        return this.__pk ??= (
-            (this as any).getTrueMetadata().PK
-        )
+        return this.__pk ??= (this as any).getTrueMetadata().PK
     }
 
     // ------------------------------------------------------------------------

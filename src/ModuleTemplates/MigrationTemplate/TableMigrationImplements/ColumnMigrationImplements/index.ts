@@ -2,7 +2,7 @@
 import { inspect } from "util"
 
 // Helpers
-import { ModuleStringHelper } from "../../../Helpers"
+import { ModuleHelper } from "../../../Helpers"
 
 // Types
 import type {
@@ -49,7 +49,7 @@ export default class ColumnMigrationImplements {
         switch (this.action) {
             case "CREATE": return this.createImplements()
 
-            case "ALTER": return ModuleStringHelper.indentMany([
+            case "ALTER": return ModuleHelper.indentMany([
                 `table.alterColumn('${this.schema.name}')`,
                 [this.propsImplements(), 4]
             ])
@@ -72,7 +72,7 @@ export default class ColumnMigrationImplements {
     // ------------------------------------------------------------------------
 
     private commonImplements(): string {
-        return ModuleStringHelper.indentMany([
+        return ModuleHelper.indentMany([
             `table.${this.createMethod()}`,
             [this.propsImplements(), 4]
         ])
@@ -94,14 +94,14 @@ export default class ColumnMigrationImplements {
 
             // ----------------------------------------------------------------
 
-            case "foreign-id": return ModuleStringHelper.indentMany([
+            case "foreign-id": return ModuleHelper.indentMany([
                 `table.foreignId('${name}')`,
                 [this.propsImplements(), 4]
             ])
 
             // ----------------------------------------------------------------
 
-            case "polymorphic-foreign-id": return ModuleStringHelper
+            case "polymorphic-foreign-id": return ModuleHelper
                 .indentMany([
                     `table.polymorphicForeignId('${name}')`,
                     [this.propsImplements(), 4]
@@ -447,7 +447,7 @@ export default class ColumnMigrationImplements {
 
         implementation.concat(this.constraintImplements())
 
-        return ModuleStringHelper.indentMany(implementation)
+        return ModuleHelper.indentMany(implementation)
     }
 
     // ------------------------------------------------------------------------

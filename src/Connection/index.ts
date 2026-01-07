@@ -14,7 +14,7 @@ import Syncronizer from '../Syncronizer'
 import { ProceduresHandler } from '../SQLBuilders'
 
 // SQL Builders
-import { li, type Literals, type LiteralHandler } from '../SQLBuilders'
+import { li, type LiteralHandler } from '../SQLBuilders'
 
 // Utils
 import Log from '../utils/Log'
@@ -112,10 +112,7 @@ export default class MySQLConnection implements MySQLConnectionInstance {
      */
     public async sync(mode: 'alter' | 'reset'): Promise<void> {
         const syncronizer = new Syncronizer(
-            this as unknown as MySQLConnectionInterface,
-            {
-                logging: true
-            }
+            this as unknown as MySQLConnectionInterface
         )
 
         switch (mode) {

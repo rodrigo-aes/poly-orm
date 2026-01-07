@@ -31,6 +31,14 @@ import UpdateOrCreateSQLBuilder, {
 import DeleteSQLBuilder from "./DeleteSQLBuilder"
 import JoinSQLBuilder from "./JoinSQLBuilder"
 
+import ConditionalSQLBuilder, {
+    WhereSQLBuilder,
+    OnSQLBuilder,
+    CaseSQLBuilder,
+    AndSQLBuilder,
+    OrSQLBuilder,
+} from "./ConditionalSQLBuilder"
+
 import {
     HasOneHandlerSQLBuilder,
     HasManyHandlerSQLBuilder,
@@ -131,6 +139,12 @@ export {
     DeleteSQLBuilder,
 
     JoinSQLBuilder,
+    ConditionalSQLBuilder,
+    WhereSQLBuilder,
+    OnSQLBuilder,
+    CaseSQLBuilder,
+    AndSQLBuilder,
+    OrSQLBuilder,
 
     HasOneHandlerSQLBuilder,
     HasManyHandlerSQLBuilder,

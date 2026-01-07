@@ -11,9 +11,7 @@ import {
 // SQL Builers
 import {
     FindSQLBuilder,
-
     type FindQueryOptions as SQLBuilderOptions,
-    type OrderQueryOption
 } from "../../../SQLBuilders"
 
 // Query Builders
@@ -22,7 +20,7 @@ import OrderQueryBuilder, {
 } from "../../OrderQueryBuilder"
 
 // Types
-import type { Entity, Constructor } from "../../../types"
+import type { Entity } from "../../../types"
 import type { FindQueryOptions } from "./types"
 
 /**
@@ -44,12 +42,10 @@ export default class BulkFindQueryBuilder<
      * @returns {this} - `this`
      */
     public orderBy(...options: OrderQueryOptions<T>): this {
-        this._options.order = this._options.order ?? new OrderQueryBuilder(
-            this.target,
-            this.alias
-        )
-
-        this._options.order.orderBy(...options)
+        (this._options.order ??= new OrderQueryBuilder(
+            this.target, this.alias
+        ))
+            .orderBy(...options)
 
         return this
     }
@@ -108,7 +104,7 @@ export default class BulkFindQueryBuilder<
         return {
             select: select?.toQueryOptions(),
             where: where?.toQueryOptions(),
-            relations: this.relationsToOptions(),
+            relations: this.relationsOptions(),
             group: group?.toQueryOptions(),
             order: order?.toQueryOptions(),
             limit,

@@ -11,10 +11,6 @@ import {
 
 // Query Builders
 import ConditionalQueryBuilder from "../ConditionalQueryBuilder"
-
-// Handlers
-import QueryBuilderHandler from "../QueryBuilderHandler"
-
 // Types
 import type {
     Entity,
@@ -111,8 +107,8 @@ export default class ExistsQueryBuilder<T extends Entity> {
         target: Constructor<T>,
         handler: ConditionalQueryHandler<T>
     ): ConditionalQueryOptions<T> {
-        return QueryBuilderHandler
-            .handle(new ConditionalQueryBuilder(target, this.alias), handler)
+        return new ConditionalQueryBuilder(target, this.alias)
+            .handle(handler)
             .toQueryOptions()
     }
 

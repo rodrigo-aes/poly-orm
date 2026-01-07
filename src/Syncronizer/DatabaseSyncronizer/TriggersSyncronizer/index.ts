@@ -4,7 +4,7 @@ import TriggerSyncronizer from "./TriggerSyncronizer"
 export default class TriggersSyncronizer extends TriggersSchema<
     TriggerSyncronizer
 > {
-    declare protected previous?: TriggersSyncronizer;
+    declare protected previous?: TriggersSyncronizer
 
     protected static override get TriggerConstructor(): (
         typeof TriggerSyncronizer
@@ -70,6 +70,5 @@ export default class TriggersSyncronizer extends TriggersSchema<
         ))) (
             await trigger.drop(this.connection)
         )
-
     }
 }

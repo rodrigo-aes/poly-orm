@@ -5,7 +5,7 @@ import { writeFileSync, mkdirSync, existsSync } from "fs"
 import Config from "../Config"
 
 // Helpers
-import { ModuleStringHelper } from "./Helpers"
+import { ModuleHelper } from "./Helpers"
 
 // Types
 import type { ModuleExtension } from "./types"
@@ -50,7 +50,7 @@ export default abstract class ModuleTemplate {
     // ------------------------------------------------------------------------
 
     protected indent(str: string, spaces: number = 4): string {
-        return ModuleStringHelper.indent(str, spaces)
+        return ModuleHelper.indent(str, spaces)
     }
 
     // ------------------------------------------------------------------------
@@ -58,7 +58,7 @@ export default abstract class ModuleTemplate {
     protected indentMany(parts: (string | [string, number | undefined])[]): (
         string
     ) {
-        return ModuleStringHelper.indentMany(parts)
+        return ModuleHelper.indentMany(parts)
     }
 
     // Privates ---------------------------------------------------------------
@@ -72,6 +72,6 @@ export default abstract class ModuleTemplate {
     // Static Methods =========================================================
     // Publics ----------------------------------------------------------------
     public static toPascalCase(...parts: string[]): string {
-        return ModuleStringHelper.toPascalCase(...parts)
+        return ModuleHelper.toPascalCase(...parts)
     }
 }

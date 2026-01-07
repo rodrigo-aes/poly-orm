@@ -2,7 +2,7 @@
 import ColumnMigrationImplements from "./ColumnMigrationImplements"
 
 // Helpers
-import { ModuleStringHelper } from "../../Helpers"
+import { ModuleHelper } from "../../Helpers"
 
 // Types
 import type { EntityMetadata } from "../../../Metadata"
@@ -22,13 +22,9 @@ export default class TableMigrationImplements {
 
     private get hasTimestamps(): boolean {
         return !!(
-            this.schema.find(
-                ({ pattern }) => pattern === 'created-timestamp'
-            )
+            this.schema.find(({ pattern }) => pattern === 'created-timestamp')
             &&
-            this.schema.find(
-                ({ pattern }) => pattern === 'updated-timestamp'
-            )
+            this.schema.find(({ pattern }) => pattern === 'updated-timestamp')
         )
     }
 
@@ -36,13 +32,13 @@ export default class TableMigrationImplements {
     // Publics ----------------------------------------------------------------
     public implements(): string {
         switch (this.action) {
-            case "CREATE": return ModuleStringHelper.indentMany([
+            case "CREATE": return ModuleHelper.indentMany([
                 `this.database.createTable('${this.schema.name}', table => {`,
                 [this.columnsImplements(), 4],
                 '})'
             ])
 
-            case "ALTER": return ModuleStringHelper.indentMany([
+            case "ALTER": return ModuleHelper.indentMany([
                 `this.database.alterTable('${this.schema.name}', table => {`,
                 [this.columnsImplements(), 4],
                 '})'
@@ -58,7 +54,7 @@ export default class TableMigrationImplements {
 
     // Privates ---------------------------------------------------------------
     private columnsImplements(): string {
-        let implementation = ModuleStringHelper.indentMany(
+        let implementation = ModuleHelper.indentMany(
             this.schema.flatMap(column => {
                 const prevColumn = this.previous?.findColumn(column.name)
                 const [action] = column.compare(prevColumn)
