@@ -108,6 +108,12 @@ export default class ColumnsMetadata extends MetadataArray<ColumnMetadata> {
     ) {
         this.findOrThrow(name).defineForeignKey(initMap)
     }
+
+    // ------------------------------------------------------------------------
+
+    public addCheck(name: string, ...constraints: string[]) {
+        this.findOrThrow(name).addCheck(...constraints)
+    }
 }
 
 export {

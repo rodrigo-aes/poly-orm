@@ -23,7 +23,7 @@ import type {
 
 import type {
     RelatedColumnsMap
-} from "../../../../EntityMetadata/ColumnsMetadata/ColumnMetadata/ForeignKeyReferences/types"
+} from "../../../../EntityMetadata/ColumnsMetadata/ColumnMetadata/ForeignKeyRef/types"
 
 export default class PolymorphicForeignKeyReferences {
     public constrained: boolean = true

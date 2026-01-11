@@ -1,10 +1,16 @@
-import ColumnSchema from "../../../../DatabaseSchema/TableSchema/ColumnSchema"
+import ColumnSchema, {
+    ForeignKeyRefSchema,
+    CheckConstraintSchema,
+
+    type ColumnSchemaChild
+} from "../../../../DatabaseSchema/TableSchema/ColumnSchema"
 
 // Metadata
 import { DataType } from "../../../../Metadata"
 
 // SQL Builders
 import ForeignKeyConstraintSQLBuilder from "./ForeignKeyConstraintSQLBuilder"
+import CheckConstraintSQLBuilder from "./CheckConstraintSQLBuilder"
 
 // Symbols
 import { PolymorphicId, CurrentTimestamp } from "./Symbols"
@@ -14,17 +20,25 @@ import { SQLString } from "../../../../Handlers"
 
 // Types
 import type { ActionType } from "../../../../DatabaseSchema"
-import type { ColumnSQLBuilderMap } from "./types"
+import type { ColumnSQLBuilderMap, ColumnSQLBuilderChild } from "./types"
 
 export default class ColumnSQLBuilder extends ColumnSchema {
     declare public map: ColumnSQLBuilderMap
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get foreignKeyConstraint(): (
+    public get FKSQLBuilder(): (
         ForeignKeyConstraintSQLBuilder | undefined
     ) {
         return this.map.references
+    }
+
+    // ------------------------------------------------------------------------
+
+    public get CHKSQLBuilder(): (
+        CheckConstraintSQLBuilder | undefined
+    ) {
+        return this.map.check
     }
 
     // Static Getters =========================================================
@@ -38,105 +52,79 @@ export default class ColumnSQLBuilder extends ColumnSchema {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public createSQL() {
-        return `${this.columnSQL('CREATE')}${this.createForeignKeySQL()}`
-    }
-
-    // ------------------------------------------------------------------------
-
-    public createForeignKeySQL() {
-        return this.foreignKeyConstraint?.map.constrained
-            ? `, ${this.foreignKeyConstraint?.createSQL()}`
-            : ''
+        return this.columnSQL() + this.createConstraintsSQL()
     }
 
     // ------------------------------------------------------------------------
 
     public addSQL() {
-        return `ADD COLUMN ${this.columnSQL('CREATE')}${(
-            this.addForeignKeySQL()
-        )}`
-    }
-
-    // ------------------------------------------------------------------------
-
-    public addForeignKeySQL() {
-        return this.foreignKeyConstraint?.map.constrained
-            ? `, ${this.foreignKeyConstraint?.addSQL()}`
-            : ''
+        return 'ADD COLUMN ' + this.columnSQL() + this.createConstraintsSQL(
+            true
+        )
     }
 
     // ------------------------------------------------------------------------
 
     public alterSQL() {
-        return `MODIFY COLUMN ${this.columnSQL('ALTER')}`
+        return 'MODIFY COLUMN ' + this.columnSQL()
     }
 
     // ------------------------------------------------------------------------
 
-    public dropAndAddSQL(): string {
-        return `${this.dropSQL()}, ${this.addSQL()}${this.addForeignKeySQL()}`
-    }
-
-    // ------------------------------------------------------------------------
-
-    public alterForeignKeySQL(): string {
-        return this.foreignKeyConstraint?.alterSQL() ?? ''
+    public rebuildSQL(): string {
+        return `${this.dropSQL()}, ${this.addSQL()}`
     }
 
     // ------------------------------------------------------------------------
 
     public syncAlterSQL(schema?: ColumnSchema) {
-        const sql: string[] = []
-
-        const { primary: oldPk, unique: oldUn } = schema?.map ?? this.map
-        const { primary, unique } = this.map
-
-        if (oldPk ?? primary) sql.push(this.dropIndexSQL('PRIMARY'))
-        if (oldUn ?? unique) sql.push(this.dropIndexSQL('UNIQUE'))
-
-        sql.push(this.alterSQL())
-
-        if (primary) sql.push(this.addIndexSQL('PRIMARY'))
-        if (unique) sql.push(this.addIndexSQL('UNIQUE'))
-
-        const fkSQL = schema ? this.syncForeignKeyActionSQL(schema) : undefined
-        if (fkSQL) sql.push(fkSQL)
-
-        return SQLString.sanitize(sql.join(', '))
+        return (
+            this.dropConstraintsSQL(schema) +
+            this.alterSQL() +
+            this.createConstraintsSQL()
+        )
     }
 
     // ------------------------------------------------------------------------
 
     public dropSQL(): string {
-        return `${this.shouldDropForeignKeySQL()} DROP COLUMN \`${this.name}\``
+        return this.dropConstraintsSQL() + `DROP COLUMN \`${this.name}\``
     }
 
     // ------------------------------------------------------------------------
 
-    public dropForeignKeySQL(): string {
-        return this.foreignKeyConstraint?.dropSQL() ?? ''
+    public PKConstraintSQL() {
+        return `CONSTRAINT ${this.PKName} PRIMARY KEY (${this.name})`
     }
 
     // ------------------------------------------------------------------------
 
-    public addIndexSQL(index: 'PRIMARY' | 'UNIQUE'): string {
-        switch (index) {
-            case "PRIMARY": return `ADD PRIMARY KEY (${this.name})`
-            case "UNIQUE": return (
-                `ADD UNIQUE KEY ${this.uniqueKeyName} (${this.name})`
-            )
-        }
+    public addPKSQL() {
+        return 'ADD ' + this.PKConstraintSQL()
     }
 
     // ------------------------------------------------------------------------
 
-    public dropIndexSQL(index: 'PRIMARY' | 'UNIQUE'): string {
-        switch (index) {
-            case "PRIMARY": return 'DROP PRIMARY KEY'
-            case "UNIQUE": return (
-                `DROP INDEX ${this.uniqueKeyName}`
-            )
-        }
+    public dropPKSQL() {
+        return 'DROP PRIMARY KEY'
+    }
+
+    // ------------------------------------------------------------------------
+
+    public uniqueConstraintSQL(): string {
+        return `UNIQUE KEY ${this.uniqueKeyName} (\`${this.name}\`)`
+    }
+
+    // ------------------------------------------------------------------------
+
+    public addUniqueSQL(): string {
+        return 'ADD ' + this.uniqueConstraintSQL()
+    }
+
+    // ------------------------------------------------------------------------
+
+    public dropUniqueSQL(): string {
+        return 'DROP INDEX ' + this.uniqueKeyName
     }
 
     // ------------------------------------------------------------------------
@@ -144,21 +132,9 @@ export default class ColumnSQLBuilder extends ColumnSchema {
     public syncActionSQL(schema?: ColumnSchema): string | undefined {
         switch (this.compare(schema)[0]) {
             case 'CREATE': return this.addSQL()
-            case 'ALTER': return this.syncAlterSQL()
-            case "DROP/CREATE": return this.dropAndAddSQL()
+            case 'ALTER': return this.syncAlterSQL(schema)
+            case "REBUILD": return this.rebuildSQL()
             case 'DROP': return this.dropSQL()
-        }
-    }
-
-    // ------------------------------------------------------------------------
-
-    public syncForeignKeyActionSQL(schema: ColumnSchema): string {
-        switch (this.foreignKeyAction(schema)) {
-            case 'CREATE': return this.addForeignKeySQL()
-            case 'ALTER': return this.alterForeignKeySQL()
-            case 'DROP': return this.dropForeignKeySQL()
-
-            default: return ''
         }
     }
 
@@ -166,13 +142,15 @@ export default class ColumnSQLBuilder extends ColumnSchema {
 
     public migrateAlterSQL(action: Omit<ActionType, 'CREATE'>): string {
         switch (action) {
-            case 'ALTER': return [
-                this.alterSQL(),
-                this.childMigrateAlterSQL()
-            ]
-                .join(', ')
+            case 'ALTER': return `${this.alterSQL()}, ${(
+                this.migrateChildSQL()
+            )}`
 
-            case 'DROP/CREATE': this.dropAndAddSQL()
+            // ----------------------------------------------------------------
+
+            case 'REBUILD': return this.rebuildSQL()
+
+            // ----------------------------------------------------------------
 
             case 'DROP': return this.dropSQL()
         }
@@ -181,39 +159,34 @@ export default class ColumnSQLBuilder extends ColumnSchema {
     }
 
     // Protecteds -------------------------------------------------------------
-    protected childMigrateAlterSQL(): string {
-        return this.actions.map(([action]) => {
+    protected migrateChildSQL(): string {
+        return this.actions.map(([action, child]) => {
             switch (action) {
-                case "CREATE": return this.addForeignKeySQL()
-                case "ALTER": return this.alterForeignKeySQL()
-                case "DROP": return this.dropForeignKeySQL()
+                case "CREATE": return (
+                    this.childSQLBuilder(child)?.addSQL() ?? ''
+                )
+
+                // ------------------------------------------------------------
+
+                case "ALTER": return (
+                    this.childSQLBuilder(child)?.alterSQL() ?? ''
+                )
+
+                // ------------------------------------------------------------
+
+                case "DROP": return (
+                    this.childSQLBuilder(child)?.dropSQL() ?? ''
+                )
             }
         })
             .join(', ')
     }
 
     // Privates ---------------------------------------------------------------
-    private shouldDropForeignKeySQL(): string {
-        return this.map.isForeignKey
-            ? `${this.dropForeignKeySQL()},`
-            : ''
-    }
-
-    // ------------------------------------------------------------------------
-
-    private columnSQL(action: 'CREATE' | 'ALTER') {
-        const create: boolean = action === 'CREATE'
-
-        return [
-            this.nameSQL(),
-            this.typeSQL(),
-            this.unsignedSQL(),
-            create ? this.primarySQL() : '',
-            this.nullSQL(),
-            this.autoIncrementSQL(),
-            this.defaultSQL(),
-            create ? this.uniqueSQL() : '',
-        ].join(' ')
+    private columnSQL() {
+        return `${this.nameSQL()} ${this.typeSQL()} ${this.unsignedSQL()} ${(
+            this.nullSQL()
+        )} ${this.autoIncrementSQL()} ${this.defaultSQL()}`
     }
 
     // ------------------------------------------------------------------------
@@ -243,20 +216,6 @@ export default class ColumnSQLBuilder extends ColumnSchema {
 
     // ------------------------------------------------------------------------
 
-    private uniqueSQL() {
-        return this.map.unique
-            ? `, UNIQUE KEY ${this.uniqueKeyName} (\`${this.name}\`)`
-            : ''
-    }
-
-    // ------------------------------------------------------------------------
-
-    private primarySQL() {
-        return this.map.primary ? 'PRIMARY KEY' : ''
-    }
-
-    // ------------------------------------------------------------------------
-
     private autoIncrementSQL() {
         return this.map.autoIncrement ? 'AUTO_INCREMENT' : ''
     }
@@ -278,6 +237,88 @@ export default class ColumnSQLBuilder extends ColumnSchema {
             }
 
             default: return ''
+        }
+    }
+
+    // ------------------------------------------------------------------------
+
+    private createConstraintsSQL(add: boolean = false): string {
+        const constraints: string[] = []
+
+        // Primary ------------------------------------------------------------
+        if (this.map.primary) constraints.push(
+            this[add ? 'addPKSQL' : 'PKConstraintSQL']()
+        )
+
+        // Unique ------------------------------------------------------------
+        if (this.map.unique) constraints.push(
+            this[add ? 'addUniqueSQL' : 'uniqueConstraintSQL']()
+        )
+
+        // Foreign Key --------------------------------------------------------
+        if (this.constrainedForeignKey) constraints.push(
+            this.FKSQLBuilder![add ? 'addSQL' : 'createSQL']()
+        )
+
+        // Check ------------------------------------------------------------
+        if (this.checkConstraint) constraints.push(
+            this.map.check![add ? 'addSQL' : 'createSQL']()
+        )
+
+        // --------------------------------------------------------------------
+
+        return constraints.join(', ')
+    }
+
+    // ------------------------------------------------------------------------
+
+    private dropConstraintsSQL(schema?: ColumnSchema): string {
+        const constraints: string[] = []
+
+        // Primary ------------------------------------------------------------
+        if ((schema?.map ?? this.map).primary) constraints.push(
+            this.dropPKSQL()
+        )
+
+        // Unique -------------------------------------------------------------
+        if ((schema?.map ?? this.map).unique) constraints.push(
+            this.dropUniqueSQL()
+        )
+
+        // Foreign Key --------------------------------------------------------
+        if ((schema ?? this).constrainedForeignKey) constraints.push(
+            this.FKSQLBuilder!.dropSQL()
+        )
+
+        // Check ------------------------------------------------------------
+        if ((schema?.map ?? this.map).check) constraints.push(
+            this.map.check!.dropSQL()
+        )
+
+        // --------------------------------------------------------------------
+
+        return constraints.join(', ') + constraints.length ? ', ' : ''
+    }
+
+    // ------------------------------------------------------------------------
+
+    private childSQLBuilder(
+        child: ColumnSchemaChild
+    ): ColumnSQLBuilderChild | undefined {
+        switch (true) {
+            case child instanceof ForeignKeyRefSchema: return (
+                this.FKSQLBuilder
+            )
+
+            // ----------------------------------------------------------------
+
+            case child instanceof CheckConstraintSchema: return (
+                this.CHKSQLBuilder
+            )
+
+            // ----------------------------------------------------------------
+
+            default: throw new Error('Unreacheable error')
         }
     }
 }

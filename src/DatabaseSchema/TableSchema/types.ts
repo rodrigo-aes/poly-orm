@@ -2,7 +2,7 @@ import type { ActionType } from "../types"
 import type ColumnSchema from "./ColumnSchema"
 import type {
     ColumnSchemaInitMap,
-    ForeignKeyReferencesSchema
+    ForeignKeyRefSchema
 } from "./ColumnSchema"
 
 export type TableSchemaInitMap = {
@@ -12,5 +12,5 @@ export type TableSchemaInitMap = {
 
 export type TableSchemaAction = [
     ActionType | 'ADD-PK' | 'ADD-UNIQUE' | 'DROP-PK' | 'DROP-UNIQUE',
-    ColumnSchema | ForeignKeyReferencesSchema
+    ColumnSchema | ForeignKeyRefSchema
 ]

@@ -1,6 +1,6 @@
 import type { ForeignKeyActionListener } from "../../../../Metadata"
 
-export type ForeignKeyReferencesSchemaMap = {
+export type ForeignKeyRefSchemaMap = {
     tableName?: string | null
     columnName?: string | null
     constrained?: boolean

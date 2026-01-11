@@ -1,13 +1,10 @@
-import ForeignKeyReferencesSchema from "../../../../../DatabaseSchema/TableSchema/ColumnSchema/ForeignKeyReferencesSchema"
-
-// Helpers
-import { SQLString } from "../../../../../Handlers"
+import ForeignKeyRefSchema from "../../../../../DatabaseSchema/TableSchema/ColumnSchema/ForeignKeyRefSchema"
 
 // Types
 import type { ActionType } from "../../../../../DatabaseSchema"
 
 export default class ForeignKeyConstraintSQLBuilder extends
-    ForeignKeyReferencesSchema {
+    ForeignKeyRefSchema {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public createSQL(): string {
@@ -17,7 +14,7 @@ export default class ForeignKeyConstraintSQLBuilder extends
     // ------------------------------------------------------------------------
 
     public addSQL(): string {
-        return `ADD ${this.constraintSQL()}`
+        return 'ADD ' + this.constraintSQL()
     }
 
     // ------------------------------------------------------------------------

@@ -49,6 +49,32 @@ export default class DataType extends AbstractDataType {
 
     // ------------------------------------------------------------------------
 
+    public static same(
+        a: DataType | string,
+        b: DataType | string
+    ): boolean {
+        switch (typeof a) {
+            case "string": switch (typeof b) {
+                case "string": return a === b
+                case "object": return this.compareStrAndObjDataTypes(
+                    a,
+                    b
+                )
+            }
+            case "object": switch (typeof b) {
+                case "string": return this.compareStrAndObjDataTypes(
+                    b,
+                    a
+                )
+                case "object": return (
+                    a.buildSQL() === b.buildSQL()
+                )
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+
     public static CHAR(length?: number): CHAR {
         return new CHAR(length)
     }
@@ -181,6 +207,25 @@ export default class DataType extends AbstractDataType {
         type: ComputedType = 'STORED'
     ) {
         return new COMPUTED(dataType, { as, type })
+    }
+
+    // Privates ---------------------------------------------------------------
+    // ------------------------------------------------------------------------
+
+    /** @iternal */
+    private static compareStrAndObjDataTypes(
+        string: string,
+        object: DataType
+    ): boolean {
+        return object
+            .buildSQL()
+            .replace(
+                object.type.toUpperCase(),
+                object.type
+            )
+            === string
+                .replace('unsigned', '')
+                .trim()
     }
 }
 

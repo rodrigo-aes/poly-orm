@@ -4,13 +4,14 @@ import DataType from "../../DataType"
 import HooksMetadata from "../../HooksMetadata"
 
 // Objects
-import ForeignKeyReferences, {
+import ForeignKeyRef, {
     type ForeignKeyReferencedGetter,
     type ForeignKeyActionListener,
     type ForeignKeyReferencesInitMap,
     type ForeignKeyReferencesJSON
-} from "./ForeignKeyReferences"
+} from "./ForeignKeyRef"
 
+import CheckConstraint from "./CheckConstraint"
 
 // Symbols
 import { CurrentTimestamp } from "../../../../SQLBuilders"
@@ -37,8 +38,9 @@ export default class ColumnMetadata {
     public unsigned?: boolean
     public isForeignKey?: boolean
 
-    public references?: ForeignKeyReferences
+    public references?: ForeignKeyRef
     public pattern?: ColumnPattern
+    public check?: CheckConstraint
 
     constructor(
         public target: EntityTarget,
@@ -66,10 +68,20 @@ export default class ColumnMetadata {
     // Publics ----------------------------------------------------------------
     public defineForeignKey(initMap: ForeignKeyReferencesInitMap): this {
         this.isForeignKey = true
-        this.references = new ForeignKeyReferences(
+        this.references = new ForeignKeyRef(
             this.target,
             this.name,
             initMap
+        )
+
+        return this
+    }
+
+    // ------------------------------------------------------------------------
+
+    public addCheck(...constraints: string[]): this {
+        (this.check ??= new CheckConstraint(this.target, this.name)).add(
+            ...constraints
         )
 
         return this

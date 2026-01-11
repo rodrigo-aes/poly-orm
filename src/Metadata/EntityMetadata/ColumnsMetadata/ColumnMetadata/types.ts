@@ -1,10 +1,12 @@
-import type { EntityTarget } from "../../../../types";
+import type { EntityTarget } from "../../../../types"
 import type ColumnMetadata from "."
+
 import type {
     ForeignKeyReferencesInitMap,
     ForeignKeyReferencesJSON
-} from "./ForeignKeyReferences"
-import type { DataTypeMetadataJSON } from "../../DataType";
+} from "./ForeignKeyRef"
+
+import type { DataTypeMetadataJSON } from "../../DataType"
 
 export type ColumnPattern = (
     'id' |
@@ -61,6 +63,7 @@ export type ColumnConfig = {
     unsigned?: boolean
     isForeignKey?: boolean
     pattern?: ColumnPattern
+    check?: string[]
 }
 
 export type ColumnBeforeUpdateListener = (metadata: ColumnMetadata) => any

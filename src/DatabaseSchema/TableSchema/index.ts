@@ -12,11 +12,11 @@ import {
 } from "../../Metadata"
 
 import ColumnSchema, {
-    ForeignKeyReferencesSchema,
+    ForeignKeyRefSchema,
 
     type ColumnSchemaInitMap,
     type ColumnSchemaMap,
-    type ForeignKeyReferencesSchemaMap
+    type ForeignKeyRefSchemaMap
 } from "./ColumnSchema"
 
 // Symbols
@@ -105,9 +105,7 @@ export default class TableSchema<
 
         ColumnSchemaMetadata.setPolymorphicPrefix(
             column,
-            typeof target === 'string'
-                ? target
-                : target.name
+            typeof target === 'string' ? target : target.name
         )
     }
 
@@ -119,9 +117,7 @@ export default class TableSchema<
      * @returns {ColumnSchema} - Foreign id column to handle
      */
     public foreignId(name: string): T {
-        const col = this.buildColumn(name, DataType.INT('BIG'))
-            .unsigned()
-
+        const col = this.buildColumn(name, DataType.INT('BIG')).unsigned()
         col.map.isForeignKey = true
 
         return col
@@ -134,21 +130,22 @@ export default class TableSchema<
      * @param target - Target entity
      * @param name - Optional custom name
      * @default - `${target.name.toLowerCase()}_id`
-     * @returns {ForeignKeyReferencesSchema} - Foreign key references schema to
+     * @returns {ForeignKeyRefSchema} - Foreign key references schema to
      * handle
      */
-    public foreignIdFor(target: EntityTarget, name?: string): (
-        ForeignKeyReferencesSchema
-    ) {
-        const meta = EntityMetadata.findOrThrow(target)
+    public foreignIdFor(
+        target: EntityTarget,
+        name?: string
+    ): ForeignKeyRefSchema {
+        const pk = EntityMetadata.findOrThrow(target).columns.primary
 
-        const pk = meta.columns.primary
-        name = name ?? `${target.name.toLowerCase()}_id`
-
-        return this.buildColumn(name, pk.dataType)
+        return this
+            .buildColumn(
+                name ?? `${target.name.toLowerCase()}_id`,
+                pk.dataType
+            )
             .unsigned()
-            .constrained()
-            .references(target, pk.name)
+            .foreignKey(target, pk.name)
     }
 
     // ------------------------------------------------------------------------
@@ -554,11 +551,11 @@ export default class TableSchema<
      * @param column - Column name
      * @returns - Foreing key references schema to handle
      */
-    public addConstraint(column: string): ForeignKeyReferencesSchema {
+    public addConstraint(column: string): ForeignKeyRefSchema {
         const col = this.findOrThrow(column)
-        if (this.colAlreadyInActions(column)) return col.constrained()
+        if (this.alreadyHasAction(column)) return col.constrained()
 
-        col.map.references = new ForeignKeyReferencesSchema(
+        col.map.references = new ForeignKeyRefSchema(
             this.name,
             col.name
         )
@@ -574,13 +571,13 @@ export default class TableSchema<
      * @param column - Column name
      * @returns - Foreing key references schema to handle
      */
-    public alterConstraint(column: string): ForeignKeyReferencesSchema {
+    public alterConstraint(column: string): ForeignKeyRefSchema {
         const col = this.findOrThrow(column)
         if (!col.map.references) throw PolyORMException.MySQL.instantiate(
             'CANNOT_DROP_FIELD_OR_KEY', col.foreignKeyName
         )
 
-        if (this.colAlreadyInActions(column)) return col.alterConstraint()
+        if (this.alreadyHasAction(column)) return col.alterForeignKey()
 
         this.actions.push(['ALTER', col.map.references])
 
@@ -599,7 +596,7 @@ export default class TableSchema<
             'CANNOT_DROP_FIELD_OR_KEY', col.foreignKeyName
         )
 
-        if (this.colAlreadyInActions(column)) return col.dropConstraint()
+        if (this.alreadyHasAction(column)) return col.dropForeignKeyConstraint()
 
         this.actions.push(['DROP', col.map.references])
     }
@@ -677,7 +674,7 @@ export default class TableSchema<
 
     // Privates ---------------------------------------------------------------
     /** @internal */
-    private colAlreadyInActions(column: string): boolean {
+    private alreadyHasAction(column: string): boolean {
         return !!this.actions.find(([_, { name }]) => name === column)
     }
 
@@ -754,10 +751,10 @@ export default class TableSchema<
 
 export {
     ColumnSchema,
-    ForeignKeyReferencesSchema,
+    ForeignKeyRefSchema as ForeignKeyReferencesSchema,
 
     type TableSchemaInitMap,
     type ColumnSchemaInitMap,
     type ColumnSchemaMap,
-    type ForeignKeyReferencesSchemaMap
+    type ForeignKeyRefSchemaMap as ForeignKeyReferencesSchemaMap
 }

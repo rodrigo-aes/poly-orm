@@ -27,7 +27,7 @@ export type RelatedColumnsMap = {
     [key: string]: ColumnMetadata
 }
 
-export type ForeignKeyReferencesJSON = {
+export type ForeignKeyRefJSON = {
     entity: (
         EntityMetadataJSON |
         { [k: string]: EntityMetadataJSON | PolymorphicEntityMetadataJSON }

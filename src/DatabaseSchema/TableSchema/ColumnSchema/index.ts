@@ -6,9 +6,11 @@ import {
     ColumnSchemaMetadata
 } from "../../../Metadata"
 
-import ForeignKeyReferencesSchema, {
-    type ForeignKeyReferencesSchemaMap
-} from "./ForeignKeyReferencesSchema"
+import ForeignKeyRefSchema, {
+    type ForeignKeyRefSchemaMap
+} from "./ForeignKeyRefSchema"
+
+import CheckConstraintSchema from "./CheckConstraintSchema"
 
 // Types
 import type { EntityTarget, Constructor } from "../../../types"
@@ -17,8 +19,10 @@ import type { ActionType } from "../../types"
 import type {
     ColumnSchemaInitMap,
     ColumnSchemaMap,
+    ColumnSchemaChild,
     ColumnSchemaAction
 } from "./types"
+import type { LiteralHandler } from "../../../SQLBuilders"
 
 // Exceptions
 import PolyORMException from "../../../Errors"
@@ -63,10 +67,10 @@ export default class ColumnSchema {
         this.map = { ...this.map, ...map }
 
         if (references) this.map.references = (
-            references instanceof ForeignKeyReferencesSchema
+            references instanceof ForeignKeyRefSchema
         )
             ? references
-            : new ForeignKeyReferencesSchema(
+            : new ForeignKeyRefSchema(
                 this.tableName,
                 this.name,
                 references
@@ -76,7 +80,14 @@ export default class ColumnSchema {
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     /** @internal */
-    public get foreignKeyConstraint(): ForeignKeyReferencesSchema | undefined {
+    public get PKName(): string {
+        return `pk_${this.tableName}`
+    }
+
+    // ------------------------------------------------------------------------
+
+    /** @internal */
+    public get FKSQLBuilder(): ForeignKeyRefSchema | undefined {
         return this.map.references
     }
 
@@ -91,11 +102,15 @@ export default class ColumnSchema {
 
     /** @internal */
     public get uniqueKeyName(): string | undefined {
-        return this.map.unique
-            ? `${this.name}_unique_key`
-            : undefined
+        return this.map.unique ? `${this.name}_unique_key` : undefined
     }
 
+    // ------------------------------------------------------------------------
+
+    /** @internal */
+    public get checkName(): string | undefined {
+        return this.map.check?.length ? `chk_${this.name}` : undefined
+    }
 
     // ------------------------------------------------------------------------
 
@@ -116,13 +131,30 @@ export default class ColumnSchema {
         )
     }
 
+    // ------------------------------------------------------------------------
+
+    /** @internal */
+    public get constrainedForeignKey(): boolean {
+        return !!(
+            this.map.isForeignKey &&
+            this.map.references?.map.constrained
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
+    /** @internal */
+    public get checkConstraint(): boolean {
+        return !!this.map.check?.length
+    }
+
     // Static Getters =========================================================
     // Protecteds =============================================================
     /** @internal */
     protected static get ForeignKeyConstructor(): (
-        typeof ForeignKeyReferencesSchema
+        typeof ForeignKeyRefSchema
     ) {
-        return ForeignKeyReferencesSchema
+        return ForeignKeyRefSchema
     }
 
     // Instance Methods =======================================================
@@ -213,50 +245,27 @@ export default class ColumnSchema {
     public foreignKey(
         table: string | EntityTarget,
         column: string
-    ): ForeignKeyReferencesSchema {
+    ): ForeignKeyRefSchema {
         this.map.isForeignKey = true
-        return this.constrained().references(table, column)
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Define `this` as a constrained foreign key and returns foreign key
-     * refrences shcema to handle
-     * @returns {ForeignKeyReferencesSchema} - Foreign key references schema
-     */
-    public constrained(): ForeignKeyReferencesSchema {
-        if (this.map.references) PolyORMException.MySQL.throwOutOfOperation(
-            'DUPLICATE_KEY', this.foreignKeyName
+        return this.addAction(
+            this.validAction('CREATE', 'references'),
+            new ForeignKeyRefSchema(this.tableName, this.name).references(
+                table, column
+            )
         )
-
-        this.map.isForeignKey = true
-        this.map.references = new ForeignKeyReferencesSchema(
-            this.tableName,
-            this.name,
-            {
-                constrained: true
-            }
-        )
-        this.actions.push(['CREATE', this.map.references])
-
-        return this.map.references
     }
 
     // ------------------------------------------------------------------------
 
     /**
      * Alter `this` constraint foreign key
-     * @returns {ForeignKeyReferencesSchema} - Foreign key references schema
+     * @returns {ForeignKeyRefSchema} - Foreign key references schema
      */
-    public alterConstraint(): ForeignKeyReferencesSchema {
-        if (!this.map.references) throw PolyORMException.MySQL.instantiate(
-            'CANNOT_DROP_FIELD_OR_KEY', this.foreignKeyName
+    public alterForeignKey(): ForeignKeyRefSchema {
+        return this.addAction(
+            this.validAction('ALTER', 'references'),
+            this.map.references!
         )
-
-        this.actions.push(['ALTER', this.map.references])
-
-        return this.map.references
     }
 
     // ------------------------------------------------------------------------
@@ -264,26 +273,66 @@ export default class ColumnSchema {
     /**
      * Drop `this` constrained foreign key
      */
-    public dropConstraint(): void {
-        if (!this.map.references) throw PolyORMException.MySQL.instantiate(
-            'CANNOT_DROP_FIELD_OR_KEY', this.foreignKeyName
+    public dropForeignKeyConstraint(): void {
+        if (!this.map.references?.map.constrained) throw (
+            PolyORMException.MySQL.instantiate(
+                'CANNOT_DROP_FIELD_OR_KEY', this.foreignKeyName
+            )
         )
 
-        this.actions.push(['DROP', this.map.references])
+        this.addAction(
+            this.validAction('DROP', 'references'),
+            this.map.references!
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
+    public check(...constraints: (string | LiteralHandler)[]): this {
+        this.addAction(
+            this.validAction('CREATE', 'check'),
+            (this.map.check ??= new CheckConstraintSchema(
+                this.tableName, this.name, ...constraints
+            ))
+        )
+
+        return this
+    }
+
+    // ------------------------------------------------------------------------
+
+    public alterCheck(...constraints: (string | LiteralHandler)[]): this {
+        this.addAction(
+            this.validAction('ALTER', 'check'),
+            this.map.check = new CheckConstraintSchema(
+                this.tableName, this.name, ...constraints
+            )
+        )
+
+        return this
+    }
+
+    // ------------------------------------------------------------------------
+
+    public dropCheck(): this {
+        this.addAction(
+            this.validAction('DROP', 'check'),
+            this.map.check!
+        )
+
+        return this
     }
 
     // ------------------------------------------------------------------------
 
     /** @iternal */
     public compare(schema?: ColumnSchema): [ActionType, ActionType] {
-        this._action = this._action ?? this.action(schema) as ActionType
-        this._fkAction = this._fkAction ?? (
-            schema
+        return [
+            this._action ??= this.action(schema) as ActionType,
+            this._fkAction ??= schema
                 ? this.foreignKeyAction(schema)
                 : 'NONE'
-        )
-
-        return [this._action, this._fkAction]
+        ]
     }
 
     // Protecteds -------------------------------------------------------------]
@@ -292,7 +341,7 @@ export default class ColumnSchema {
         switch (true) {
             case !schema: return 'CREATE';
             case this.shouldAlter(schema!): return 'ALTER'
-            case this.shouldDropAndAdd(schema!): return 'DROP/CREATE'
+            case this.shouldRebuild(schema!): return 'DROP/CREATE'
 
             default: return 'NONE'
         }
@@ -301,25 +350,29 @@ export default class ColumnSchema {
     // ------------------------------------------------------------------------
 
     /** @iternal */
-    protected foreignKeyAction(schema: ColumnSchema): (
-        ActionType
-    ) {
+    protected foreignKeyAction(schema: ColumnSchema): ActionType {
         switch (true) {
             case (
                 !schema.map.isForeignKey &&
                 this.map.isForeignKey
             ): return 'CREATE'
 
+            // ----------------------------------------------------------------
+
             case (
                 schema.map.isForeignKey &&
                 !this.map.isForeignKey
             ): return 'DROP'
 
+            // ----------------------------------------------------------------
+
             case (
-                !!schema.map.references &&
-                !!this.map.references &&
+                schema.map.references &&
+                this.map.references &&
                 this.shouldAlterForeignKey(schema.map.references)
             ): return 'ALTER'
+
+            // ----------------------------------------------------------------
 
             default: return 'NONE'
         }
@@ -329,85 +382,39 @@ export default class ColumnSchema {
 
     /** @iternal */
     protected shouldAlter(schema: ColumnSchema): boolean {
-        const { references, ...map } = this.map
-
-        for (const [key, value] of Object.entries(map) as (
-            [keyof ColumnSchemaMap, any][])
-        ) if (!this.compareValues(value, schema.map[key])) return true
-
-
-        return false
+        return Object
+            .entries(this.map)
+            .filter(([key]) => key !== 'references')
+            .some(([key, value]) => !this.compareValues(
+                value, schema.map[key as keyof ColumnSchemaMap]
+            ))
     }
 
     // ------------------------------------------------------------------------
 
     /** @iternal */
-    protected shouldDropAndAdd(schema: ColumnSchema): boolean {
-        if (!this.compareDataTypes(typeof schema.dataType === 'string'
-            ? schema.map.columnType!
-            : schema.dataType
-        )) return true
+    protected shouldRebuild(schema: ColumnSchema): boolean {
+        return !DataType.same(
+            typeof schema.dataType === 'object'
+                ? schema.dataType
+                : schema.map.columnType!,
 
-        return false
+            this.dataType
+        )
     }
 
     // ------------------------------------------------------------------------
 
     /** @iternal */
-    protected shouldAlterForeignKey(references: ForeignKeyReferencesSchema): (
+    protected shouldAlterForeignKey(references: ForeignKeyRefSchema): (
         boolean
     ) {
         for (const [key, value] of Object.entries(this.map.references!) as (
-            [keyof ForeignKeyReferencesSchema, string | null][]
+            [keyof ForeignKeyRefSchema, string | null][]
         ))
             if (!this.compareValues(value, references[key])) return true
 
         return false
-    }
-
-    // ------------------------------------------------------------------------
-
-    /** @iternal */
-    protected compareDataTypes(
-        dataTypeA: DataType | string,
-        dataTypeB: DataType | string = this.dataType
-    ): boolean {
-        switch (typeof dataTypeA) {
-            case "string": switch (typeof dataTypeB) {
-                case "string": return dataTypeA === dataTypeB
-                case "object": return this.compareStrAndObjDataTypes(
-                    dataTypeA,
-                    dataTypeB
-                )
-            }
-            case "object": switch (typeof dataTypeB) {
-                case "string": return this.compareStrAndObjDataTypes(
-                    dataTypeB,
-                    dataTypeA
-                )
-                case "object": return (
-                    dataTypeA.buildSQL() === dataTypeB.buildSQL()
-                )
-            }
-        }
-    }
-
-    // ------------------------------------------------------------------------
-
-    /** @iternal */
-    protected compareStrAndObjDataTypes(
-        string: string,
-        object: DataType
-    ): boolean {
-        return object
-            .buildSQL()
-            .replace(
-                object.type.toUpperCase(),
-                object.type
-            )
-            === string
-                .replace('unsigned', '')
-                .trim()
     }
 
     // ------------------------------------------------------------------------
@@ -423,6 +430,47 @@ export default class ColumnSchema {
             case "function": return value() === compare
 
             default: return true
+        }
+    }
+
+    // Privates ---------------------------------------------------------------
+    /** @iternal */
+    private addAction<T extends ColumnSchemaChild>(
+        action: ActionType,
+        child: T
+    ): T {
+        this.actions.push([action, child])
+        return child
+    }
+
+    // ------------------------------------------------------------------------
+
+    /** @iternal */
+    private validAction(
+        action: ActionType,
+        key: keyof ColumnSchemaMap
+    ): ActionType {
+        switch (action) {
+            case "CREATE": return !this.map[key]
+                ? action
+                : PolyORMException.MySQL.throwOutOfOperation(
+                    'DUPLICATE_KEY', this.foreignKeyName
+                ) as any
+
+            // ----------------------------------------------------------------
+
+            case "ALTER":
+            case "DROP": return this.map[key]
+                ? action
+                : (() => {
+                    throw PolyORMException.MySQL.instantiate(
+                        'CANNOT_DROP_FIELD_OR_KEY', this.foreignKeyName
+                    )
+                })()
+
+            // ----------------------------------------------------------------
+
+            default: throw new Error('Unreacheable error')
         }
     }
 
@@ -462,9 +510,11 @@ export default class ColumnSchema {
 }
 
 export {
-    ForeignKeyReferencesSchema,
+    ForeignKeyRefSchema,
+    CheckConstraintSchema,
 
     type ColumnSchemaInitMap,
     type ColumnSchemaMap,
-    type ForeignKeyReferencesSchemaMap
+    type ColumnSchemaChild,
+    type ForeignKeyRefSchemaMap
 }

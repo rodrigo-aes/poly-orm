@@ -3,16 +3,16 @@ import { EntityMetadata } from "../../../../Metadata"
 // Types
 import type { EntityTarget } from "../../../../types"
 import type { ForeignKeyActionListener } from "../../../../Metadata"
-import type { ForeignKeyReferencesSchemaMap } from "./types"
+import type { ForeignKeyRefSchemaMap } from "./types"
 
-export default class ForeignKeyReferencesSchema {
+export default class ForeignKeyRefSchema {
     /** @internal */
     constructor(
         public tableName: string,
         public columnName: string,
 
         /** @internal */
-        public map: ForeignKeyReferencesSchemaMap = {}
+        public map: ForeignKeyRefSchemaMap = {}
     ) { }
 
     // Getters ================================================================
@@ -30,12 +30,16 @@ export default class ForeignKeyReferencesSchema {
      * @returns {this} - `this`
      */
     public references(table: EntityTarget | string, column: string): this {
-        if (typeof table === 'object') table = this.getTargetTableName(table)
-
-        this.map.tableName = table as string
+        this.map.tableName = this.resolveTableName(table)
         this.map.columnName = column
-        this.map.constrained = true
 
+        return this
+    }
+
+    // ------------------------------------------------------------------------
+
+    public constrained(constrained: boolean = true): this {
+        this.map.constrained = constrained
         return this
     }
 
@@ -65,11 +69,16 @@ export default class ForeignKeyReferencesSchema {
 
     // Privates ---------------------------------------------------------------
     /** @internal */
-    private getTargetTableName(target: EntityTarget): string {
-        return EntityMetadata.findOrThrow(target).tableName
+    private resolveTableName(table: EntityTarget | string): string {
+        switch (typeof table) {
+            case 'string': return table
+            case 'object': return EntityMetadata.findOrThrow(table).tableName
+
+            default: throw new Error('Unreacheable error')
+        }
     }
 }
 
 export {
-    type ForeignKeyReferencesSchemaMap
+    type ForeignKeyRefSchemaMap
 }

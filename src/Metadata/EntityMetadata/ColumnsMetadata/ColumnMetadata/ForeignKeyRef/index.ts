@@ -11,10 +11,10 @@ import type {
     ForeignKeyActionListener,
     RelatedColumnsMap,
 
-    ForeignKeyReferencesJSON
+    ForeignKeyRefJSON
 } from "./types"
 
-export default class ForeignKeyReferences {
+export default class ForeignKeyRef {
     public constrained: boolean = true
     public onDelete?: ForeignKeyActionListener
     public onUpdate?: ForeignKeyActionListener
@@ -65,7 +65,7 @@ export default class ForeignKeyReferences {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public toJSON(): ForeignKeyReferencesJSON {
+    public toJSON(): ForeignKeyRefJSON {
         return {
             entity: this.entityToJSON(),
             column: this.columnToJSON(),
@@ -122,5 +122,5 @@ export type {
     ForeignKeyReferencesInitMap,
     ForeignKeyReferencedGetter,
     ForeignKeyActionListener,
-    ForeignKeyReferencesJSON
+    ForeignKeyRefJSON as ForeignKeyReferencesJSON
 }

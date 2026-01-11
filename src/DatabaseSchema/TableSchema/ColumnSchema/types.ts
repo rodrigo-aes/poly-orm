@@ -1,7 +1,8 @@
 import type { DataType } from "../../../Metadata"
 import type { ActionType } from "../../types"
-import type ForeignKeyReferencesSchema from "./ForeignKeyReferencesSchema"
-import type { ForeignKeyReferencesSchemaMap } from "./ForeignKeyReferencesSchema"
+import type ForeignKeyRefSchema from "./ForeignKeyRefSchema"
+import type { ForeignKeyRefSchemaMap } from "./ForeignKeyRefSchema"
+import type CheckConstraintSchema from "./CheckConstraintSchema"
 import type { ColumnPattern } from "../../../Metadata"
 
 export interface ColumnSchemaMap {
@@ -13,9 +14,10 @@ export interface ColumnSchemaMap {
     unsigned?: boolean
     unique?: boolean
     isForeignKey?: boolean
-    references?: ForeignKeyReferencesSchema
+    references?: ForeignKeyRefSchema
 
     pattern?: ColumnPattern
+    check?: CheckConstraintSchema
 }
 
 export type ColumnSchemaInitMap = (
@@ -27,14 +29,18 @@ export type ColumnSchemaInitMap = (
     Omit<ColumnSchemaMap, 'references'>
     & {
         references?: (
-            ForeignKeyReferencesSchema |
-            ForeignKeyReferencesSchemaMap
+            ForeignKeyRefSchema |
+            ForeignKeyRefSchemaMap
         )
     }
 )
 
+export type ColumnSchemaChild = (
+    ForeignKeyRefSchema |
+    CheckConstraintSchema
+)
 
 export type ColumnSchemaAction = [
     ActionType,
-    ForeignKeyReferencesSchema
+    ColumnSchemaChild
 ]

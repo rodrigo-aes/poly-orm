@@ -200,7 +200,7 @@ export default class MigrationTemplate extends ModuleTemplate {
             case "CREATE": return 'DROP'
             case "DROP": return 'CREATE'
 
-            case 'DROP/CREATE':
+            case 'REBUILD':
             case "ALTER":
             case "NONE": return this.action
         }
