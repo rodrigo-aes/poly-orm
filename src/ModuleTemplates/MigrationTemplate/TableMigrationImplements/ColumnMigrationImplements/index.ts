@@ -28,10 +28,10 @@ import type {
 
 import type {
     ColumnSchema,
-    ForeignKeyReferencesSchema,
+    ForeignKeyRefSchema,
     ActionType,
     ColumnSchemaMap,
-    ForeignKeyReferencesSchemaMap
+    ForeignKeyRefSchemaMap
 } from "../../../../DatabaseSchema"
 
 export default class ColumnMigrationImplements {
@@ -513,14 +513,14 @@ export default class ColumnMigrationImplements {
 
     // ------------------------------------------------------------------------
 
-    private toChangeConstraintProps(): Partial<ForeignKeyReferencesSchemaMap> {
+    private toChangeConstraintProps(): Partial<ForeignKeyRefSchemaMap> {
         return this.previous
             ? Object.fromEntries(
                 Object.entries(this.schema.map.references!.map)
                     .filter(
                         ([key, value]) => (
                             value !== this.previous?.map.references?.map[
-                            key as keyof ForeignKeyReferencesSchema['map']
+                            key as keyof ForeignKeyRefSchema['map']
                             ]
                         )
                     )

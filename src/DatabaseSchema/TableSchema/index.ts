@@ -13,8 +13,10 @@ import {
 
 import ColumnSchema, {
     ForeignKeyRefSchema,
+    CheckConstraintSchema,
 
     type ColumnSchemaInitMap,
+    type ColumnSchemaChild,
     type ColumnSchemaMap,
     type ForeignKeyRefSchemaMap
 } from "./ColumnSchema"
@@ -25,9 +27,13 @@ import { PolymorphicId, CurrentTimestamp } from "../../SQLBuilders"
 // Types
 import type { EntityTarget, Constructor } from "../../types"
 import type DatabaseSchema from ".."
+import type { ActionType } from ".."
 import type { TriggerSchema } from "../TriggersSchema"
-import type { TableSchemaInitMap, TableSchemaAction } from "./types"
-import { ActionType } from ".."
+import type {
+    TableSchemaInitMap,
+    TableSchemaAction,
+    TableSchemaActionType
+} from "./types"
 
 // Exceptions
 import PolyORMException from "../../Errors"
@@ -43,7 +49,6 @@ export default class TableSchema<
 
     /** @internal */
     constructor(
-
         /** @internal */
         public database: DatabaseSchema | undefined = undefined,
 
@@ -85,7 +90,7 @@ export default class TableSchema<
      * @default - 'id'
      */
     public id(name?: string): void {
-        this.buildColumn(name ?? 'id', DataType.INT('BIG'))
+        this.addColumn(name ?? 'id', DataType.INT('BIG'))
             .primary()
             .unsigned()
             .autoIncrement()
@@ -99,12 +104,11 @@ export default class TableSchema<
      * @default - 'id'
      */
     public polymorphicId(target: EntityTarget | string, name?: string): void {
-        const column = this.buildColumn(name ?? 'id', DataType.VARCHAR())
-            .unique()
-            .default(PolymorphicId)
-
         ColumnSchemaMetadata.setPolymorphicPrefix(
-            column,
+            this.addColumn(name ?? 'id', DataType.VARCHAR())
+                .unique()
+                .default(PolymorphicId),
+
             typeof target === 'string' ? target : target.name
         )
     }
@@ -117,7 +121,7 @@ export default class TableSchema<
      * @returns {ColumnSchema} - Foreign id column to handle
      */
     public foreignId(name: string): T {
-        const col = this.buildColumn(name, DataType.INT('BIG')).unsigned()
+        const col = this.addColumn(name, DataType.INT('BIG')).unsigned()
         col.map.isForeignKey = true
 
         return col
@@ -140,12 +144,12 @@ export default class TableSchema<
         const pk = EntityMetadata.findOrThrow(target).columns.primary
 
         return this
-            .buildColumn(
-                name ?? `${target.name.toLowerCase()}_id`,
+            .addColumn(
+                name ?? `${target.name.toLowerCase()}Id`,
                 pk.dataType
             )
             .unsigned()
-            .foreignKey(target, pk.name)
+            .FK(target, pk.name)
     }
 
     // ------------------------------------------------------------------------
@@ -156,7 +160,7 @@ export default class TableSchema<
      * @returns {ColumnSchema} - Polymorphic foreign id column
      */
     public polymorphicForeignId(name: string): T {
-        const col = this.buildColumn(name, DataType.VARCHAR())
+        const col = this.addColumn(name, DataType.VARCHAR())
         col.map.isForeignKey = true
 
         return col
@@ -174,7 +178,7 @@ export default class TableSchema<
         name: string,
         ...referenceds: EntityTarget[]
     ): T {
-        return this.buildColumn(name, DataType.ENUM(
+        return this.addColumn(name, DataType.ENUM(
             ...referenceds.map(type => type.name)
         ))
     }
@@ -185,7 +189,8 @@ export default class TableSchema<
      * Create `createdAt` column timestamp
      */
     public createdTimestamp(): void {
-        this.buildColumn('createdAt', DataType.TIMESTAMP())
+        this
+            .addColumn('createdAt', DataType.TIMESTAMP())
             .default(CurrentTimestamp)
     }
 
@@ -195,7 +200,8 @@ export default class TableSchema<
      * Create `updatedAt` column timestamp
      */
     public updatedTimestamp(): void {
-        this.buildColumn('updatedAt', DataType.TIMESTAMP())
+        this
+            .addColumn('updatedAt', DataType.TIMESTAMP())
             .default(CurrentTimestamp)
     }
 
@@ -218,7 +224,7 @@ export default class TableSchema<
      * @returns - Created column
      */
     public column(name: string, dataType: DataType): T {
-        return this.buildColumn(name, dataType)
+        return this.addColumn(name, dataType)
     }
 
     // ------------------------------------------------------------------------
@@ -230,7 +236,7 @@ export default class TableSchema<
      * @returns - Created string column
      */
     public string(name: string, length?: number): T {
-        return this.buildColumn(name, DataType.VARCHAR(length))
+        return this.addColumn(name, DataType.VARCHAR(length))
     }
 
     // ------------------------------------------------------------------------
@@ -242,7 +248,7 @@ export default class TableSchema<
      * @returns - Created char column
      */
     public char(name: string, length?: number): T {
-        return this.buildColumn(name, DataType.CHAR(length))
+        return this.addColumn(name, DataType.CHAR(length))
     }
 
     // ------------------------------------------------------------------------
@@ -254,7 +260,7 @@ export default class TableSchema<
      * @returns - Created text column
      */
     public text(name: string, length?: TextLength): T {
-        return this.buildColumn(name, DataType.TEXT(length))
+        return this.addColumn(name, DataType.TEXT(length))
     }
 
     // ------------------------------------------------------------------------
@@ -266,7 +272,7 @@ export default class TableSchema<
      * @returns - Created int column
      */
     public int(name: string, length?: IntegerLength): T {
-        return this.buildColumn(name, DataType.INT(length))
+        return this.addColumn(name, DataType.INT(length))
     }
 
     // ------------------------------------------------------------------------
@@ -277,7 +283,7 @@ export default class TableSchema<
      * @returns - Create bigint column
      */
     public bigint(name: string): T {
-        return this.buildColumn(name, DataType.INT('BIG'))
+        return this.addColumn(name, DataType.INT('BIG'))
     }
 
     // ------------------------------------------------------------------------
@@ -288,7 +294,7 @@ export default class TableSchema<
      * @returns - Created tinyint column
      */
     public tinyint(name: string): T {
-        return this.buildColumn(name, DataType.INT('TINY'))
+        return this.addColumn(name, DataType.INT('TINY'))
     }
 
     // ------------------------------------------------------------------------
@@ -301,7 +307,7 @@ export default class TableSchema<
      * @returns - Created float column
      */
     public float(name: string, M: number, D: number): T {
-        return this.buildColumn(name, DataType.FLOAT(M, D))
+        return this.addColumn(name, DataType.FLOAT(M, D))
     }
 
     // ------------------------------------------------------------------------
@@ -314,7 +320,7 @@ export default class TableSchema<
      * @returns - Created decimal column
      */
     public decimal(name: string, M: number, D: number): T {
-        return this.buildColumn(name, DataType.DECIMAL(M, D))
+        return this.addColumn(name, DataType.DECIMAL(M, D))
     }
 
     // ------------------------------------------------------------------------
@@ -327,7 +333,7 @@ export default class TableSchema<
      * @returns - Created double column
      */
     public double(name: string, M: number, D: number): T {
-        return this.buildColumn(name, DataType.DOUBLE(M, D))
+        return this.addColumn(name, DataType.DOUBLE(M, D))
     }
 
     // ------------------------------------------------------------------------
@@ -338,7 +344,7 @@ export default class TableSchema<
      * @returns - Created boolean column
      */
     public boolean(name: string): T {
-        return this.buildColumn(name, DataType.BOOLEAN())
+        return this.addColumn(name, DataType.BOOLEAN())
     }
 
     // ------------------------------------------------------------------------
@@ -350,7 +356,7 @@ export default class TableSchema<
      * @returns - Created enum column
      */
     public enum(name: string, options: string[]): T {
-        return this.buildColumn(name, DataType.ENUM(...options))
+        return this.addColumn(name, DataType.ENUM(...options))
     }
 
     // ------------------------------------------------------------------------
@@ -362,7 +368,7 @@ export default class TableSchema<
      * @returns - Created set column
      */
     public set(name: string, options: string[]): T {
-        return this.buildColumn(name, DataType.SET(...options))
+        return this.addColumn(name, DataType.SET(...options))
     }
 
     // ------------------------------------------------------------------------
@@ -373,7 +379,7 @@ export default class TableSchema<
      * @returns - Created timestamp column
      */
     public timestamp(name: string): T {
-        return this.buildColumn(name, DataType.TIMESTAMP())
+        return this.addColumn(name, DataType.TIMESTAMP())
     }
 
     // ------------------------------------------------------------------------
@@ -384,7 +390,7 @@ export default class TableSchema<
      * @returns - Created datetime column
      */
     public datetime(name: string): T {
-        return this.buildColumn(name, DataType.DATETIME())
+        return this.addColumn(name, DataType.DATETIME())
     }
 
     // ------------------------------------------------------------------------
@@ -395,7 +401,7 @@ export default class TableSchema<
      * @returns - Created date column
      */
     public date(name: string): T {
-        return this.buildColumn(name, DataType.DATE())
+        return this.addColumn(name, DataType.DATE())
     }
 
     // ------------------------------------------------------------------------
@@ -406,7 +412,7 @@ export default class TableSchema<
      * @returns - Created time column
      */
     public time(name: string): T {
-        return this.buildColumn(name, DataType.TIME())
+        return this.addColumn(name, DataType.TIME())
     }
 
     // ------------------------------------------------------------------------
@@ -417,7 +423,7 @@ export default class TableSchema<
      * @returns - Created year column
      */
     public year(name: string): T {
-        return this.buildColumn(name, DataType.YEAR())
+        return this.addColumn(name, DataType.YEAR())
     }
 
     // ------------------------------------------------------------------------
@@ -428,7 +434,7 @@ export default class TableSchema<
      * @returns - Created json column
      */
     public json(name: string): T {
-        return this.buildColumn(name, DataType.JSON())
+        return this.addColumn(name, DataType.JSON())
     }
 
     // ------------------------------------------------------------------------
@@ -445,7 +451,7 @@ export default class TableSchema<
         dataType: DataType,
         config: JSONColumnConfig
     ): T {
-        return this.buildColumn(name, DataType.JSONRef(dataType, config))
+        return this.addColumn(name, DataType.JSONRef(dataType, config))
     }
 
     // ------------------------------------------------------------------------
@@ -457,7 +463,7 @@ export default class TableSchema<
      * @returns - Created bit column
      */
     public bit(name: string, length?: BitLength): T {
-        return this.buildColumn(name, DataType.BIT(length))
+        return this.addColumn(name, DataType.BIT(length))
     }
 
     // ------------------------------------------------------------------------
@@ -469,7 +475,7 @@ export default class TableSchema<
      * @returns - Created binary column
      */
     public binary(name: string, length: number): T {
-        return this.buildColumn(name, DataType.BINARY(length))
+        return this.addColumn(name, DataType.BINARY(length))
     }
 
     // ------------------------------------------------------------------------
@@ -481,7 +487,7 @@ export default class TableSchema<
      * @returns - Created varbinary column
      */
     public varbinary(name: string, length: number): T {
-        return this.buildColumn(name, DataType.VARBINARY(length))
+        return this.addColumn(name, DataType.VARBINARY(length))
     }
 
     // ------------------------------------------------------------------------
@@ -493,7 +499,7 @@ export default class TableSchema<
      * @returns - Created blob column
      */
     public blob(name: string, length?: BlobLength): T {
-        return this.buildColumn(name, DataType.BLOB(length))
+        return this.addColumn(name, DataType.BLOB(length))
     }
 
     // ------------------------------------------------------------------------
@@ -513,7 +519,7 @@ export default class TableSchema<
         as: string,
         type: ComputedType
     ): T {
-        return this.buildColumn(name, DataType.COMPUTED(dataType, as, type))
+        return this.addColumn(name, DataType.COMPUTED(dataType, as, type))
     }
 
     // ------------------------------------------------------------------------
@@ -524,13 +530,7 @@ export default class TableSchema<
      * @returns - Column to handle modify changes
      */
     public alterColumn(name: string): T {
-        const col = this.findOrThrow(name)
-
-        this.beforeAlterActions(col)
-        this.actions.push(['ALTER', col])
-        this.afterAlterActions(col)
-
-        return col
+        return this.addAction('ALTER', this.findOrThrow(name))
     }
 
     // ------------------------------------------------------------------------
@@ -540,65 +540,7 @@ export default class TableSchema<
      * @param name - Column name
      */
     public dropColumn(name: string): void {
-        const col = this.findOrThrow(name)
-        this.actions.push(['DROP', col])
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Add a foreign key constraint to a existent column
-     * @param column - Column name
-     * @returns - Foreing key references schema to handle
-     */
-    public addConstraint(column: string): ForeignKeyRefSchema {
-        const col = this.findOrThrow(column)
-        if (this.alreadyHasAction(column)) return col.constrained()
-
-        col.map.references = new ForeignKeyRefSchema(
-            this.name,
-            col.name
-        )
-        this.actions.push(['CREATE', col.map.references])
-
-        return col.map.references
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Alter a existent foreign key constraint in a column
-     * @param column - Column name
-     * @returns - Foreing key references schema to handle
-     */
-    public alterConstraint(column: string): ForeignKeyRefSchema {
-        const col = this.findOrThrow(column)
-        if (!col.map.references) throw PolyORMException.MySQL.instantiate(
-            'CANNOT_DROP_FIELD_OR_KEY', col.foreignKeyName
-        )
-
-        if (this.alreadyHasAction(column)) return col.alterForeignKey()
-
-        this.actions.push(['ALTER', col.map.references])
-
-        return col.map.references
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Drop a existent foreign key constraint in a column
-     * @param column - Column name
-     */
-    public dropConstraint(column: string): void {
-        const col = this.findOrThrow(column)
-        if (!col.map.references) throw PolyORMException.MySQL.instantiate(
-            'CANNOT_DROP_FIELD_OR_KEY', col.foreignKeyName
-        )
-
-        if (this.alreadyHasAction(column)) return col.dropForeignKeyConstraint()
-
-        this.actions.push(['DROP', col.map.references])
+        this.addAction('DROP', this.findOrThrow(name))
     }
 
     // ------------------------------------------------------------------------
@@ -609,7 +551,7 @@ export default class TableSchema<
      * @returns {ColumnSchema | undefined} - The column case exists or
      * `undefined`
      */
-    public findColumn(columnName: string): T | undefined {
+    public search(columnName: string): T | undefined {
         return this.find(col => col.name === columnName)
     }
 
@@ -627,23 +569,21 @@ export default class TableSchema<
 
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected buildColumn(name: string, dataType: DataType): T {
-        const col = new ColumnSchema({
-            tableName: this.name,
-            name,
-            dataType
-        }) as T
-
-        this.push(col)
-        this.actions.push(['CREATE', col])
-
-        return col
+    protected addColumn(name: string, dataType: DataType): T {
+        return this.addAction(
+            'CREATE',
+            this.add(new ColumnSchema({
+                tableName: this.name,
+                name,
+                dataType
+            }) as T)
+        )
     }
 
     // ------------------------------------------------------------------------
 
     /** @internal */
-    protected buildTrigger(name: string): TriggerSchema {
+    protected addTrigger(name: string): TriggerSchema {
         return this.database!.createTrigger(this.name, name)
     }
 
@@ -651,47 +591,40 @@ export default class TableSchema<
 
     /** @internal */
     protected shouldAlter(schema: TableSchema): boolean {
-        const diff = this.some(column => {
-            const [action, fkAction] = column.compare(
-                schema.findColumn(column.name)
+        return this
+            .some(column => column
+                .compare(schema.search(column.name))
+                .some(action =>
+                    typeof action === 'string'
+                        ? action !== 'NONE'
+                        : action.some(action => action !== 'NONE')
+                )
             )
-
-            return action !== 'NONE' || fkAction !== 'NONE'
-        })
-
-        const shouldDrop = schema.some(({ name }) => !this.findColumn(name))
-
-        return diff || shouldDrop
+            || schema.some(({ name }) => !this.search(name))
     }
 
     // ------------------------------------------------------------------------
 
     /** @internal */
     protected findOrThrow(name: string): T {
-        return this.findColumn(name)! ?? PolyORMException.MySQL
-            .throwOutOfOperation('UNKNOW_COLUMN', name, this.name)
+        return this.search(name)!
+            ?? PolyORMException.MySQL.throwOutOfOperation(
+                'UNKNOW_COLUMN', name, this.name
+            )
     }
 
     // Privates ---------------------------------------------------------------
     /** @internal */
-    private alreadyHasAction(column: string): boolean {
-        return !!this.actions.find(([_, { name }]) => name === column)
+    private add(column: T): T {
+        this.push(column)
+        return column
     }
 
     // ------------------------------------------------------------------------
-
     /** @internal */
-    private beforeAlterActions(column: ColumnSchema): void {
-        if (column.map.primary) this.actions.push(['DROP-PK', column])
-        if (column.map.unique) this.actions.push(['DROP-UNIQUE', column])
-    }
-
-    // ------------------------------------------------------------------------
-
-    /** @internal */
-    private afterAlterActions(column: ColumnSchema): void {
-        if (column.map.primary) this.actions.push(['ADD-PK', column])
-        if (column.map.unique) this.actions.push(['ADD-UNIQUE', column])
+    private addAction(action: TableSchemaActionType, column: T): T {
+        this.actions.push([action, column])
+        return column
     }
 
     // Static Methods =========================================================
@@ -751,10 +684,12 @@ export default class TableSchema<
 
 export {
     ColumnSchema,
-    ForeignKeyRefSchema as ForeignKeyReferencesSchema,
+    ForeignKeyRefSchema,
+    CheckConstraintSchema,
 
     type TableSchemaInitMap,
     type ColumnSchemaInitMap,
+    type ColumnSchemaChild,
     type ColumnSchemaMap,
-    type ForeignKeyRefSchemaMap as ForeignKeyReferencesSchemaMap
+    type ForeignKeyRefSchemaMap
 }

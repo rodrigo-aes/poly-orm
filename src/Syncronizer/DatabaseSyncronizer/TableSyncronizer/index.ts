@@ -25,7 +25,7 @@ export default class TableSyncronizer extends TableSQLBuilder<
     // ------------------------------------------------------------------------
 
     public async alter(connection: PolyORMConnection, schema: TableSchema) {
-        await connection.query(this.syncAlterSQL(schema))
+        await connection.query(this.alterSQL(schema))
     }
 
     // ------------------------------------------------------------------------
@@ -40,7 +40,31 @@ export default class TableSyncronizer extends TableSQLBuilder<
         connection: PolyORMConnection,
         schema?: TableSchema
     ): Promise<void> {
-        const sql = this.syncActionSQL(schema)
+        const sql = this.actionSQL(schema)
         if (sql) await connection.query(sql)
+    }
+
+    // Privates ---------------------------------------------------------------
+    private actionSQL(schema?: TableSchema): string | undefined {
+        switch (this.compare(schema)) {
+            case 'CREATE': return this.createSQL()
+            case 'ALTER': return this.alterSQL(schema!)
+        }
+    }
+
+    // ------------------------------------------------------------------------
+
+    private alterSQL(schema: TableSchema) {
+        return `ALTER TABLE ${this.name} ${this.alterColsSQL(schema)}`
+    }
+
+    // ------------------------------------------------------------------------
+
+    private alterColsSQL(schema: TableSchema): string {
+        return this
+            .flatMap(
+                col => col.actionSQL(schema.search(col.name)) ?? []
+            )
+            .join(', ')
     }
 }

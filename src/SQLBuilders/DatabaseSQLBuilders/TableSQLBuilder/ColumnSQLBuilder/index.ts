@@ -19,7 +19,6 @@ import { PolymorphicId, CurrentTimestamp } from "./Symbols"
 import { SQLString } from "../../../../Handlers"
 
 // Types
-import type { ActionType } from "../../../../DatabaseSchema"
 import type { ColumnSQLBuilderMap, ColumnSQLBuilderChild } from "./types"
 
 export default class ColumnSQLBuilder extends ColumnSchema {
@@ -65,25 +64,11 @@ export default class ColumnSQLBuilder extends ColumnSchema {
 
     // ------------------------------------------------------------------------
 
-    public alterSQL() {
-        return 'MODIFY COLUMN ' + this.columnSQL()
-    }
-
-    // ------------------------------------------------------------------------
-
     public rebuildSQL(): string {
         return `${this.dropSQL()}, ${this.addSQL()}`
     }
 
-    // ------------------------------------------------------------------------
 
-    public syncAlterSQL(schema?: ColumnSchema) {
-        return (
-            this.dropConstraintsSQL(schema) +
-            this.alterSQL() +
-            this.createConstraintsSQL()
-        )
-    }
 
     // ------------------------------------------------------------------------
 
@@ -127,59 +112,91 @@ export default class ColumnSQLBuilder extends ColumnSchema {
         return 'DROP INDEX ' + this.uniqueKeyName
     }
 
-    // ------------------------------------------------------------------------
-
-    public syncActionSQL(schema?: ColumnSchema): string | undefined {
-        switch (this.compare(schema)[0]) {
-            case 'CREATE': return this.addSQL()
-            case 'ALTER': return this.syncAlterSQL(schema)
-            case "REBUILD": return this.rebuildSQL()
-            case 'DROP': return this.dropSQL()
-        }
-    }
-
-    // ------------------------------------------------------------------------
-
-    public migrateAlterSQL(action: Omit<ActionType, 'CREATE'>): string {
-        switch (action) {
-            case 'ALTER': return `${this.alterSQL()}, ${(
-                this.migrateChildSQL()
-            )}`
-
-            // ----------------------------------------------------------------
-
-            case 'REBUILD': return this.rebuildSQL()
-
-            // ----------------------------------------------------------------
-
-            case 'DROP': return this.dropSQL()
-        }
-
-        throw new Error
-    }
-
     // Protecteds -------------------------------------------------------------
-    protected migrateChildSQL(): string {
-        return this.actions.map(([action, child]) => {
-            switch (action) {
-                case "CREATE": return (
-                    this.childSQLBuilder(child)?.addSQL() ?? ''
-                )
+    protected modifySQL() {
+        return 'MODIFY COLUMN ' + this.columnSQL()
+    }
 
-                // ------------------------------------------------------------
+    // ------------------------------------------------------------------------
 
-                case "ALTER": return (
-                    this.childSQLBuilder(child)?.alterSQL() ?? ''
-                )
+    protected createConstraintsSQL(add: boolean = false): string {
+        const constraints: string[] = []
 
-                // ------------------------------------------------------------
+        // Primary ------------------------------------------------------------
+        if (this.map.primary) constraints.push(
+            this[add ? 'addPKSQL' : 'PKConstraintSQL']()
+        )
 
-                case "DROP": return (
-                    this.childSQLBuilder(child)?.dropSQL() ?? ''
-                )
-            }
-        })
-            .join(', ')
+        // Unique ------------------------------------------------------------
+        if (this.map.unique) constraints.push(
+            this[add ? 'addUniqueSQL' : 'uniqueConstraintSQL']()
+        )
+
+        // Foreign Key --------------------------------------------------------
+        if (this.constrainedForeignKey) constraints.push(
+            this.FKSQLBuilder![add ? 'addSQL' : 'createSQL']()
+        )
+
+        // Check ------------------------------------------------------------
+        if (this.checkConstraint) constraints.push(
+            this.map.check![add ? 'addSQL' : 'createSQL']()
+        )
+
+        // --------------------------------------------------------------------
+
+        return constraints.join(', ')
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected dropConstraintsSQL(schema?: ColumnSchema): string {
+        const constraints: string[] = []
+
+        // Primary ------------------------------------------------------------
+        if ((schema?.map ?? this.map).primary) constraints.push(
+            this.dropPKSQL()
+        )
+
+        // Unique -------------------------------------------------------------
+        if ((schema?.map ?? this.map).unique) constraints.push(
+            this.dropUniqueSQL()
+        )
+
+        // Foreign Key --------------------------------------------------------
+        if ((schema ?? this).constrainedForeignKey) constraints.push(
+            this.FKSQLBuilder!.dropSQL()
+        )
+
+        // Check ------------------------------------------------------------
+        if ((schema?.map ?? this.map).check) constraints.push(
+            this.map.check!.dropSQL()
+        )
+
+        // --------------------------------------------------------------------
+
+        return constraints.join(', ') + constraints.length ? ', ' : ''
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected childSQLBuilder(
+        child: ColumnSchemaChild
+    ): ColumnSQLBuilderChild | undefined {
+        switch (true) {
+            case child instanceof ForeignKeyRefSchema: return (
+                this.FKSQLBuilder
+            )
+
+            // ----------------------------------------------------------------
+
+            case child instanceof CheckConstraintSchema: return (
+                this.CHKSQLBuilder
+            )
+
+            // ----------------------------------------------------------------
+
+            default: throw new Error('Unreacheable error')
+        }
     }
 
     // Privates ---------------------------------------------------------------
@@ -240,87 +257,11 @@ export default class ColumnSQLBuilder extends ColumnSchema {
         }
     }
 
-    // ------------------------------------------------------------------------
 
-    private createConstraintsSQL(add: boolean = false): string {
-        const constraints: string[] = []
-
-        // Primary ------------------------------------------------------------
-        if (this.map.primary) constraints.push(
-            this[add ? 'addPKSQL' : 'PKConstraintSQL']()
-        )
-
-        // Unique ------------------------------------------------------------
-        if (this.map.unique) constraints.push(
-            this[add ? 'addUniqueSQL' : 'uniqueConstraintSQL']()
-        )
-
-        // Foreign Key --------------------------------------------------------
-        if (this.constrainedForeignKey) constraints.push(
-            this.FKSQLBuilder![add ? 'addSQL' : 'createSQL']()
-        )
-
-        // Check ------------------------------------------------------------
-        if (this.checkConstraint) constraints.push(
-            this.map.check![add ? 'addSQL' : 'createSQL']()
-        )
-
-        // --------------------------------------------------------------------
-
-        return constraints.join(', ')
-    }
 
     // ------------------------------------------------------------------------
 
-    private dropConstraintsSQL(schema?: ColumnSchema): string {
-        const constraints: string[] = []
 
-        // Primary ------------------------------------------------------------
-        if ((schema?.map ?? this.map).primary) constraints.push(
-            this.dropPKSQL()
-        )
-
-        // Unique -------------------------------------------------------------
-        if ((schema?.map ?? this.map).unique) constraints.push(
-            this.dropUniqueSQL()
-        )
-
-        // Foreign Key --------------------------------------------------------
-        if ((schema ?? this).constrainedForeignKey) constraints.push(
-            this.FKSQLBuilder!.dropSQL()
-        )
-
-        // Check ------------------------------------------------------------
-        if ((schema?.map ?? this.map).check) constraints.push(
-            this.map.check!.dropSQL()
-        )
-
-        // --------------------------------------------------------------------
-
-        return constraints.join(', ') + constraints.length ? ', ' : ''
-    }
-
-    // ------------------------------------------------------------------------
-
-    private childSQLBuilder(
-        child: ColumnSchemaChild
-    ): ColumnSQLBuilderChild | undefined {
-        switch (true) {
-            case child instanceof ForeignKeyRefSchema: return (
-                this.FKSQLBuilder
-            )
-
-            // ----------------------------------------------------------------
-
-            case child instanceof CheckConstraintSchema: return (
-                this.CHKSQLBuilder
-            )
-
-            // ----------------------------------------------------------------
-
-            default: throw new Error('Unreacheable error')
-        }
-    }
 }
 
 export {
@@ -328,5 +269,6 @@ export {
     PolymorphicId,
     CurrentTimestamp,
 
-    type ColumnSQLBuilderMap
+    type ColumnSQLBuilderMap,
+    type ColumnSQLBuilderChild
 }

@@ -2,12 +2,14 @@ import { EntityMetadata } from "../Metadata"
 
 import TableSchema, {
     ColumnSchema,
-    ForeignKeyReferencesSchema,
+    ForeignKeyRefSchema,
+    CheckConstraintSchema,
 
     type TableSchemaInitMap,
     type ColumnSchemaInitMap,
     type ColumnSchemaMap,
-    type ForeignKeyReferencesSchemaMap
+    type ColumnSchemaChild,
+    type ForeignKeyRefSchemaMap
 } from "./TableSchema"
 
 import TriggersSchema, { TriggerSchema } from "./TriggersSchema"
@@ -260,7 +262,8 @@ export default class DatabaseSchema<
 export {
     TableSchema,
     ColumnSchema,
-    ForeignKeyReferencesSchema,
+    ForeignKeyRefSchema,
+    CheckConstraintSchema,
     TriggersSchema,
     TriggerSchema,
 
@@ -268,5 +271,6 @@ export {
     type TableSchemaInitMap,
     type ColumnSchemaInitMap,
     type ColumnSchemaMap,
-    type ForeignKeyReferencesSchemaMap
+    type ColumnSchemaChild,
+    type ForeignKeyRefSchemaMap
 }

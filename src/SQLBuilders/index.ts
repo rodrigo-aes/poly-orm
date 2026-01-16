@@ -124,7 +124,8 @@ import {
     CurrentTimestamp,
     PolymorphicId,
 
-    type ColumnSQLBuilderMap
+    type ColumnSQLBuilderMap,
+    type ColumnSQLBuilderChild
 } from "./DatabaseSQLBuilders"
 
 export {
@@ -227,5 +228,6 @@ export {
     type EntityExistsQueryOption,
     // type CrossExistsQueryOptions,
 
-    type ColumnSQLBuilderMap
+    type ColumnSQLBuilderMap,
+    type ColumnSQLBuilderChild
 }

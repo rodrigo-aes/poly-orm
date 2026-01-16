@@ -55,6 +55,9 @@ export default class ColumnSchema {
     protected _fkAction?: ActionType
 
     /** @internal */
+    protected _checkAction?: ActionType
+
+    /** @internal */
     constructor({ name, tableName, dataType, pattern, ...rest }: (
         ColumnSchemaInitMap
     )) {
@@ -242,7 +245,7 @@ export default class ColumnSchema {
      * @param column - Referenced foreign table column
      * @returns {this} - `this`
      */
-    public foreignKey(
+    public FK(
         table: string | EntityTarget,
         column: string
     ): ForeignKeyRefSchema {
@@ -261,7 +264,7 @@ export default class ColumnSchema {
      * Alter `this` constraint foreign key
      * @returns {ForeignKeyRefSchema} - Foreign key references schema
      */
-    public alterForeignKey(): ForeignKeyRefSchema {
+    public alterFK(): ForeignKeyRefSchema {
         return this.addAction(
             this.validAction('ALTER', 'references'),
             this.map.references!
@@ -273,7 +276,7 @@ export default class ColumnSchema {
     /**
      * Drop `this` constrained foreign key
      */
-    public dropForeignKeyConstraint(): void {
+    public dropFK(): void {
         if (!this.map.references?.map.constrained) throw (
             PolyORMException.MySQL.instantiate(
                 'CANNOT_DROP_FIELD_OR_KEY', this.foreignKeyName
@@ -326,12 +329,18 @@ export default class ColumnSchema {
     // ------------------------------------------------------------------------
 
     /** @iternal */
-    public compare(schema?: ColumnSchema): [ActionType, ActionType] {
+    public compare(schema?: ColumnSchema): [ActionType, ActionType[]] {
         return [
             this._action ??= this.action(schema) as ActionType,
-            this._fkAction ??= schema
-                ? this.foreignKeyAction(schema)
-                : 'NONE'
+            [
+                this._fkAction ??= schema
+                    ? this.FKAction(schema)
+                    : 'NONE',
+
+                this._checkAction ??= schema
+                    ? this.checkAction(schema)
+                    : 'NONE'
+            ]
         ]
     }
 
@@ -350,19 +359,23 @@ export default class ColumnSchema {
     // ------------------------------------------------------------------------
 
     /** @iternal */
-    protected foreignKeyAction(schema: ColumnSchema): ActionType {
+    protected FKAction(schema: ColumnSchema): ActionType {
         switch (true) {
             case (
                 !schema.map.isForeignKey &&
                 this.map.isForeignKey
-            ): return 'CREATE'
+            ): return (
+                'CREATE'
+            )
 
             // ----------------------------------------------------------------
 
             case (
                 schema.map.isForeignKey &&
                 !this.map.isForeignKey
-            ): return 'DROP'
+            ): return (
+                'DROP'
+            )
 
             // ----------------------------------------------------------------
 
@@ -370,7 +383,44 @@ export default class ColumnSchema {
                 schema.map.references &&
                 this.map.references &&
                 this.shouldAlterForeignKey(schema.map.references)
-            ): return 'ALTER'
+            ): return (
+                'ALTER'
+            )
+
+            // ----------------------------------------------------------------
+
+            default: return 'NONE'
+        }
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected checkAction(schema: ColumnSchema): ActionType {
+        switch (true) {
+            case (
+                !schema.map.check?.length &&
+                !!this.map.check?.length
+            ): return (
+                'CREATE'
+            )
+
+            // ----------------------------------------------------------------
+
+            case (
+                this.map.check?.length !== schema.map.check?.length ||
+                this.map.check?.some(c => !schema.map.check?.includes(c))
+            ): return (
+                'ALTER'
+            )
+
+            // ----------------------------------------------------------------
+
+            case (
+                !!schema.map.check?.length &&
+                !this.map.check?.length
+            ): return (
+                'DROP'
+            )
 
             // ----------------------------------------------------------------
 

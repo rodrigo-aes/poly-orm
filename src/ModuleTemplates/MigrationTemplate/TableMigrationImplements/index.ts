@@ -56,7 +56,7 @@ export default class TableMigrationImplements {
     private columnsImplements(): string {
         let implementation = ModuleHelper.indentMany(
             this.schema.flatMap(column => {
-                const prevColumn = this.previous?.findColumn(column.name)
+                const prevColumn = this.previous?.search(column.name)
                 const [action] = column.compare(prevColumn)
 
                 if (action === 'NONE') return []
@@ -99,7 +99,7 @@ export default class TableMigrationImplements {
 
     private toDropColumns(): string[] {
         return this.previous?.
-            filter(({ name }) => !this.schema.findColumn(name))
+            filter(({ name }) => !this.schema.search(name))
             .map(
                 column => new ColumnMigrationImplements(
                     this.metadata,

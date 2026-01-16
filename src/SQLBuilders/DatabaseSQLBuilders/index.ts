@@ -5,7 +5,8 @@ import TableSQLBuilder, {
     PolymorphicId,
     CurrentTimestamp,
 
-    type ColumnSQLBuilderMap
+    type ColumnSQLBuilderMap,
+    type ColumnSQLBuilderChild
 } from "./TableSQLBuilder"
 
 import TriggerSQLBuilder from "./TriggerSQLBuilder"
@@ -20,5 +21,6 @@ export {
     PolymorphicId,
     CurrentTimestamp,
 
-    type ColumnSQLBuilderMap
+    type ColumnSQLBuilderMap,
+    type ColumnSQLBuilderChild
 }

@@ -48,7 +48,6 @@ export default class DatabaseMigrator extends DatabaseSchema<TableMigrator> {
 
     public clearActions(): void {
         this.actions = []
-
         for (const table of this) {
             for (const column of table) column.actions = []
             table.actions = []

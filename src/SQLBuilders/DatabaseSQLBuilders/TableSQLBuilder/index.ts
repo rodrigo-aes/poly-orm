@@ -9,15 +9,9 @@ import ColumnSQLBuilder, {
     PolymorphicId,
     CurrentTimestamp,
 
-    type ColumnSQLBuilderMap
+    type ColumnSQLBuilderMap,
+    type ColumnSQLBuilderChild
 } from "./ColumnSQLBuilder"
-
-// Types
-import type { ActionType } from "../../../DatabaseSchema"
-import type { ColumnMigrator } from "../../../Migrator/DatabaseMigrator"
-
-// Exceptions
-import PolyORMException from "../../../Errors"
 
 export default class TableSQLBuilder<
     T extends ColumnSQLBuilder = ColumnSQLBuilder
@@ -34,21 +28,15 @@ export default class TableSQLBuilder<
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public createSQL() {
-        return `CREATE TABLE ${this.name} (${this.createColumnsSQL()})`
+        return `CREATE TABLE ${this.name} (${this.createColsSQL()})`
     }
 
     // ------------------------------------------------------------------------
 
     public createIfNotExistsSQL(): string {
         return `CREATE TABLE IF NOT EXISTS ${this.name} (${(
-            this.createColumnsSQL()
+            this.createColsSQL()
         )})`
-    }
-
-    // ------------------------------------------------------------------------
-
-    public syncAlterSQL(schema: TableSchema) {
-        return `ALTER TABLE ${this.name} ${this.alterColumnsSQL(schema)}`
     }
 
     // ------------------------------------------------------------------------
@@ -57,120 +45,9 @@ export default class TableSQLBuilder<
         return `DROP TABLE ${this.name}`
     }
 
-    // ------------------------------------------------------------------------
-
-    public syncActionSQL(schema?: TableSchema): string | undefined {
-        switch (this.compare(schema)) {
-            case 'CREATE': return this.createSQL()
-            case 'ALTER': return this.syncAlterSQL(schema!)
-        }
-    }
-
-    // ------------------------------------------------------------------------
-
-    public migrateAlterSQL(action: Omit<ActionType, 'CREATE'>): string {
-        switch (action) {
-            case 'ALTER': return `ALTER TABLE ${this.name} ${(
-                this.migrateAlterChildsSQL()
-            )}`
-
-            case 'DROP': return this.dropSQL()
-        }
-
-        throw new Error
-    }
-
     // Privates ---------------------------------------------------------------
-    private createColumnsSQL(): string {
+    private createColsSQL(): string {
         return this.map(column => column.createSQL()).join(', ')
-    }
-
-    // ------------------------------------------------------------------------
-
-    private alterColumnsSQL(schema: TableSchema): string {
-        return this.map(column => column.syncActionSQL(
-            schema.findColumn(column.name)
-        ))
-            .filter(action => !!action)
-            .join(', ')
-    }
-
-    // ------------------------------------------------------------------------
-
-    private migrateAlterChildsSQL(): string {
-        return this.actions.map(([action, source]) => {
-            switch (true) {
-                case source instanceof ColumnSchema: return (
-                    this.migrateAlterColumnSQL(
-                        source as ColumnMigrator,
-                        action
-                    )
-                )
-
-                case source instanceof ForeignKeyRefSchema: return (
-                    this.migrateAlterForeignKeyConstraintSQL(
-                        source.name,
-                        action as ActionType
-                    )
-                )
-            }
-        })
-            .filter(line => !!line)
-            .join(', ')
-    }
-
-    // ------------------------------------------------------------------------
-
-    private migrateAlterColumnSQL(
-        schema: ColumnMigrator,
-        action: ActionType | (
-            'ADD-PK' | 'ADD-UNIQUE' | 'DROP-PK' | 'DROP-UNIQUE'
-        )
-    ): string | undefined {
-        switch (action) {
-            case "CREATE": return schema?.addSQL()
-
-            // ----------------------------------------------------------------
-
-            case "ALTER":
-            case 'REBUILD':
-            case "DROP": return schema.migrateAlterSQL(action)
-
-            // ----------------------------------------------------------------
-
-            case "ADD-PK": return schema.map.primary
-                ? schema.addPKSQL()
-                : undefined
-
-            // ----------------------------------------------------------------
-
-            case "ADD-UNIQUE": return schema.map.unique
-                ? schema.addUniqueSQL()
-                : undefined
-
-            // ----------------------------------------------------------------
-
-            case "DROP-PK": return schema.dropPKSQL()
-            case "DROP-UNIQUE": return schema.dropUniqueSQL()
-
-            // ----------------------------------------------------------------
-
-            case "NONE": return ''
-        }
-    }
-
-    // ------------------------------------------------------------------------
-
-    private migrateAlterForeignKeyConstraintSQL(
-        column: string,
-        action: ActionType
-    ): string {
-        const col = this.findOrThrow(column)
-        if (!col.map.references) PolyORMException.MySQL.throwOutOfOperation(
-            'CANNOT_DROP_FIELD_OR_KEY', col.foreignKeyName, col.name
-        )
-
-        return col.map.references!.migrateAlterSQL(action)
     }
 }
 
@@ -181,5 +58,6 @@ export {
     PolymorphicId,
     CurrentTimestamp,
 
-    type ColumnSQLBuilderMap
+    type ColumnSQLBuilderMap,
+    type ColumnSQLBuilderChild
 }
