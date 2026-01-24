@@ -1,0 +1,10 @@
+src/
+tests/
+scripts/
+tsconfig*.json
+clean-js.ps1
+poly-orm.config.ts
+vscode-worksapce.code-workspace
+.vscode
+node_modules
+*.tgz

@@ -29,6 +29,7 @@ export default class MigrationCommander extends Command {
         'delete',
         'move'
     ]
+
     public static override description: string = 'Manage migrations'
 
     constructor(
@@ -140,10 +141,10 @@ export default class MigrationCommander extends Command {
     // ------------------------------------------------------------------------
 
     private async executeCreate(): Promise<void> {
-        const [action, tableName] = this.args as ([
+        const [action, tableName] = this.args as [
             string | undefined,
             string | undefined
-        ])
+        ]
 
         if (!action) throw new Error
         if (!tableName) throw new Error

@@ -34,15 +34,19 @@ export default class TableMigrationImplements {
         switch (this.action) {
             case "CREATE": return ModuleHelper.indentMany([
                 `this.database.createTable('${this.schema.name}', table => {`,
-                [this.columnsImplements(), 4],
+                [this.columns(), 4],
                 '})'
             ])
 
+            // --------------------------------------------------------------------
+
             case "ALTER": return ModuleHelper.indentMany([
                 `this.database.alterTable('${this.schema.name}', table => {`,
-                [this.columnsImplements(), 4],
+                [this.columns(), 4],
                 '})'
             ])
+
+            // --------------------------------------------------------------------
 
             case "DROP": return (
                 `this.database.dropTable('${this.schema.name}')`
@@ -53,11 +57,11 @@ export default class TableMigrationImplements {
     }
 
     // Privates ---------------------------------------------------------------
-    private columnsImplements(): string {
-        let implementation = ModuleHelper.indentMany(
+    private columns(): string {
+        return ModuleHelper.indentMany(
             this.schema.flatMap(column => {
-                const prevColumn = this.previous?.search(column.name)
-                const [action] = column.compare(prevColumn)
+                const prev = this.previous?.search(column.name)
+                const [action] = column.compare(prev)
 
                 if (action === 'NONE') return []
 
@@ -65,47 +69,37 @@ export default class TableMigrationImplements {
                     this.metadata,
                     action,
                     column,
-                    prevColumn,
+                    prev,
                     this.hasTimestamps
                 )
                     .implements()
             })
-                .concat(this.toDropColumns())
+                .concat(this.dropColumns())
                 .filter(line => line !== '')
-        )
-
-        implementation += this.addFixedImplements()
-
-        return implementation
+        ) + (
+                this.fixed()
+            )
     }
 
     // ------------------------------------------------------------------------
 
-    private addFixedImplements(): string {
-        let implementation: string = ''
-
-        if (this.hasTimestamps) implementation += this.timestampsImplement()
-
-        return implementation
+    private fixed(): string {
+        return this.hasTimestamps ? this.timestamps() : ''
     }
 
     // ------------------------------------------------------------------------
 
-    private timestampsImplement(): string {
+    private timestamps(): string {
         return this.hasTimestamps ? `\ntable.timestamps()` : ''
     }
 
     // ------------------------------------------------------------------------
 
-    private toDropColumns(): string[] {
-        return this.previous?.
-            filter(({ name }) => !this.schema.search(name))
-            .map(
-                column => new ColumnMigrationImplements(
-                    this.metadata,
-                    'DROP',
-                    column,
-                )
+    private dropColumns(): string[] {
+        return this.previous
+            ?.filter(({ name }) => !this.schema.search(name))
+            .map(column =>
+                new ColumnMigrationImplements(this.metadata, 'DROP', column)
                     .implements()
             )
             ?? []

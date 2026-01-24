@@ -3,16 +3,20 @@
   "version": "0.0.0",
   "description": "ORM",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.js"
+    },
+    "./*": null
   },
   "scripts": {
-    "test": "tsx ./tests/index.ts",
-    "build": "rimraf dist && tsc && tsx ./scripts/FixDistImportErrors.ts"
+    "build": "tsx ./scripts/Build.ts"
   },
   "bin": {
-    "poly-cli": "./dist/cli.js"
+    "polyorm": "./lib/cli.js"
   },
   "author": "Rodrigo Alves Do Espirito Santo",
   "license": "ISC",

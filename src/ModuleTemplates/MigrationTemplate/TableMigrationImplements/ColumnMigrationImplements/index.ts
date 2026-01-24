@@ -47,11 +47,11 @@ export default class ColumnMigrationImplements {
     // Publics ----------------------------------------------------------------
     public implements(): string {
         switch (this.action) {
-            case "CREATE": return this.createImplements()
+            case "CREATE": return this.create()
 
             case "ALTER": return ModuleHelper.indentMany([
                 `table.alterColumn('${this.schema.name}')`,
-                [this.propsImplements(), 4]
+                [this.props(), 4]
             ])
 
             case "DROP": return `table.dropColumn('${this.schema.name}')`
@@ -61,26 +61,26 @@ export default class ColumnMigrationImplements {
     }
 
     // Privates ---------------------------------------------------------------
-    private createImplements(): string {
+    private create(): string {
         return (
             this.schema.pattern
-                ? this.patternImplements()
-                : this.commonImplements()
+                ? this.pattern()
+                : this.common()
         )
     }
 
     // ------------------------------------------------------------------------
 
-    private commonImplements(): string {
+    private common(): string {
         return ModuleHelper.indentMany([
             `table.${this.createMethod()}`,
-            [this.propsImplements(), 4]
+            [this.props(), 4]
         ])
     }
 
     // ------------------------------------------------------------------------
 
-    private patternImplements(): string {
+    private pattern(): string {
         const { pattern, name } = this.schema
 
         switch (pattern!) {
@@ -96,7 +96,7 @@ export default class ColumnMigrationImplements {
 
             case "foreign-id": return ModuleHelper.indentMany([
                 `table.foreignId('${name}')`,
-                [this.propsImplements(), 4]
+                [this.props(), 4]
             ])
 
             // ----------------------------------------------------------------
@@ -104,7 +104,7 @@ export default class ColumnMigrationImplements {
             case "polymorphic-foreign-id": return ModuleHelper
                 .indentMany([
                     `table.polymorphicForeignId('${name}')`,
-                    [this.propsImplements(), 4]
+                    [this.props(), 4]
                 ])
 
             // ----------------------------------------------------------------
@@ -139,12 +139,12 @@ export default class ColumnMigrationImplements {
     // ------------------------------------------------------------------------
 
     private createMethod(): string {
-        return this.createMethodName() + this.createMethodArgs()
+        return this.methodName() + this.methodArgs()
     }
 
     // ------------------------------------------------------------------------
 
-    private createMethodName(): string {
+    private methodName(): string {
         const { dataType } = this.schema
 
         switch ((dataType as DataType).type) {
@@ -190,10 +190,13 @@ export default class ColumnMigrationImplements {
 
     // ------------------------------------------------------------------------
 
-    private createMethodArgs(): string {
-        const { name, dataType } = this.schema
+    private methodArgs(): string {
+        const { name, dataType } = this.schema as {
+            name: string,
+            dataType: DataType
+        }
 
-        switch ((dataType as DataType).type) {
+        switch ((dataType).type) {
             case "int":
             case "bigint":
             case "tinyint":
@@ -226,7 +229,7 @@ export default class ColumnMigrationImplements {
             case "binary":
             case "varbinary": return `(${[
                 `'${name}'`,
-                this.dataTypeArgs(dataType as DataType)
+                this.DTArgs(dataType)
             ].join(', ')})`
 
             // ----------------------------------------------------------------
@@ -234,14 +237,14 @@ export default class ColumnMigrationImplements {
             case "enum":
             case "set": return `(${[
                 `'${name}'`,
-                `[${this.dataTypeArgs(dataType as DataType)}]`
+                `[${this.DTArgs(dataType)}]`
             ].join(', ')})`
 
             // ----------------------------------------------------------------
 
             case "computed": return `(${[
                 `'${name}'`,
-                this.dataType((dataType as COMPUTED).dataType),
+                this.DT((dataType as COMPUTED).dataType),
                 `'${(dataType as COMPUTED).config.as}'`,
                 `'${(dataType as COMPUTED).config.type}'`
             ].join(', ')})`
@@ -250,7 +253,7 @@ export default class ColumnMigrationImplements {
 
             case "json-ref": return `(${[
                 `'${name}'`,
-                this.dataType((dataType as JSONReference).dataType),
+                this.DT((dataType as JSONReference).dataType),
                 inspect((dataType as JSONReference).config)
             ].join(', ')})`
         }
@@ -258,10 +261,10 @@ export default class ColumnMigrationImplements {
 
     // ------------------------------------------------------------------------
 
-    private dataType(dataType: DataType): string {
+    private DT(dataType: DataType): string {
         switch (dataType.type) {
-            case "char": return `DataType.CHAR(${this.dataTypeArgs(dataType)})`
-            case "varchar": return `DataType.VARCHAR(${this.dataTypeArgs(
+            case "char": return `DataType.CHAR(${this.DTArgs(dataType)})`
+            case "varchar": return `DataType.VARCHAR(${this.DTArgs(
                 dataType
             )})`
 
@@ -270,7 +273,7 @@ export default class ColumnMigrationImplements {
             case "text":
             case "tinytext":
             case "mediumtext":
-            case "longtext": return `DataType.TEXT(${this.dataTypeArgs(
+            case "longtext": return `DataType.TEXT(${this.DTArgs(
                 dataType
             )})`
 
@@ -280,7 +283,7 @@ export default class ColumnMigrationImplements {
             case "tinyint":
             case "smallint":
             case "mediumint":
-            case "bigint": return `DataType.INT(${this.dataTypeArgs(
+            case "bigint": return `DataType.INT(${this.DTArgs(
                 dataType
             )})`
 
@@ -289,7 +292,7 @@ export default class ColumnMigrationImplements {
             case "blob":
             case "tinyblob":
             case "mediumblob":
-            case "longblob": return `DataType.BLOB(${this.dataTypeArgs(
+            case "longblob": return `DataType.BLOB(${this.DTArgs(
                 dataType
             )})`
 
@@ -305,49 +308,49 @@ export default class ColumnMigrationImplements {
 
             // ----------------------------------------------------------------
 
-            case "decimal": return `DataType.DECIMAL(${this.dataTypeArgs(
+            case "decimal": return `DataType.DECIMAL(${this.DTArgs(
                 dataType
             )})`
 
             // ----------------------------------------------------------------
 
-            case "float": return `DataType.FLOAT(${this.dataTypeArgs(
+            case "float": return `DataType.FLOAT(${this.DTArgs(
                 dataType
             )})`
 
             // ----------------------------------------------------------------
 
-            case "double": return `DataType.DOUBLE(${this.dataTypeArgs(
+            case "double": return `DataType.DOUBLE(${this.DTArgs(
                 dataType
             )})`
 
             // ----------------------------------------------------------------
 
-            case "bit": return `DataType.BIT(${this.dataTypeArgs(
+            case "bit": return `DataType.BIT(${this.DTArgs(
                 dataType
             )})`
 
             // ----------------------------------------------------------------
 
-            case "enum": return `DataType.ENUM(${this.dataTypeArgs(
+            case "enum": return `DataType.ENUM(${this.DTArgs(
                 dataType
             )})`
 
             // ----------------------------------------------------------------
 
-            case "set": return `DataType.SET(${this.dataTypeArgs(
+            case "set": return `DataType.SET(${this.DTArgs(
                 dataType
             )})`
 
             // ----------------------------------------------------------------
 
-            case "binary": return `DataType.BINARY(${this.dataTypeArgs(
+            case "binary": return `DataType.BINARY(${this.DTArgs(
                 dataType
             )})`
 
             // ----------------------------------------------------------------
 
-            case "varbinary": return `DataType.VARBINARY(${this.dataTypeArgs(
+            case "varbinary": return `DataType.VARBINARY(${this.DTArgs(
                 dataType
             )})`
 
@@ -359,7 +362,7 @@ export default class ColumnMigrationImplements {
 
     // ------------------------------------------------------------------------
 
-    private dataTypeArgs(dataType: DataType): string {
+    private DTArgs(dataType: DataType): string {
         switch (dataType.type) {
             case "int":
             case "text":
@@ -428,13 +431,13 @@ export default class ColumnMigrationImplements {
 
     // ------------------------------------------------------------------------
 
-    private propsImplements(): string {
+    private props(): string {
         const implementation: string[] = []
-        const { defaultValue, ...rest } = this.toChangeProperties()
+        const { defaultValue, ...rest } = this.toAlterProps()
 
         implementation.push(...Object.entries(rest).flatMap(
             ([key, value]) => value !== undefined
-                ? `.${key}(${this.propImplementArgs(value)})`
+                ? `.${key}(${this.propArgs(value)})`
                 : []
         ))
 
@@ -445,16 +448,16 @@ export default class ColumnMigrationImplements {
             implementation.push(`.default(${defaultValue})`)
         )
 
-        implementation.concat(this.constraintImplements())
+        implementation.concat(this.FKs())
 
         return ModuleHelper.indentMany(implementation)
     }
 
     // ------------------------------------------------------------------------
 
-    private constraintImplements(): string[] {
-        const hasConstraint = !!this.schema.map.references
-        const hasPrevious = !!this.previous?.map.references
+    private FKs(): string[] {
+        const hasConstraint = !!this.schema.map.references?.map.constrained
+        const hasPrevious = !!this.previous?.map.references?.map.constrained
         const implementation: string[] = []
 
         switch (true) {
@@ -478,11 +481,11 @@ export default class ColumnMigrationImplements {
 
         if (hasConstraint) {
             const { tableName, columnName, onUpdate, onDelete } = (
-                this.toChangeConstraintProps()
+                this.toAlterFKs()
             )
 
             if (tableName || columnName) implementation.push(
-                `.references('${tableName}', '${columnName}')`
+                `.FK('${tableName}', '${columnName}')`
             )
 
             if (onUpdate) implementation.push(`.onUpdate('${onUpdate}')`)
@@ -494,13 +497,13 @@ export default class ColumnMigrationImplements {
 
     // ------------------------------------------------------------------------
 
-    private propImplementArgs(value: any): string {
+    private propArgs(value: any): string {
         return value && !this.previous ? '' : inspect(value)
     }
 
     // ------------------------------------------------------------------------
 
-    private toChangeProperties(): Partial<ColumnSchemaMap> {
+    private toAlterProps(): Partial<ColumnSchemaMap> {
         const exclude = ['columnType', 'isForeignKey', 'references']
 
         return Object.fromEntries(Object.entries(this.schema.map).filter(
@@ -513,7 +516,7 @@ export default class ColumnMigrationImplements {
 
     // ------------------------------------------------------------------------
 
-    private toChangeConstraintProps(): Partial<ForeignKeyRefSchemaMap> {
+    private toAlterFKs(): Partial<ForeignKeyRefSchemaMap> {
         return this.previous
             ? Object.fromEntries(
                 Object.entries(this.schema.map.references!.map)

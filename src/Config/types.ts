@@ -8,7 +8,7 @@ export type PolyORMConfig = {
     }
 
     migrations?: {
-        baseDir?: string,
+        dir?: string,
         ext?: ModuleExtension
     }
 }

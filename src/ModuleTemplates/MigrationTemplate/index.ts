@@ -46,23 +46,15 @@ export default class MigrationTemplate extends ModuleTemplate {
 
     // ------------------------------------------------------------------------
 
-    protected override get ext(): ModuleExtension {
-        return Config.migrationsExt
-    }
-
-    // ------------------------------------------------------------------------
-
     protected get importLine(): string {
-        const dataType = this.shouldImportDataType ? ', DataType' : ''
-
-        return (
-            `import { Migration${dataType} } from "${this.packageImportPath}"`
-        )
+        return `import { Migration${(
+            this.shouldImportDT ? ', DataType' : ''
+        )} } from "${this.packageImportPath}"`
     }
 
     // ------------------------------------------------------------------------
 
-    protected get shouldImportDataType(): boolean {
+    protected get shouldImportDT(): boolean {
         return (
             this.implements === 'sync' &&
             [...this.schema, ...this.previous ?? []].some(
@@ -82,9 +74,9 @@ export default class MigrationTemplate extends ModuleTemplate {
     // ------------------------------------------------------------------------
 
     protected get defaultCreateTableMethod(): string {
-        return (
-            `this.database.createTable('${this.tableName}', table => {\n\n})`
-        )
+        return `this.database.createTable('${(
+            this.tableName
+        )}', table => {\n\n})`
     }
 
     // ------------------------------------------------------------------------
@@ -155,14 +147,12 @@ export default class MigrationTemplate extends ModuleTemplate {
         name: 'up' | 'down',
         sync: boolean = false
     ): string {
-        const reverse = name === 'down'
-
         return this.indentMany([
             `public ${name}() {`,
             [
                 sync
-                    ? this.syncImplement(reverse)
-                    : this.defaultImplement(reverse),
+                    ? this.syncImplement(name === 'down')
+                    : this.defaultImplement(name === 'down'),
                 4
             ],
             '}'
@@ -172,7 +162,7 @@ export default class MigrationTemplate extends ModuleTemplate {
     // ------------------------------------------------------------------------
 
     private defaultImplement(reverse: boolean = false): string {
-        switch (reverse ? this.invertAction() : this.action) {
+        switch (reverse ? this.reverseAction() : this.action) {
             case "CREATE": return this.defaultCreateTableMethod
             case "ALTER": return this.defaultAlterTableMethod
             case "DROP": return this.defaultDropTableMethod
@@ -186,7 +176,7 @@ export default class MigrationTemplate extends ModuleTemplate {
     private syncImplement(reverse: boolean = false): string {
         return new TableMigrationImplements(
             this.metadata,
-            reverse ? this.invertAction() : this.action,
+            reverse ? this.reverseAction() : this.action,
             this.schema,
             this.previous
         )
@@ -195,7 +185,7 @@ export default class MigrationTemplate extends ModuleTemplate {
 
     // ------------------------------------------------------------------------
 
-    private invertAction(): ActionType {
+    private reverseAction(): ActionType {
         switch (this.action) {
             case "CREATE": return 'DROP'
             case "DROP": return 'CREATE'

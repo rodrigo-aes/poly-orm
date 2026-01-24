@@ -1,5 +1,6 @@
 import 'reflect-metadata'
 
+import type { PolyORMConfig } from './Config'
 import type {
     Target,
     EntityTarget,
@@ -266,6 +267,7 @@ import {
 } from './SQLBuilders'
 
 export {
+    type PolyORMConfig,
     MySQLConnection,
 
     DataType,

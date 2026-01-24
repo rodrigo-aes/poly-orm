@@ -1,5 +1,6 @@
 // Commands
 import Command from './Command'
+import InitCommander from './InitCommander'
 import MigrationCommander from './MigrationCommander'
 
 // Types
@@ -232,5 +233,6 @@ export default class CLI {
 
 
 export {
+    InitCommander,
     MigrationCommander
 }

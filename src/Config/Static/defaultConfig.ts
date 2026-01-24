@@ -14,7 +14,7 @@ const defaultConfig: PolyORMConfig = {
     },
 
     migrations: {
-        baseDir: './Migrations',
+        dir: './Migrations',
         ext: '.ts'
     }
 }

@@ -1,7 +1,10 @@
 node_modules
+.vscode
 src/TestTools
 clean-js.ps1
 poly-orm.config.ts
-scripts
-dist
+lib
 vscode-worksapce.code-workspace
+tsconfig.cjs.json
+tsconfig.esm.json
+*.tgz
