@@ -144,7 +144,7 @@ export default class ColumnSQLBuilder extends ColumnSchema {
 
         // --------------------------------------------------------------------
 
-        return constraints.join(', ')
+        return (constraints.length ? ', ' : '') + constraints.join(', ')
     }
 
     // ------------------------------------------------------------------------
@@ -174,7 +174,7 @@ export default class ColumnSQLBuilder extends ColumnSchema {
 
         // --------------------------------------------------------------------
 
-        return constraints.join(', ') + constraints.length ? ', ' : ''
+        return (constraints.length ? ', ' : '') + constraints.join(', ')
     }
 
     // ------------------------------------------------------------------------
@@ -256,12 +256,6 @@ export default class ColumnSQLBuilder extends ColumnSchema {
             default: return ''
         }
     }
-
-
-
-    // ------------------------------------------------------------------------
-
-
 }
 
 export {

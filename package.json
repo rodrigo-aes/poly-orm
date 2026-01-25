@@ -13,7 +13,8 @@
     "./*": null
   },
   "scripts": {
-    "build": "tsx ./scripts/Build.ts"
+    "build": "tsx ./scripts/Build.ts",
+    "pack": "tsx ./scripts/Pack.ts"
   },
   "bin": {
     "polyorm": "./lib/cli.js"
