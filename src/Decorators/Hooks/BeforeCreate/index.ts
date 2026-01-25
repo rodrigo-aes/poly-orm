@@ -11,6 +11,7 @@ export default function BeforeCreate<T extends Entity>(
         (options: CreationAttributes<T>) => void | Promise<void>
     >
 ) {
-    HooksMetadata.findOrBuild(target.constructor as EntityTarget)
-        .addBeforeCreate(propertyName)
+    HooksMetadata
+        .findOrBuild(target.constructor as EntityTarget)
+        .add('beforeCreate', propertyName)
 }

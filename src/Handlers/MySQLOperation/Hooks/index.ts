@@ -224,9 +224,7 @@ export default class Hooks {
         await HooksMetadata
             .find(target)
             ?.call(
-                Array.isArray(result)
-                    ? 'afterBulkCreate'
-                    : 'afterCreate',
+                Array.isArray(result) ? 'afterBulkCreate' : 'afterCreate',
                 result
             )
     }

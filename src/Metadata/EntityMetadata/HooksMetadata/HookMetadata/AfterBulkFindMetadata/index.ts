@@ -2,9 +2,9 @@ import HookMetadata from "../HookMetadata"
 import type { HookType } from "../types"
 
 export default class AfterBulkFindMetadata extends HookMetadata {
-    // Getters ================================================================
+    // Static Getters =========================================================
     // Publics ----------------------------------------------------------------
-    public get type(): HookType {
+    public static get type(): HookType {
         return 'afterBulkFind'
     }
 

@@ -11,6 +11,7 @@ export default function BeforeBulkCreate<T extends Entity>(
         (options: CreationAttributes<T>[]) => void | Promise<void>
     >
 ) {
-    HooksMetadata.findOrBuild(target.constructor as EntityTarget)
-        .addBeforeBulkCreate(propertyName)
+    HooksMetadata
+        .findOrBuild(target.constructor as EntityTarget)
+        .add('beforeBulkCreate', propertyName)
 }

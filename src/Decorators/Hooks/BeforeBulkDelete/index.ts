@@ -11,6 +11,7 @@ export default function BeforeBulkDelete<T extends Entity>(
         where: ConditionalQueryOptions<T>
     ) => void | Promise<void>>
 ) {
-    HooksMetadata.findOrBuild(target.constructor as EntityTarget)
-        .addBeforeBulkDelete(propertyName)
+    HooksMetadata
+        .findOrBuild(target.constructor as EntityTarget)
+        .add('beforeBulkDelete', propertyName)
 }

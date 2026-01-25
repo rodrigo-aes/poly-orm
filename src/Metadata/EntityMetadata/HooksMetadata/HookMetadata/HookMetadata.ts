@@ -2,7 +2,11 @@ import type {
     Target,
     EntityTarget
 } from "../../../../types"
+
 import type { HookType, HookFunction, HookMetadataJSON } from "./types"
+
+// Exceptions
+import PolyORMException from "../../../../Errors"
 
 export default abstract class HookMetadata {
     constructor(
@@ -12,12 +16,22 @@ export default abstract class HookMetadata {
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public abstract get type(): HookType
+    public get type(): HookType {
+        return (this.constructor as typeof HookMetadata).type
+    }
 
     // ------------------------------------------------------------------------
 
     public get hookFn(): HookFunction {
         return this.target[this.method as keyof EntityTarget]
+    }
+
+    // Static Getters =======================================================
+    // Publics ----------------------------------------------------------------
+    public static get type(): HookType {
+        throw PolyORMException.Common.instantiate(
+            'UNIMPLEMENTED_GET', 'type', this.name
+        )
     }
 
     // Instance Methods =======================================================

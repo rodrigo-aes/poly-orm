@@ -15,6 +15,7 @@ export default function BeforeBulkUpdate<T extends Entity>(
         where?: ConditionalQueryOptions<T>
     ) => void | Promise<void>>
 ) {
-    HooksMetadata.findOrBuild(target.constructor as EntityTarget)
-        .addBeforeBulkUpdate(propertyName)
+    HooksMetadata
+        .findOrBuild(target.constructor as EntityTarget)
+        .add('beforeBulkUpdate', propertyName)
 }

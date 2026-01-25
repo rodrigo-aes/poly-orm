@@ -4,9 +4,9 @@ import type { HookType } from "../types"
 import type { Entity } from "../../../../../types"
 
 export default class AfterUpdateMetadata extends HookMetadata {
-    // Getters ================================================================
+    // Static Getters =========================================================
     // Publics ----------------------------------------------------------------
-    public get type(): HookType {
+    public static get type(): HookType {
         return 'afterUpdate'
     }
 

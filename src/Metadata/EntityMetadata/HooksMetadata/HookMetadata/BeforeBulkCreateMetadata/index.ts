@@ -5,9 +5,9 @@ import type { HookType } from "../types"
 import type { CreationAttributes } from "../../../../../SQLBuilders"
 
 export default class BeforeBulkCreateMetadata extends HookMetadata {
-    // Getters ================================================================
+    // Static Getters =========================================================
     // Publics ----------------------------------------------------------------
-    public get type(): HookType {
+    public static get type(): HookType {
         return 'beforeBulkCreate'
     }
 

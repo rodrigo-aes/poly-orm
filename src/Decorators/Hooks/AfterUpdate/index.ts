@@ -8,6 +8,7 @@ export default function AfterUpdate<T extends Entity>(
     propertyName: string,
     hookFn: TypedPropertyDescriptor<(entity: T) => void | Promise<void>>
 ) {
-    HooksMetadata.findOrBuild(target.constructor as EntityTarget)
-        .addAfterUpdate(propertyName)
+    HooksMetadata
+        .findOrBuild(target.constructor as EntityTarget)
+        .add('afterUpdate', propertyName)
 }

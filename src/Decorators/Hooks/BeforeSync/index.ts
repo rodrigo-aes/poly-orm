@@ -8,6 +8,7 @@ export default function BeforeSync<T extends Entity>(
     propertyName: string,
     hookFn: TypedPropertyDescriptor<() => void | Promise<void>>
 ) {
-    HooksMetadata.findOrBuild(target.constructor as EntityTarget)
-        .addBeforeSync(propertyName)
+    HooksMetadata
+        .findOrBuild(target.constructor as EntityTarget)
+        .add('beforeSync', propertyName)
 }

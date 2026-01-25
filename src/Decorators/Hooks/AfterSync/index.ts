@@ -8,6 +8,7 @@ export default function AfterSync<T extends Entity>(
     propertyName: string,
     hookFn: TypedPropertyDescriptor<() => void | Promise<void>>
 ) {
-    HooksMetadata.findOrBuild(target.constructor as EntityTarget)
-        .addAfterSync(propertyName)
+    HooksMetadata
+        .findOrBuild(target.constructor as EntityTarget)
+        .add('afterSync', propertyName)
 }

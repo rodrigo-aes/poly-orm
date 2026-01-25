@@ -19,6 +19,10 @@ export type HookType = (
     'afterBulkDelete'
 )
 
+export type InternalHookType = (
+    'updatedTimestamp'
+)
+
 export type HookFunction = (...args: any[]) => void | Promise<void>
 
 export type HookMetadataJSON = {

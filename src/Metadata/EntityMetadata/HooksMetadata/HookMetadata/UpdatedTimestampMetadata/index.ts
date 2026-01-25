@@ -14,14 +14,14 @@ export default class UpdatedTimestampMetadata extends BeforeUpdateMetadata {
         super(target, '')
     }
 
-    // Getters ================================================================
+    // Static Getters =========================================================
     // Publics ----------------------------------------------------------------
-    public get type(): HookType {
+    public static override get type(): HookType {
         return 'beforeUpdate'
     }
 
-    // ------------------------------------------------------------------------
-
+    // Getters ================================================================
+    // Publics ----------------------------------------------------------------
     public override get hookFn(): HookFunction {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD',

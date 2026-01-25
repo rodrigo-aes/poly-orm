@@ -11,6 +11,7 @@ export default function BeforeFind<T extends Entity>(
         (options: FindQueryOptions<T>) => void | Promise<void>
     >
 ) {
-    HooksMetadata.findOrBuild(target.constructor as EntityTarget)
-        .addBeforeFind(propertyName)
+    HooksMetadata
+        .findOrBuild(target.constructor as EntityTarget)
+        .add('beforeFind', propertyName)
 }

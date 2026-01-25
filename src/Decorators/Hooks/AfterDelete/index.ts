@@ -12,6 +12,7 @@ export default function AfterDelete<T extends Entity>(
         result: DeleteResult
     ) => void | Promise<void>>
 ) {
-    HooksMetadata.findOrBuild(target.constructor as EntityTarget)
-        .addAfterDelete(propertyName)
+    HooksMetadata
+        .findOrBuild(target.constructor as EntityTarget)
+        .add('afterDelete', propertyName)
 }

@@ -15,6 +15,7 @@ export default function BeforeUpdate<T extends Entity>(
         where?: ConditionalQueryOptions<T>
     ) => void | Promise<void>>
 ) {
-    HooksMetadata.findOrBuild(target.constructor as EntityTarget)
-        .addBeforeUpdate(propertyName)
+    HooksMetadata
+        .findOrBuild(target.constructor as EntityTarget)
+        .add('beforeUpdate', propertyName)
 }

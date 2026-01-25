@@ -20,8 +20,11 @@ import HookMetadata, {
     BeforeBulkDeleteMetadata,
     AfterBulkDeleteMetadata,
 
+    UpdatedTimestampMetadata,
+
     type HookMetadataJSON,
-    type HookType
+    type HookType,
+    type InternalHookType
 } from "./HookMetadata"
 
 // Helpers
@@ -94,6 +97,25 @@ export default class HooksMetadata extends Metadata {
         )
 
         this.toCall.add(name)
+    }
+
+    // ------------------------------------------------------------------------
+
+    public addInternal(name: InternalHookType, propertyName: string) {
+        const key = (
+            HookMetadata[name.charAt(0).toUpperCase() + name.slice(1) as (
+                keyof typeof HookMetadata
+            )] as any
+        )
+            .type as HookType
+
+        (this[key] as HookMetadata[]).push(new (HookMetadata[(
+            name.charAt(0).toUpperCase() + name.slice(1) as (
+                keyof typeof HookMetadata
+            )
+        )] as any)(this.target, propertyName))
+
+        this.toCall.add(key)
     }
 
     // ------------------------------------------------------------------------

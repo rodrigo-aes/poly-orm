@@ -8,6 +8,7 @@ export default function BeforeDelete<T extends Entity>(
     propertyName: string,
     hookFn: TypedPropertyDescriptor<(entity: T) => void | Promise<void>>
 ) {
-    HooksMetadata.findOrBuild(target.constructor as EntityTarget)
-        .addBeforeDelete(propertyName)
+    HooksMetadata
+        .findOrBuild(target.constructor as EntityTarget)
+        .add('beforeDelete', propertyName)
 }

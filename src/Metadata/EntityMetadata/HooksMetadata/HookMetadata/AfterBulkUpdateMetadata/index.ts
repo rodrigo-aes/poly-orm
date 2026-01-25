@@ -6,9 +6,9 @@ import type { Entity } from "../../../../../types"
 import type { ConditionalQueryOptions } from "../../../../../SQLBuilders"
 
 export default class AfterBulkUpdateMetadata extends HookMetadata {
-    // Getters ================================================================
+    // Static Getters =========================================================
     // Publics ----------------------------------------------------------------
-    public get type(): HookType {
+    public static get type(): HookType {
         return 'afterBulkUpdate'
     }
 

@@ -10,6 +10,7 @@ export default function AfterBulkCreate<T extends Entity>(
         (entities: T[]) => void | Promise<void>
     >
 ) {
-    HooksMetadata.findOrBuild(target.constructor as EntityTarget)
-        .addAfterBulkCreate(propertyName)
+    HooksMetadata
+        .findOrBuild(target.constructor as EntityTarget)
+        .add('afterBulkCreate', propertyName)
 }

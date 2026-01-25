@@ -13,6 +13,7 @@ export default function AfterBulkUpdate<T extends Entity>(
         result: ResultSetHeader
     ) => void | Promise<void>>
 ) {
-    HooksMetadata.findOrBuild(target.constructor as EntityTarget)
-        .addAfterBulkUpdate(propertyName)
+    HooksMetadata
+        .findOrBuild(target.constructor as EntityTarget)
+        .add('afterBulkUpdate', propertyName)
 }

@@ -22,7 +22,7 @@ import AfterBulkDeleteMetadata from "./AfterBulkDeleteMetadata"
 import UpdatedTimestampMetadata from "./UpdatedTimestampMetadata"
 
 // Types
-import type { HookMetadataJSON, HookType } from "./types"
+import type { HookMetadataJSON, HookType, InternalHookType } from "./types"
 
 export default abstract class HookMetadata extends AbstractHookMetadata {
     public static BeforeSync = BeforeSyncMetadata
@@ -31,20 +31,20 @@ export default abstract class HookMetadata extends AbstractHookMetadata {
     public static AfterFind = AfterFindMetadata
     public static BeforeBulkFind = BeforeBulkFindMetadata
     public static AfterBulkFind = AfterBulkFindMetadata
-    public static BeforeCreateMetadata = BeforeCreateMetadata
-    public static AfterCreateMetadata = AfterCreateMetadata
-    public static BeforeBulkCreateMetadata = BeforeBulkCreateMetadata
-    public static AfterBulkCreateMetadata = AfterBulkCreateMetadata
-    public static BeforeUpdateMetadata = BeforeUpdateMetadata
-    public static AfterUpdateMetadata = AfterUpdateMetadata
-    public static BeforeBulkUpdateMetadata = BeforeBulkUpdateMetadata
-    public static AfterBulkUpdateMetadata = AfterBulkUpdateMetadata
-    public static BeforeDeleteMetadata = BeforeDeleteMetadata
-    public static AfterDeleteMetadata = AfterDeleteMetadata
-    public static BeforeBulkDeleteMetadata = BeforeBulkDeleteMetadata
-    public static AfterBulkDeleteMetadata = AfterBulkDeleteMetadata
+    public static BeforeCreate = BeforeCreateMetadata
+    public static AfterCreate = AfterCreateMetadata
+    public static BeforeBulkCreate = BeforeBulkCreateMetadata
+    public static AfterBulkCreate = AfterBulkCreateMetadata
+    public static BeforeUpdate = BeforeUpdateMetadata
+    public static AfterUpdate = AfterUpdateMetadata
+    public static BeforeBulkUpdate = BeforeBulkUpdateMetadata
+    public static AfterBulkUpdate = AfterBulkUpdateMetadata
+    public static BeforeDelete = BeforeDeleteMetadata
+    public static AfterDelete = AfterDeleteMetadata
+    public static BeforeBulkDelete = BeforeBulkDeleteMetadata
+    public static AfterBulkDelete = AfterBulkDeleteMetadata
 
-    public static UpdatedTimestampMetadata = UpdatedTimestampMetadata
+    public static UpdatedTimestamp = UpdatedTimestampMetadata
 }
 
 export {
@@ -70,5 +70,6 @@ export {
     UpdatedTimestampMetadata,
 
     type HookMetadataJSON,
-    type HookType
+    type HookType,
+    type InternalHookType
 }

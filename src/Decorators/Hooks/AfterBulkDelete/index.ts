@@ -13,6 +13,7 @@ export default function AfterBulkDelete<T extends Entity>(
         result: DeleteResult
     ) => void | Promise<void>>
 ) {
-    HooksMetadata.findOrBuild(target.constructor as EntityTarget)
-        .addAfterBulkDelete(propertyName)
+    HooksMetadata
+        .findOrBuild(target.constructor as EntityTarget)
+        .add('afterBulkDelete', propertyName)
 }

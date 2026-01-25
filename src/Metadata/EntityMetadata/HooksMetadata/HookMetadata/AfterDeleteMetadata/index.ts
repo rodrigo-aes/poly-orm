@@ -5,9 +5,9 @@ import type { Entity } from "../../../../../types"
 import type { DeleteResult } from "../../../../../Handlers"
 
 export default class AfterDeleteMetadata extends HookMetadata {
-    // Getters ================================================================
+    // Static Getters =========================================================
     // Publics ----------------------------------------------------------------
-    public get type(): HookType {
+    public static get type(): HookType {
         return 'afterDelete'
     }
 

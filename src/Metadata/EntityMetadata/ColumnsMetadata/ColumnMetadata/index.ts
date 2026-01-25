@@ -285,7 +285,7 @@ export default class ColumnMetadata {
     // ------------------------------------------------------------------------
 
     public static buildUpdateDateColumn(target: EntityTarget, name: string) {
-        HooksMetadata.findOrBuild(target).addUpdatedTimestampMetadata()
+        HooksMetadata.findOrBuild(target).addInternal('updatedTimestamp', name)
 
         return new ColumnMetadata(
             target,

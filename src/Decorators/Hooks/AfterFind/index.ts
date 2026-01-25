@@ -10,6 +10,7 @@ export default function AfterFind<T extends Entity>(
         (entity: T) => void | Promise<void>
     >
 ) {
-    HooksMetadata.findOrBuild(target.constructor as EntityTarget)
-        .addAfterFind(propertyName)
+    HooksMetadata
+        .findOrBuild(target.constructor as EntityTarget)
+        .add('afterFind', propertyName)
 }

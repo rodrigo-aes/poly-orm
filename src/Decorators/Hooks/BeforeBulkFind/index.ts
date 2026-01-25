@@ -11,6 +11,7 @@ export default function BeforeBulkFind<T extends Entity>(
         (options: FindQueryOptions<T>) => void | Promise<void>
     >
 ) {
-    HooksMetadata.findOrBuild(target.constructor as EntityTarget)
-        .addBeforeBulkFind(propertyName)
+    HooksMetadata
+        .findOrBuild(target.constructor as EntityTarget)
+        .add('beforeBulkFind', propertyName)
 }

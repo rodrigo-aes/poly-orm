@@ -5,9 +5,9 @@ import type { DeleteResult } from "../../../../../Handlers"
 import type { ConditionalQueryOptions } from "../../../../../SQLBuilders"
 
 export default class AfterBulkDeleteMetadata extends HookMetadata {
-    // Getters ================================================================
+    // Static Getters =========================================================
     // Publics ----------------------------------------------------------------
-    public get type(): HookType {
+    public static get type(): HookType {
         return 'afterBulkDelete'
     }
 
