@@ -197,6 +197,8 @@ export default class Hooks {
         if (result) await HooksMetadata
             .find(target)
             ?.call('afterBulkFind', result)
+
+        return result
     }
 
     // ------------------------------------------------------------------------
@@ -227,6 +229,8 @@ export default class Hooks {
                 Array.isArray(result) ? 'afterBulkCreate' : 'afterCreate',
                 result
             )
+
+        return result
     }
 
     // ------------------------------------------------------------------------
@@ -253,11 +257,13 @@ export default class Hooks {
         sqlBuilder: UpdateSQLBuilder<T>,
         result: T | ResultSetHeader,
     ) {
-        return (HooksMetadata.find(target)?.call as any)(...(() =>
+        (HooksMetadata.find(target)?.call as any)(...(() =>
             result instanceof EntityBase
                 ? ['afterUpdate', result]
                 : ['afterBulkUpdate', sqlBuilder.conditional, result]
         )())
+
+        return result
     }
 
     // ------------------------------------------------------------------------
@@ -283,10 +289,12 @@ export default class Hooks {
         sqlBuilder: DeleteSQLBuilder<T>,
         result: DeleteResult,
     ) {
-        return (HooksMetadata.find(target)?.call as any)(...(() =>
+        (HooksMetadata.find(target)?.call as any)(...(() =>
             sqlBuilder.conditional instanceof EntityBase
                 ? ['afterDelete', sqlBuilder.conditional]
                 : ['afterBulkDelete', sqlBuilder.conditional, result]
         )())
+
+        return result
     }
 }

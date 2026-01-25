@@ -100,6 +100,8 @@ export default class EntityBuilder<T extends EntityTarget> {
         target: Target<T>,
         attributes: CreationAttributes<T>
     ): T {
+        console.log(attributes)
+        console.log((target as StaticTarget<T>).build<Entity>(attributes))
         return (target as StaticTarget<T>).build<Entity>(attributes) as T
     }
 
