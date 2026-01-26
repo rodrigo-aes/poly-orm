@@ -1,0 +1,14 @@
+{
+    "extends": "./tsconfig.base.json",
+    "compilerOptions": {
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "outDir": "./lib"
+    },
+    "include": [
+        "src/cli.ts",
+        "src/CLI/**/*",
+        "src/Config/**/*",
+        "src/Errors/**/*"
+    ]
+}

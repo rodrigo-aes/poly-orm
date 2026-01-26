@@ -3,5 +3,9 @@
     "compilerOptions": {
         "module": "es2022",
         "moduleResolution": "bundler"
-    }
+    },
+    "exclude": [
+        "src/cli.ts",
+        "src/CLI/**/*",
+    ]
 }

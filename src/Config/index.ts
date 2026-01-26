@@ -65,14 +65,7 @@ class Config extends Map<string, any> {
 
     private async loadConfigFile(): Promise<PolyORMConfig | undefined> {
         try {
-            console.log(resolve('poly-orm.config.ts'))
-            console.log(pathToFileURL(resolve('poly-orm.config.ts')).href)
-            console.log(
-                await import(
-                    pathToFileURL(resolve('poly-orm.config.ts')).href
-                )
-            )
-
+            await import('tsx/cjs')
             return (
                 await import(
                     pathToFileURL(resolve('poly-orm.config.ts')).href

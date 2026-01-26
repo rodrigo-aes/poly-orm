@@ -17,7 +17,7 @@
     "pack": "tsx ./scripts/Pack.ts"
   },
   "bin": {
-    "polyorm": "./lib/cli.js"
+    "polyorm": "./lib/cli.cjs"
   },
   "author": "Rodrigo Alves Do Espirito Santo",
   "license": "ISC",
@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.14.1",
-    "rimraf": "^6.0.1"
+    "rimraf": "^6.0.1",
+    "tsx": "^4.21.0"
   }
 }
