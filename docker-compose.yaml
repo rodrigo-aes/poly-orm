@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  legacy:
+    build:
+      context: .
+      dockerfile: docker/legacy-decorators/Dockerfile
+    container_name: polyorm-ts-legacy
+    volumes:
+      - .:/app
+    command: npm test
+
+  modern:
+    build:
+      context: .
+      dockerfile: docker/modern/Dockerfile
+    container_name: polyorm-ts-modern
+    volumes:
+      - .:/app
+    command: npm test
