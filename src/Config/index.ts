@@ -2,9 +2,6 @@
 import { resolve } from "path"
 import { pathToFileURL } from "url"
 
-// Modules
-import ConfigFile from "./ConfigFile"
-
 // Static
 import { defaultConfig } from "./Static"
 
