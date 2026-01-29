@@ -137,6 +137,7 @@ export default class Migrator extends Array<Constructor<Migration>> {
 
     @Logs.RunMainProcess
     public async run(): Promise<void> {
+        console.log('run')
         await this.loadProcessDependencies('run')
 
         const migrator = new DatabaseMigrator(this.connection)
@@ -237,6 +238,7 @@ export default class Migrator extends Array<Constructor<Migration>> {
 
     // Privates ---------------------------------------------------------------
     private verifyDir(): void {
+        console.log('DIR:', this.dir)
         if (!existsSync(this.dir)) mkdirSync(this.dir, { recursive: true })
     }
 
@@ -310,7 +312,6 @@ export default class Migrator extends Array<Constructor<Migration>> {
     private async loadMigrations(method?: MigrationRunMethod): Promise<void> {
         const files = method ? await this.filterFiles(method) : this.files
         if (method) this.splice(0, this.length)
-        if (files.some(file => file.endsWith('ts'))) await import('tsx/cjs')
 
         this.push(...await Promise.all(
             files.map(async file =>

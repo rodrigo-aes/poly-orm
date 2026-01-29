@@ -2,6 +2,9 @@
 import { resolve } from "path"
 import { pathToFileURL } from "url"
 
+// Modules
+import ConfigFile from "./ConfigFile"
+
 // Static
 import { defaultConfig } from "./Static"
 
@@ -10,8 +13,6 @@ import type { PolyORMConfig } from "./types"
 import type { ModuleExtension } from "../ModuleTemplates"
 
 class Config extends Map<string, any> {
-    private loaded: boolean = false
-
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     public get createConnections(): PolyORMConfig['createConnections'] {
@@ -27,7 +28,7 @@ class Config extends Map<string, any> {
     // ------------------------------------------------------------------------
 
     public get migrationsDir(): string {
-        return resolve(this.get('migrations').baseDir)
+        return resolve(this.get('migrations').dir)
     }
 
     // ------------------------------------------------------------------------
@@ -39,41 +40,27 @@ class Config extends Map<string, any> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public async load(): Promise<this> {
-        if (!this.loaded) for (const [key, value] of (
-            await this.buildConfig()
-        )) (
-            this.set(key, value)
-        )
-
-        this.loaded = true
-
+        for (const conf of await this.getConfig()) this.set(...conf)
         return this
     }
 
     // ------------------------------------------------------------------------
 
-    private async buildConfig(): Promise<[string, any][]> {
-        console.log(await this.loadConfigFile())
-
-        return Object.entries({
-            ...defaultConfig,
-            ...await this.loadConfigFile()
-        })
+    private async getConfig(): Promise<[string, any][]> {
+        return Object.entries({ ...defaultConfig, ...await this.loadFile() })
     }
 
     // ------------------------------------------------------------------------
 
-    private async loadConfigFile(): Promise<PolyORMConfig | undefined> {
+    private async loadFile(): Promise<PolyORMConfig | undefined> {
         try {
-            await import('tsx/cjs')
-            return (
-                await import(
-                    pathToFileURL(resolve('poly-orm.config.ts')).href
-                )
+            return (await import(
+                pathToFileURL(resolve("poly-orm.config.ts")).href)
             )
                 .default
-
-        } catch (_) {
+        }
+        catch (err) {
+            console.error("Failed to load config file:", err)
             return undefined
         }
     }

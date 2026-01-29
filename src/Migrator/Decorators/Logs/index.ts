@@ -64,20 +64,12 @@ export default class Logs {
 
     // Static Methods =========================================================
     // Publics ----------------------------------------------------------------
-    public static InitProccess(
-        _: Migrator,
-        __: 'init',
-        descriptor: DefaultVoidDescriptor
-    ) {
-        const proccess = descriptor.value!
-
-        descriptor.value = async function (
-            this: Migrator
-        ) {
+    public static InitProccess(value: (this: Migrator) => Promise<void>) {
+        return async function (this: Migrator) {
             const initAt = Date.now()
 
             Logs.initProcessInitLog((this as any).connection.name)
-            await proccess.apply(this)
+            await value.apply(this)
             Logs.initProcessDoneLog(
                 (this as any).connection.name,
                 initAt
@@ -88,130 +80,107 @@ export default class Logs {
     // ------------------------------------------------------------------------
 
     public static RunMainProcess(
-        _: Migrator,
-        method: MainProcessMethod,
-        descriptor: DefaultVoidDescriptor
+        value: (this: Migrator) => Promise<void>
     ) {
-        const proccess = descriptor.value!
-
-        descriptor.value = async function (this: Migrator) {
+        return async function (this: Migrator) {
             const initAt = Date.now()
-            Logs.mainProcessInitLog(
-                method,
-                (this as any).connection.name
-            )
 
-            await proccess.apply(this)
-
+            Logs.mainProcessInitLog(value.name, (this as any).connection.name)
+            await value.apply(this)
             Logs.mainProcessDoneLog(
-                method,
-                (this as any).connection.name,
-                initAt
+                value.name, (this as any).connection.name, initAt
             )
         }
-
-        return descriptor
     }
 
     // ------------------------------------------------------------------------
 
-    public static RunChildProcess<Method extends ChildProccessMethod>(
-        _: Migrator,
-        method: Method,
-        descriptor: ChildProccessDescriptor<Method>
+    public static RunChildProcess(
+        value: (this: Migrator, ...args: any[]) => Promise<void>
     ) {
-        const proccess = descriptor.value!
-
-        descriptor.value = async function (
-            this: Migrator,
-            ...args: ChildProccessArgs<Method>
+        return async function (
+            this: Migrator, ...args: any[]
         ) {
-            const [_, Migration] = args
             const initAt = Date.now()
 
             Logs.childProcessInitLog(
-                Logs.migrationMethod(method),
-                Migration.name
+                Logs.migrationMethod(value.name as ChildProccessMethod),
+                args[1].name
             )
 
-            await proccess.apply(this, args)
+            await value.apply(this, args)
             Logs.childProcessDoneLog(initAt)
         }
-
-        return descriptor
     }
 
     // ------------------------------------------------------------------------
 
     public static SyncProccess(
-        _: Migrator,
-        __: 'sync',
-        descriptor: DefaultVoidDescriptor
+        value: (this: Migrator) => Promise<void>
     ) {
-        const proccess = descriptor.value!
-
-        descriptor.value = async function (this: Migrator) {
+        return async function (this: Migrator) {
             const initAt = Date.now()
 
             Logs.syncProcessInitLog((this as any).connection.name)
-            await proccess.apply(this)
+            await value.apply(this)
             Logs.syncProcessDoneLog(
                 (this as any).connection.name,
                 initAt
             )
         }
-
-        return descriptor
     }
 
     // ------------------------------------------------------------------------
 
-    public static SQLTableOperation<
-        Method extends SQLTableOperationMethod
-    >(
-        _: SQLTableOperationThisArg<Method>,
-        method: Method,
-        descriptor: DefaultVoidDescriptor,
+    public static SQLTableOperation(
+        value: (this: any, ...args: any[]) => Promise<void>,
+        context: ClassMethodDecoratorContext<any, typeof value>
     ) {
-        const proccess = descriptor.value!
-
-        descriptor.value = async function (
-            this: SQLTableOperationThisArg<Method>,
-            ...args: any[]
-        ) {
+        return async function (this: any, ...args: any[]) {
             const initAt = Date.now()
-            const asParent = ['createAll', 'dropAll'].includes(method)
-            const name = asParent
-                ? (this as DatabaseSchema).connection.name
-                : (this as TableSchema).name
-
-            Logs.SQLTableOperationInitLog(method, name, asParent)
-
-            if (asParent) await Logs.storage.run(
-                {
-                    parentProccess: method
-                },
-                async () => await proccess.apply(this, args)
+            const isParent = ['createAll', 'dropAll'].includes(
+                context.name as SQLTableOperationMethod
             )
 
-            else await proccess.apply(this, args)
+            Logs.SQLTableOperationInitLog(
+                context.name as SQLTableOperationMethod,
+                isParent ? this.connection.name : this.name,
+                isParent
+            )
 
-            Logs.SQLTableOperationDoneLog(method, initAt, asParent)
+            await (
+                isParent
+                    ? Logs.storage.run(
+                        {
+                            parentProccess: context.name as (
+                                SQLTableOperationMethod
+                            )
+                        },
+                        async () => await value.apply(this, args)
+                    )
+                    : value.apply(this, args)
+            )
+
+            Logs.SQLTableOperationDoneLog(
+                context.name as SQLTableOperationMethod,
+                initAt,
+                isParent
+            )
         }
-
-        return descriptor
     }
 
     // ------------------------------------------------------------------------ 
 
     public static CreateMigrationProcess(
-        _: Migrator,
-        __: 'create',
-        descriptor: CreateMigrationDescriptor
+        value: (
+            this: Migrator,
+            action: ActionType,
+            tableName: string,
+            className?: string,
+            at?: number
+        ) => Promise<void>
     ) {
-        const orignalMethod = descriptor.value!
-
-        descriptor.value = async function (
+        return async function (
             this: Migrator,
             action: ActionType,
             tableName: string,
@@ -220,69 +189,52 @@ export default class Logs {
         ) {
             const initAt = Date.now()
             const name = className ?? MigrationTemplate.buildClassName(
-                action,
-                tableName
+                action, tableName
             )
 
             Logs.createMigrationProccessInitLog(
-                name,
-                (this as any).connection.name
+                name, (this as any).connection.name
             )
 
-            await orignalMethod.apply(this, [action, tableName, className, at])
-
+            await value.apply(this, [action, tableName, className, at])
             Logs.createMigrationProcessDoneLog(
-                name,
-                (this as any).connection.name,
-                initAt
+                name, (this as any).connection.name, initAt
             )
         }
-
-        return descriptor
     }
 
     // ------------------------------------------------------------------------ 
 
     public static DeleteMigrationProcess(
-        _: Migrator,
-        __: 'delete',
-        descriptor: DeleteMigrationDescriptor
+        value: (this: Migrator, id: string | number) => Promise<void>
     ) {
-        const orignalMethod = descriptor.value!
-
-        descriptor.value = async function (
+        return async function (
             this: Migrator,
             id: string | number
         ) {
             const initAt = Date.now()
 
             Logs.deleteMigrationProccessInitLog(
-                id,
-                (this as any).connection.name
+                id, (this as any).connection.name
             )
 
-            await orignalMethod.apply(this, [id])
-
+            await value.apply(this, [id])
             Logs.deleteMigrationProcessDoneLog(
-                id,
-                (this as any).connection.name,
-                initAt
+                id, (this as any).connection.name, initAt
             )
         }
-
-        return descriptor
     }
 
     // ------------------------------------------------------------------------
 
     public static MoveMigrationProccess(
-        _: Migrator,
-        __: 'move',
-        descriptor: MoveMigrationDescriptor
+        value: (
+            this: Migrator,
+            from: number,
+            to: number
+        ) => Promise<void>
     ) {
-        const proccess = descriptor.value!
-
-        descriptor.value = async function (
+        return async function (
             this: Migrator,
             from: number,
             to: number
@@ -293,7 +245,7 @@ export default class Logs {
                 from, to, (this as any).connection.name
             )
 
-            await proccess.apply(this, [from, to])
+            await value.apply(this, [from, to])
             Logs.moveMigrationProcessDoneLog(initAt)
         }
     }
@@ -301,40 +253,32 @@ export default class Logs {
     // ------------------------------------------------------------------------
 
     public static RegisterMigrationsProccess(
-        _: Migrator,
-        __: 'register',
-        descriptor: DefaultVoidDescriptor
+        value: (this: Migrator) => Promise<void>
     ) {
-        const orignalMethod = descriptor.value!
-
-        descriptor.value = async function (this: Migrator) {
+        return async function (this: Migrator) {
             const initAt = Date.now()
 
             Logs.registerMigrationsProccessInitLog(
                 (this as any).connection.name
             )
 
-            await orignalMethod.apply(this)
-
+            await value.apply(this)
             Logs.registerMigrationsProccessDoneLog(
-                (this as any).connection.name,
-                initAt
+                (this as any).connection.name, initAt
             )
         }
-
-        return descriptor
     }
 
     // ------------------------------------------------------------------------
 
     public static RegisterMigration(
-        _: MigrationsTableHandler,
-        __: 'insert',
-        descriptor: InsertMigrationDescriptor,
+        value: (
+            this: MigrationsTableHandler,
+            name: string,
+            ...args: any[]
+        ) => Promise<any>
     ) {
-        const proccess = descriptor.value!
-
-        descriptor.value = async function (
+        return async function (
             this: MigrationsTableHandler,
             name: string,
             ...args: any[]
@@ -342,142 +286,112 @@ export default class Logs {
             const initAt = Date.now()
 
             Logs.registerMigrationInitLog(name)
-            const result = await proccess.apply(this, [name, ...args])
+            const result = await value.apply(this, [name, ...args])
             Logs.registerMigrationDoneLog(initAt)
 
             return result
         }
-
-        return descriptor
     }
 
     // ------------------------------------------------------------------------
 
     public static EraseMigration(
-        _: MigrationsTableHandler,
-        __: 'delete',
-        descriptor: EraseMigrationDescriptor,
+        value: (
+            this: MigrationsTableHandler,
+            id: string | number
+        ) => Promise<number>
     ) {
-        const proccess = descriptor.value!
-
-        descriptor.value = async function (
+        return async function (
             this: MigrationsTableHandler,
             id: string | number
         ) {
             const initAt = Date.now()
 
             Logs.eraseMigrationInitLog(id)
-            const result = await proccess.apply(this, [id])
+            const result = await value.apply(this, [id])
             Logs.eraseMigrationDoneLog(initAt)
 
             return result
         }
-
-        return descriptor
     }
 
     // ------------------------------------------------------------------------
 
-    public static CreateMigrationFile<
-        Method extends CreateMigrationFileMethod
-    >(
-        _: MigrationFileHandler,
-        __: Method,
-        descriptor: CreateMigrationFileDescriptor<Method>,
-    ) {
-        const proccess = descriptor.value!
-
-        descriptor.value = async function (
+    public static CreateMigrationFile(
+        value: (
             this: MigrationFileHandler,
             dir: string,
             action: ActionType,
-            props: CreateMigrationFileArgs<Method>
+            props: any
+        ) => Promise<void>
+    ) {
+        return async function (
+            this: MigrationFileHandler,
+            dir: string,
+            action: ActionType,
+            props: any
         ) {
             const initAt = Date.now()
 
             Logs.createMigrationFileInitLog(
-                dir,
-                props.fileName + Config.migrationsExt
+                dir, props.fileName + Config.migrationsExt
             )
 
-            proccess.apply(this, [dir, action, props])
+            await value.apply(this, [dir, action, props])
             Logs.createMigrationFileDoneLog(initAt)
         }
-
-        return descriptor
     }
 
     // ------------------------------------------------------------------------
 
     public static DeleteMigrationFile(
-        _: MigrationFileHandler,
-        __: 'delete',
-        descriptor: DeleteMigrationFileDescriptor,
+        value: (
+            this: MigrationFileHandler,
+            deleted: number
+        ) => Promise<void>
     ) {
-        const proccess = descriptor.value!
-
-        descriptor.value = async function (
+        return async function (
             this: MigrationFileHandler,
             deleted: number
         ) {
             const initAt = Date.now()
 
-            Logs.deleteMigrationFileInitLog(
-                deleted,
-                this.dir
-            )
+            Logs.deleteMigrationFileInitLog(deleted, this.dir)
 
-            proccess.apply(this, [deleted])
+            await value.apply(this, [deleted])
             Logs.deleteMigrationFileDoneLog(initAt)
         }
-
-        return descriptor
     }
 
     // ------------------------------------------------------------------------
 
     public static NothingToRun(
-        _: Migrator,
-        __: 'included',
-        descriptor: IncludedDescriptor
+        value: (this: Migrator, method: MigrationRunMethod) => Promise<
+            string[]
+        >
     ) {
-        const proccess = descriptor.value!
-
-        descriptor.value = async function (
+        return async function (
             this: Migrator,
             method: MigrationRunMethod
         ) {
-            const included = await proccess.apply(this, [method])
+            const included = await value.apply(this, [method])
             if (included.length === 0) Logs.nothingToRunLog(method)
 
             return included
         }
-
-        return descriptor
     }
 
     // ------------------------------------------------------------------------
 
     public static NothingToRegister(
-        _: Migrator,
-        __: 'unknownMigrationFiles',
-        descriptor: UnknownMigrationFilesDescriptor
+        value: (this: Migrator, silent: boolean) => Promise<string[]>
     ) {
-        const proccess = descriptor.value!
-
-        descriptor.value = async function (
-            this: Migrator,
-            silent: boolean = true
-        ) {
-            const unknown = await proccess.apply(this, [silent])
-            if (!silent && unknown.length === 0) (
-                Logs.nothingToRegisterLog()
-            )
+        return async function (this: Migrator, silent: boolean = true) {
+            const unknown = await value.apply(this, [silent])
+            if (!silent && unknown.length === 0) Logs.nothingToRegisterLog()
 
             return unknown
         }
-
-        return descriptor
     }
 
     // Privates ---------------------------------------------------------------
@@ -507,10 +421,7 @@ export default class Logs {
     }
 
     // MAIN PROCCESS LOGS -----------------------------------------------------
-    private static mainProcessInitLog(
-        method: MainProcessMethod,
-        connection: string
-    ) {
+    private static mainProcessInitLog(method: string, connection: string) {
         Log.composedLine(
             `\n#[default]Initializing migrations #[warning]${method.toUpperCase()} #[default]proccess for connection #[warning]${connection}#[default]`,
             {
@@ -524,7 +435,7 @@ export default class Logs {
     // ------------------------------------------------------------------------
 
     private static mainProcessDoneLog(
-        method: MainProcessMethod,
+        method: string,
         connection: string,
         initAt: number
     ) {
@@ -591,7 +502,7 @@ export default class Logs {
 
     // SQL TABLE OPERATION LOGS -----------------------------------------------
     private static SQLTableOperationInitLog(
-        method: SQLTableOperationMethod,
+        method: string,
         name: string,
         asParent: boolean = false
     ) {
@@ -609,7 +520,7 @@ export default class Logs {
     // ------------------------------------------------------------------------
 
     private static SQLTableOperationDoneLog(
-        method: SQLTableOperationMethod,
+        method: string,
         initAt: number,
         asParent: boolean = false
     ) {
@@ -632,7 +543,10 @@ export default class Logs {
     }
 
     // CREATE MIGRATION PROCCESS LOGS -----------------------------------------
-    private static createMigrationProccessInitLog(name: string, connection: string) {
+    private static createMigrationProccessInitLog(
+        name: string,
+        connection: string
+    ) {
         Log.composedLine(
             `\n#[default]Creating migration #[info]${name} #[default]for connection #[warning]${connection}#[default]`,
             {
@@ -897,7 +811,7 @@ export default class Logs {
     // ------------------------------------------------------------------------
 
     private static SQLOperationInitProcess(
-        method: SQLTableOperationMethod,
+        method: string,
         name: string
     ) {
         switch (method) {
@@ -911,7 +825,7 @@ export default class Logs {
 
     // ------------------------------------------------------------------------
 
-    private static SQLOperationDoneProcess(method: SQLTableOperationMethod) {
+    private static SQLOperationDoneProcess(method: string) {
         switch (method) {
             case "create": return 'CREATED'
             case "alter": return 'ALTERED'

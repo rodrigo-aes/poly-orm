@@ -21,7 +21,7 @@ export type CreateMigrationFileMethod = 'create' | 'sync'
 
 // THIS ARGs===================================================================
 export type SQLTableOperationThisArg<
-    Method extends SQLTableOperationMethod
+    Method extends string
 > = (
         Method extends 'create' | 'alter' | 'drop'
         ? TableSchema

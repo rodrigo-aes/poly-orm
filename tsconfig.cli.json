@@ -3,10 +3,10 @@
     "compilerOptions": {
         "module": "commonjs",
         "moduleResolution": "node",
-        "outDir": "./lib"
+        "outDir": "./lib/bin"
     },
     "include": [
-        "src/cli.ts",
+        "src/bin/cli.ts",
         "src/CLI/**/*",
         "src/Config/**/*",
         "src/Errors/**/*"

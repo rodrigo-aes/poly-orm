@@ -32,9 +32,11 @@ export default class CLI {
 
         if (this.shouldHelp) return this.help(command, method)
 
-        const proccess = this.instantiate(command, method)
-        proccess.parseCommand()
-        await proccess.execute()
+        const task = this.instantiate(command, method)
+        task.parseCommand()
+        await task.execute()
+
+        process.exit(0)
     }
 
     // ------------------------------------------------------------------------

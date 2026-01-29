@@ -42,6 +42,7 @@ export default class MigrationCommander extends Command {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public execute(): Promise<void> {
+        console.log(this.method)
         switch (this.method) {
             case 'init':
             case 'run':
@@ -129,7 +130,13 @@ export default class MigrationCommander extends Command {
     // ------------------------------------------------------------------------
 
     private async executeMethod(): Promise<void> {
+        console.log(this.method)
         for (const connection of await this.getConnections()) {
+            console.log(this.method)
+            console.log(new Migrator(connection)[this.method as (
+                'init' | 'run' | 'back' | 'reset' | 'sync' | 'register'
+            )])
+
             await new Migrator(connection)[this.method as (
                 'init' | 'run' | 'back' | 'reset' | 'sync' | 'register'
             )]()

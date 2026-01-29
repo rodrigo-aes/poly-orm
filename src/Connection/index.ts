@@ -163,9 +163,9 @@ export default class MySQLConnection implements MySQLConnectionInstance {
             ...this.entities
         )
 
-        await ProceduresHandler.register(
-            this as unknown as MySQLConnectionInterface
-        )
+        // await ProceduresHandler.register(
+        //     this as unknown as MySQLConnectionInterface
+        // )
 
         if (this.config.sync) await this.sync('alter')
     }
