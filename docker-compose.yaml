@@ -1,20 +1,33 @@
 version: "3.9"
 
 services:
-  legacy:
+
+  # Main ========================================================================
+  main:
     build:
       context: .
-      dockerfile: docker/legacy-decorators/Dockerfile
-    container_name: polyorm-ts-legacy
+      dockerfile: docker/TS5/Dockerfile
+    container_name: polyorm-main
     volumes:
       - .:/app
     command: npm test
 
-  modern:
+  # Typescript 4.9- =============================================================
+  ts4.9:
     build:
       context: .
-      dockerfile: docker/modern/Dockerfile
-    container_name: polyorm-ts-modern
+      dockerfile: docker/TS4.9/Dockerfile
+    container_name: polyorm-ts-4.9
+    volumes:
+      - .:/app
+    command: npm test
+
+  # Typescript 5.0+ =============================================================
+  ts5:
+    build:
+      context: .
+      dockerfile: docker/TS5/Dockerfile
+    container_name: polyorm-ts-5
     volumes:
       - .:/app
     command: npm test

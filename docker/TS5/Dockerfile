@@ -9,4 +9,4 @@ RUN npm install --save-dev typescript@latest
 
 COPY . .
 
-CMD ["npm", "test"]
+CMD ["npm", "build"]
