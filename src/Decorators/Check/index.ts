@@ -1,13 +1,20 @@
 import { ColumnsMetadata } from "../../Metadata"
-import type { Entity, EntityTarget } from "../../types"
+import type { EntityTarget, Prop } from "../../types"
+import type { BaseEntity } from "../../Entities"
 
-export default function Check<T extends Entity>(...constraints: string[]) {
-    return function (
-        target: T,
-        name: string
+export default function Check(...constraints: string[]) {
+    return function <T extends BaseEntity>(
+        column: undefined,
+        context: ClassFieldDecoratorContext<T, Prop>
     ) {
-        ColumnsMetadata
-            .findOrBuild(target.constructor as EntityTarget)
-            .addCheck(name, ...constraints)
+        context.addInitializer(function (this: T) {
+            if ((this.constructor as any).shouldRegisterMeta(
+                context.name, 'check'
+            )) (
+                ColumnsMetadata
+                    .findOrBuild(this.constructor as EntityTarget)
+                    .addCheck(context.name as string, ...constraints)
+            )
+        })
     }
 }

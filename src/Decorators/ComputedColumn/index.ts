@@ -8,18 +8,29 @@ import {
 } from '../../Metadata'
 
 // Types
-import type { Entity, EntityTarget } from '../../types'
+import type { EntityTarget, Prop } from '../../types'
+import type { BaseEntity } from '../../Entities'
 
-export default function ComputedColumn<T extends Entity>(
+export default function ComputedColumn(
     dataType: DataType,
     as: string,
     type: ComputedType = 'STORED'
 ) {
-    return function (
-        target: T,
-        name: string
+    return function <T extends BaseEntity>(
+        column: undefined,
+        context: ClassFieldDecoratorContext<T, Prop>
     ) {
-        ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)
-            .registerColumn(name, DataType.COMPUTED(dataType, as, type))
+        context.addInitializer(function (this: T) {
+            if ((this.constructor as any).shouldRegisterMeta(
+                context.name, 'computed-column'
+            )) (
+                ColumnsMetadata
+                    .findOrBuild(this.constructor as EntityTarget)
+                    .registerColumn(
+                        context.name as string,
+                        DataType.COMPUTED(dataType, as, type)
+                    )
+            )
+        })
     }
 }

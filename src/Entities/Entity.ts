@@ -94,6 +94,9 @@ export default abstract class Entity {
     public static readonly INHERIT_ONLY_HOOKS?: HookType[]
 
     /** @internal */
+    public static readonly __registered = new Set<string>()
+
+    /** @internal */
     private __pk?: string
 
     /** @internal */
@@ -703,5 +706,13 @@ export default abstract class Entity {
         Object.assign(replic, this)
 
         return replic as T
+    }
+
+    // ------------------------------------------------------------------------
+
+    /** @internal */
+    public static shouldRegisterMeta(...keys: string[]): boolean {
+        const key = `${this.name}:${keys.join(':')}`
+        return (!this.__registered.has(key) && !!this.__registered.add(key))
     }
 }

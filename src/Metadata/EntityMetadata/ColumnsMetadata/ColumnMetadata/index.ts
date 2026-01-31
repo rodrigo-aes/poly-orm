@@ -49,6 +49,8 @@ export default class ColumnMetadata {
         public config?: ColumnConfig
     ) {
         if (config) Object.assign(this, config)
+
+        Reflect.defineMetadata(`column:${this.name}`, this, this.target)
         this.syncWithDataType()
     }
 

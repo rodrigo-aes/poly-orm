@@ -1,20 +1,32 @@
 import { ColumnsMetadata } from "../../Metadata"
 
-import type { Entity, EntityTarget } from "../../types"
+import type { EntityTarget, FKProp } from "../../types"
 import type { ForeignIdRelatedGetter, ForeignIdOptions } from "./types"
+import type { BaseEntity } from "../../Entities"
 
 export default function ForeignId(
     referenced: ForeignIdRelatedGetter,
     options?: ForeignIdOptions
 ) {
-    return function <T extends Entity>(
-        target: T,
-        name: string
+    return function <T extends BaseEntity>(
+        prop: undefined,
+        context: ClassFieldDecoratorContext<T, FKProp<number>>
     ) {
-        ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)
-            .registerColumnPattern(name, 'foreign-id', {
-                referenced, ...options
-            })
+        context.addInitializer(function (this: T) {
+            if ((this.constructor as any).shouldRegisterMeta(
+                context.name, 'foreign-id'
+            )) (
+                ColumnsMetadata
+                    .findOrBuild(this.constructor as EntityTarget)
+                    .registerColumnPattern(
+                        context.name as string,
+                        'foreign-id',
+                        {
+                            referenced, ...options
+                        }
+                    )
+            )
+        })
     }
 }
 

@@ -1,15 +1,20 @@
 import { ColumnsMetadata } from "../../Metadata"
-import type { Entity, EntityTarget } from "../../types"
+import type { EntityTarget, Prop } from "../../types"
+import type { BaseEntity } from "../../Entities"
 
-export default function Primary<T extends Entity>(
-    primary: boolean = true
-) {
-    return function (
-        target: T,
-        name: string
+export default function Primary(primary: boolean = true) {
+    return function <T extends BaseEntity>(
+        column: undefined,
+        context: ClassFieldDecoratorContext<T, Prop>
     ) {
-        ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)
-            .set(name, { primary })
-
+        context.addInitializer(function (this: T) {
+            if ((this.constructor as any).shouldRegisterMeta(
+                context.name, 'primary'
+            )) (
+                ColumnsMetadata
+                    .findOrBuild(this.constructor as EntityTarget)
+                    .set(context.name as string, { primary })
+            )
+        })
     }
 }

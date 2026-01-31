@@ -1,14 +1,20 @@
 import 'reflect-metadata'
 
 import { ColumnsMetadata, type DataType } from '../../Metadata'
-import type { Entity, EntityTarget } from '../../types'
+import type { EntityTarget, Prop } from '../../types'
+import type { BaseEntity } from '../../Entities'
 
-export default function Column<T extends Entity>(dataType: DataType) {
-    return function (
-        target: T,
-        name: string
+export default function Column(dataType: DataType) {
+    return function <T extends BaseEntity>(
+        column: undefined,
+        context: ClassFieldDecoratorContext<T, Prop>
     ) {
-        ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)
-            .registerColumn(name, dataType)
+        context.addInitializer(function (this: T) {
+            if ((this.constructor as any).shouldRegisterMeta(context.name)) (
+                ColumnsMetadata
+                    ?.findOrBuild(this.constructor as EntityTarget)
+                    .registerColumn(context.name as string, dataType)
+            )
+        })
     }
 }

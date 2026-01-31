@@ -1,14 +1,20 @@
 import { ColumnsMetadata } from "../../Metadata"
-import type { Entity, EntityTarget } from "../../types"
+import type { EntityTarget, AutoGenProp } from "../../types"
+import type { BaseEntity } from "../../Entities"
 
-export default function AutoIncrement<T extends Entity>(
-    autoIncrement: boolean = true
-) {
-    return function (
-        target: T,
-        name: string
+export default function AutoIncrement(autoIncrement: boolean = true) {
+    return function <T extends BaseEntity>(
+        column: undefined,
+        context: ClassFieldDecoratorContext<T, AutoGenProp<number>>
     ) {
-        ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)
-            .set(name, { autoIncrement })
+        context.addInitializer(function (this: T) {
+            if ((this.constructor as any).shouldRegisterMeta(
+                context.name, 'auto-increment'
+            )) (
+                ColumnsMetadata
+                    ?.findOrBuild(this.constructor as EntityTarget)
+                    .set(context.name, { autoIncrement })
+            )
+        })
     }
 }

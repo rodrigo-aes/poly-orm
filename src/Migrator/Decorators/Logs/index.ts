@@ -10,39 +10,12 @@ import Config from "../../../Config"
 
 // Types
 import type Migrator from "../.."
-import type DatabaseSchema from "../../../DatabaseSchema"
-import type { TableSchema, ActionType } from "../../../DatabaseSchema"
+import type { ActionType } from "../../../DatabaseSchema"
 import type MigrationsTableHandler from "../../MigrationsTableHandler"
 import type MigrationFileHandler from "../../MigrationFileHandler"
 import type { MigrationRunMethod } from "../../types"
 
-import type {
-    // Method names 
-    MainProcessMethod,
-    ChildProccessMethod,
-    SQLTableOperationMethod,
-    CreateMigrationFileMethod,
-
-    // This args
-    SQLTableOperationThisArg,
-
-    // Args
-    ChildProccessArgs,
-    CreateMigrationFileArgs,
-
-    // Descriptos
-    DefaultVoidDescriptor,
-    ChildProccessDescriptor,
-    CreateMigrationDescriptor,
-    DeleteMigrationDescriptor,
-    MoveMigrationDescriptor,
-    InsertMigrationDescriptor,
-    EraseMigrationDescriptor,
-    CreateMigrationFileDescriptor,
-    DeleteMigrationFileDescriptor,
-    IncludedDescriptor,
-    UnknownMigrationFilesDescriptor
-} from "./types"
+import type { ChildProccessMethod, SQLTableOperationMethod } from "./types"
 
 export default class Logs {
     private static _storage?: AsyncLocalStorage<{ parentProccess: string }>
@@ -323,7 +296,7 @@ export default class Logs {
             dir: string,
             action: ActionType,
             props: any
-        ) => Promise<void>
+        ) => void
     ) {
         return async function (
             this: MigrationFileHandler,
@@ -348,7 +321,7 @@ export default class Logs {
         value: (
             this: MigrationFileHandler,
             deleted: number
-        ) => Promise<void>
+        ) => void
     ) {
         return async function (
             this: MigrationFileHandler,

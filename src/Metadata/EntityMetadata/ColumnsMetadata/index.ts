@@ -114,6 +114,21 @@ export default class ColumnsMetadata extends MetadataArray<ColumnMetadata> {
     public addCheck(name: string, ...constraints: string[]) {
         this.findOrThrow(name).addCheck(...constraints)
     }
+
+    // Static Methods =========================================================
+    // Publics ----------------------------------------------------------------
+    public static exists(target: EntityTarget, name: string) {
+        return Reflect.hasMetadata(`column:${name}`, target)
+    }
+
+    public static shouldRegister(
+        target: EntityTarget,
+        name: string
+    ): typeof ColumnsMetadata | undefined {
+        return this.exists(target, name)
+            ? undefined
+            : ColumnsMetadata
+    }
 }
 
 export {

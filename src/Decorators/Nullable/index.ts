@@ -1,14 +1,22 @@
 import { ColumnsMetadata } from "../../Metadata"
-import type { Entity, EntityTarget } from "../../types"
+import type { EntityTarget, Prop } from "../../types"
+import type { BaseEntity } from "../../Entities"
 
-export default function Nullable<T extends Entity>(
+export default function Nullable(
     nullable: boolean = true
 ) {
-    return function (
-        target: T,
-        name: string
+    return function <T extends BaseEntity>(
+        column: undefined,
+        context: ClassFieldDecoratorContext<T, Prop>
     ) {
-        ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)
-            .set(name, { nullable })
+        context.addInitializer(function (this: T) {
+            if ((this.constructor as any).shouldRegisterMeta(
+                context.name, 'nullable'
+            )) (
+                ColumnsMetadata
+                    .findOrBuild(this.constructor as EntityTarget)
+                    .set(context.name as string, { nullable })
+            )
+        })
     }
 }

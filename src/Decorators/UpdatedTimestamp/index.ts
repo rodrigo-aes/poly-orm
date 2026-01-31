@@ -1,12 +1,22 @@
 import 'reflect-metadata'
 
 import { ColumnsMetadata } from '../../Metadata'
-import type { Entity, EntityTarget } from "../../types"
+import type { EntityTarget, Prop } from "../../types"
+import type { BaseEntity } from "../../Entities"
 
-export default function UpdatedTimestamp<T extends Entity>(
-    target: T,
-    name: string
+export default function UpdatedTimestamp<T extends BaseEntity>(
+    column: undefined,
+    context: ClassFieldDecoratorContext<T, Prop<Date>>
 ) {
-    ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)
-        .registerColumnPattern(name, 'updated-timestamp')
+    context.addInitializer(function (this: T) {
+        if ((this.constructor as any).shouldRegisterMeta(
+            context.name, 'updated-timestamp'
+        )) (
+            ColumnsMetadata
+                .findOrBuild(this.constructor as EntityTarget)
+                .registerColumnPattern(
+                    context.name as string, 'updated-timestamp'
+                )
+        )
+    })
 }

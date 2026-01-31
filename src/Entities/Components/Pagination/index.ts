@@ -12,6 +12,9 @@ export default class Pagination<
 > {
     public static readonly alias: string = this.name
 
+    /** @internal */
+    public static readonly __registered = new Set<string>()
+
     public page: number = 1
     public perPage: number = 26
     public total: number = 0

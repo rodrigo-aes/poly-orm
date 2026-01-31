@@ -1,12 +1,19 @@
 import 'reflect-metadata'
 
 import { ColumnsMetadata } from '../../Metadata'
-import type { Entity, EntityTarget } from "../../types"
+import type { EntityTarget, AutoGenProp } from "../../types"
+import type { BaseEntity } from "../../Entities"
 
-export default function CreatedTimestamp<T extends Entity>(
-    target: T,
-    name: string
+export default function CreatedTimestamp<T extends BaseEntity>(
+    prop: undefined,
+    context: ClassFieldDecoratorContext<T, AutoGenProp<Date>>
 ) {
-    ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)
-        .registerColumnPattern(name, 'created-timestamp')
+    context.addInitializer(function (this: T) {
+        if ((this.constructor as any).shouldRegisterMeta(
+            context.name, 'created-timestamp'
+        )) (
+            ColumnsMetadata.findOrBuild(this.constructor as EntityTarget)
+                .registerColumnPattern(context.name as string, 'created-timestamp')
+        )
+    })
 }

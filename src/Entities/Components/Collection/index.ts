@@ -11,6 +11,9 @@ import type { UpdateAttributes } from "../../../SQLBuilders"
 export default class Collection<T extends Entity> extends Array<T> {
     public static readonly alias: string = this.name
 
+    /** @internal */
+    public static readonly __registered = new Set<string>()
+
     constructor(...entities: T[]) {
         super(...entities)
         this.assignComputedProperties()

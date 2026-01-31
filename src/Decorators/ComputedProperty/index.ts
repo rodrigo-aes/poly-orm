@@ -4,17 +4,23 @@ import {
 } from "../../Metadata"
 
 // Types
-import type { Entity, Constructor } from "../../types"
+import type { Entity, Constructor, Prop } from "../../types"
 import type { Collection, Pagination } from "../../Entities"
 
 export default function ComputedProperty(fn: ComputedPropertyFunction) {
     return function <T extends Entity | Collection<any> | Pagination<any>>(
-        target: T,
-        name: string
+        prop: undefined,
+        context: ClassFieldDecoratorContext<T, Prop>
     ) {
-        ComputedPropertiesMetadata
-            .findOrBuild(target.constructor as Constructor<T>)
-            .set(name, fn)
+        context.addInitializer(function (this: T) {
+            if ((this.constructor as any).shouldRegisterMeta(
+                context.name, 'computed-property'
+            )) (
+                ComputedPropertiesMetadata
+                    .findOrBuild(this.constructor as Constructor<T>)
+                    .set(context.name as string, fn)
+            )
+        })
     }
 }
 

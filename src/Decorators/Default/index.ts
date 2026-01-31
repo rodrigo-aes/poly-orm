@@ -1,12 +1,19 @@
 import { ColumnsMetadata } from "../../Metadata"
-import type { Entity, EntityTarget } from "../../types"
+import type { EntityTarget, Prop } from "../../types"
+import type { BaseEntity } from "../../Entities"
 
-export default function Default<T extends Entity>(value: any) {
-    return function (
-        target: T,
-        name: string
+export default function Default(value: any) {
+    return function <T extends BaseEntity>(
+        prop: undefined,
+        context: ClassFieldDecoratorContext<T, Prop>
     ) {
-        ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)
-            .set(name, { defaultValue: value })
+        context.addInitializer(function (this: T) {
+            if ((this.constructor as any).shouldRegisterMeta(
+                context.name, 'default'
+            )) (
+                ColumnsMetadata.findOrBuild(this.constructor as EntityTarget)
+                    .set(context.name as string, { defaultValue: value })
+            )
+        })
     }
 }

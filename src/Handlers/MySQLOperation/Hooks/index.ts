@@ -24,6 +24,7 @@ import type {
     UpdateOperation,
     DeleteOperation,
 
+    FindOneResult,
     DeleteResult,
 } from "../OperationHandlers"
 
@@ -32,92 +33,72 @@ import type { ResultSetHeader } from "mysql2"
 export default class Hooks {
     // Static Methods =========================================================
     // Publics ----------------------------------------------------------------
-    public static Find<
-        T extends typeof FindByPkOperation | typeof FindOneOperation
-    >(
-        _: T,
-        __: string,
-        descriptor: TypedPropertyDescriptor<
-            (options: ExecOptions<any, any, any>) => Promise<any>
-        >
-    ) {
-        const process = descriptor.value!
-
-        descriptor.value = async function (
+    public static Find<T extends (
+        typeof FindByPkOperation |
+        typeof FindOneOperation
+    )>(value: (this: T, options: ExecOptions<any, any, any>) => Promise<any>) {
+        return async function (
             this: T,
             options: ExecOptions<any, any, any>
         ) {
             await Hooks.beforeFind(options.target, options.sqlBuilder)
             return await Hooks.afterFind(
-                options.target, await process.apply(this, [options])
+                options.target, await value.apply(this, [options])
             )
         }
     }
 
     // ------------------------------------------------------------------------
 
-    public static BulkFind<
-        T extends typeof FindOperation | typeof PaginateOperation
-    >(
-        _: T,
-        __: string,
-        descriptor: TypedPropertyDescriptor<
-            (options: ExecOptions<any, any, any>) => Promise<any>
-        >
-    ) {
-        const process = descriptor.value!
-
-        descriptor.value = async function (
+    public static BulkFind<T extends (
+        typeof FindOperation |
+        typeof PaginateOperation
+    )>(value: (this: T, options: ExecOptions<any, any, any>) => Promise<any>) {
+        return async function (
             this: T,
             options: ExecOptions<any, any, any>
         ) {
             await Hooks.beforeBulkFind(options.target, options.sqlBuilder)
             return await Hooks.afterBulkFind(
-                options.target, await process.apply(this, [options])
+                options.target, await value.apply(this, [options])
             )
         }
     }
 
     // ------------------------------------------------------------------------
 
-    public static Create(
-        _: typeof CreateOperation,
-        __: string,
-        descriptor: TypedPropertyDescriptor<
-            (options: ExecOptions<any, any, any>) => Promise<any>
-        >
-    ) {
-        const process = descriptor.value!
-
-        descriptor.value = async function (
+    public static Create(value: (
+        (
+            this: typeof CreateOperation,
+            options: ExecOptions<any, any, any>
+        ) => Promise<any>
+    )) {
+        return async function (
             this: typeof CreateOperation,
             options: ExecOptions<any, any, any>
         ) {
             await Hooks.beforeCreate(options.target, options.sqlBuilder)
             return await Hooks.afterCreate(
-                options.target, await process.apply(this, [options])
+                options.target, await value.apply(this, [options])
             )
         }
     }
 
     // ------------------------------------------------------------------------
 
-    public static Update(
-        _: typeof UpdateOperation,
-        __: string,
-        descriptor: TypedPropertyDescriptor<
-            (options: ExecOptions<any, any, never>) => Promise<any>
-        >
-    ) {
-        const process = descriptor.value!
-
-        descriptor.value = async function (
+    public static Update(value: (
+        (
+            this: typeof UpdateOperation,
+            options: ExecOptions<any, any, never>
+        ) => Promise<any>
+    )) {
+        return async function (
             this: typeof UpdateOperation,
             options: ExecOptions<any, any, never>
         ) {
             await Hooks.beforeUpdate(options.target, options.sqlBuilder)
             return await Hooks.afterUpdate(
-                options.target, options.sqlBuilder, await process.apply(
+                options.target, options.sqlBuilder, await value.apply(
                     this, [options]
                 )
             )
@@ -126,22 +107,19 @@ export default class Hooks {
 
     // ------------------------------------------------------------------------
 
-    public static Delete(
-        _: typeof DeleteOperation,
-        __: string,
-        descriptor: TypedPropertyDescriptor<
-            (options: ExecOptions<any, any, never>) => Promise<any>
-        >
-    ) {
-        const process = descriptor.value!
-
-        descriptor.value = async function (
+    public static Delete(value: (
+        (
+            this: typeof DeleteOperation,
+            options: ExecOptions<any, any, never>
+        ) => Promise<any>
+    )) {
+        return async function (
             this: typeof DeleteOperation,
             options: ExecOptions<any, any, never>
         ) {
             await Hooks.beforeDelete(options.target, options.sqlBuilder)
             return await Hooks.afterDelete(
-                options.target, options.sqlBuilder, await process.apply(
+                options.target, options.sqlBuilder, await value.apply(
                     this, [options]
                 )
             )

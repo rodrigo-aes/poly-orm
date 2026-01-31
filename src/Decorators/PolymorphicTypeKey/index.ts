@@ -4,17 +4,29 @@ import {
 } from "../../Metadata"
 
 // Types
-import type { Entity, EntityTarget } from "../../types"
+import type { EntityTarget, AutoGenProp, TKProp } from "../../types"
+import type { BaseEntity } from "../../Entities"
 
-export default function PolymorphicTypeKey(
-    relateds: PolymorphicTypeKeyRelateds
-) {
-    return function <T extends Entity>(
-        target: T,
-        name: string
+export default function PolymorphicTypeKey<
+    R extends PolymorphicTypeKeyRelateds
+>(...relateds: R) {
+    return function <T extends BaseEntity>(
+        column: undefined,
+        context: ClassFieldDecoratorContext<T, TKProp<R>>
     ) {
-        ColumnsMetadata.findOrBuild(target.constructor as EntityTarget)
-            .registerColumnPattern(name, 'polymorphic-type-key', relateds)
+        context.addInitializer(function (this: T) {
+            if ((this.constructor as any).shouldRegisterMeta(
+                context.name, 'polymorphic-type-key'
+            )) (
+                ColumnsMetadata
+                    .findOrBuild(this.constructor as EntityTarget)
+                    .registerColumnPattern(
+                        context.name as string,
+                        'polymorphic-type-key',
+                        relateds
+                    )
+            )
+        })
     }
 }
 
