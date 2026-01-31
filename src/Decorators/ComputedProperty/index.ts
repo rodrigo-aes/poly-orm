@@ -10,7 +10,7 @@ import type { Collection, Pagination } from "../../Entities"
 
 export default function ComputedProperty(fn: ComputedPropertyFunction) {
     return function <T extends Entity | Collection<any> | Pagination<any>>(
-        prop: undefined,
+        _: undefined,
         context: ClassFieldDecoratorContext<T, Prop>
     ) {
         DecoratorMeta

@@ -7,7 +7,7 @@ import type { BaseEntity } from "../../Entities"
 
 export default function Default(value: any) {
     return function <T extends BaseEntity>(
-        prop: undefined,
+        _: undefined,
         context: ClassFieldDecoratorContext<T, Prop>
     ) {
         DecoratorMeta

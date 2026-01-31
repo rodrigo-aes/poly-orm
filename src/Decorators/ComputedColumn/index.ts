@@ -18,7 +18,7 @@ export default function ComputedColumn(
     type: ComputedType = 'STORED'
 ) {
     return function <T extends BaseEntity>(
-        column: undefined,
+        _: undefined,
         context: ClassFieldDecoratorContext<T, Prop>
     ) {
         DecoratorMeta

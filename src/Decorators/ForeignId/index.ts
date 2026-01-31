@@ -11,7 +11,7 @@ export default function ForeignId(
     options?: ForeignIdOptions
 ) {
     return function <T extends BaseEntity>(
-        prop: undefined,
+        _: undefined,
         context: ClassFieldDecoratorContext<T, FKProp<number>>
     ) {
         DecoratorMeta

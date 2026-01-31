@@ -1,20 +1,20 @@
 import 'reflect-metadata'
 
 import { ColumnsMetadata } from '../../Metadata'
+import DecoratorMeta from '../DecoratorMetadata'
+
+// Types
 import type { EntityTarget, AutoGenProp } from "../../types"
 import type { BaseEntity } from '../../Entities'
 
 export default function Id<T extends BaseEntity>(
-    column: undefined,
+    _: undefined,
     context: ClassFieldDecoratorContext<T, AutoGenProp<number>>
 ) {
-    context.addInitializer(function (this: T) {
-        if ((this.constructor as any).shouldRegisterMeta(
-            context.name, 'id'
-        )) (
-            ColumnsMetadata
-                .findOrBuild(this.constructor as EntityTarget)
-                .registerColumnPattern(context.name as string, 'id')
+    DecoratorMeta
+        .define(context.metadata)
+        .col((target: EntityTarget) => ColumnsMetadata
+            .findOrBuild(target)
+            .registerColumnPattern(context.name as string, 'id')
         )
-    })
 }

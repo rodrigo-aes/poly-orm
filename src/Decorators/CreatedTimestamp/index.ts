@@ -8,7 +8,7 @@ import type { EntityTarget, AutoGenProp } from "../../types"
 import type { BaseEntity } from "../../Entities"
 
 export default function CreatedTimestamp<T extends BaseEntity>(
-    prop: undefined,
+    _: undefined,
     context: ClassFieldDecoratorContext<T, AutoGenProp<Date>>
 ) {
     DecoratorMeta
