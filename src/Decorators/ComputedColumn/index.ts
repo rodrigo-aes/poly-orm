@@ -6,6 +6,7 @@ import {
 
     type ComputedType
 } from '../../Metadata'
+import DecoratorMeta from '../DecoratorMetadata'
 
 // Types
 import type { EntityTarget, Prop } from '../../types'
@@ -20,17 +21,14 @@ export default function ComputedColumn(
         column: undefined,
         context: ClassFieldDecoratorContext<T, Prop>
     ) {
-        context.addInitializer(function (this: T) {
-            if ((this.constructor as any).shouldRegisterMeta(
-                context.name, 'computed-column'
-            )) (
-                ColumnsMetadata
-                    .findOrBuild(this.constructor as EntityTarget)
-                    .registerColumn(
-                        context.name as string,
-                        DataType.COMPUTED(dataType, as, type)
-                    )
+        DecoratorMeta
+            .define(context.metadata)
+            .col((target: EntityTarget) => ColumnsMetadata
+                .findOrBuild(target)
+                .registerColumn(
+                    context.name as string,
+                    DataType.COMPUTED(dataType, as, type)
+                )
             )
-        })
     }
 }

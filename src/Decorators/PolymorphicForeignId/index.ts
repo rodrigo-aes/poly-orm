@@ -1,5 +1,7 @@
 import { ColumnsMetadata } from "../../Metadata"
+import DecoratorMeta from "../DecoratorMetadata"
 
+// Types
 import type { EntityTarget, FKProp } from "../../types"
 import type { BaseEntity } from "../../Entities"
 import type {
@@ -12,22 +14,19 @@ export default function PolymorphicForeignId(
     options?: PolymorphicForeignIdOptions
 ) {
     return function <T extends BaseEntity>(
-        column: undefined,
+        _: undefined,
         context: ClassFieldDecoratorContext<T, FKProp<string>>
     ) {
-        context.addInitializer(function (this: T) {
-            if ((this.constructor as any).shouldRegisterMeta(
-                context.name, 'polymorphic-foreign-id'
-            )) (
-                ColumnsMetadata
-                    .findOrBuild(this.constructor as EntityTarget)
-                    .registerColumnPattern(
-                        context.name as string,
-                        'polymorphic-foreign-id',
-                        { referenced, ...options }
-                    )
+        DecoratorMeta
+            .define(context.metadata)
+            .col((target: EntityTarget) => ColumnsMetadata
+                .findOrBuild(target)
+                .registerColumnPattern(
+                    context.name as string,
+                    'polymorphic-foreign-id',
+                    { referenced, ...options }
+                )
             )
-        })
     }
 }
 

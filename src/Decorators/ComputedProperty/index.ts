@@ -2,9 +2,10 @@ import {
     ComputedPropertiesMetadata,
     type ComputedPropertyFunction
 } from "../../Metadata"
+import DecoratorMeta from "../DecoratorMetadata"
 
 // Types
-import type { Entity, Constructor, Prop } from "../../types"
+import type { Entity, EntityTarget, Constructor, Prop } from "../../types"
 import type { Collection, Pagination } from "../../Entities"
 
 export default function ComputedProperty(fn: ComputedPropertyFunction) {
@@ -12,15 +13,12 @@ export default function ComputedProperty(fn: ComputedPropertyFunction) {
         prop: undefined,
         context: ClassFieldDecoratorContext<T, Prop>
     ) {
-        context.addInitializer(function (this: T) {
-            if ((this.constructor as any).shouldRegisterMeta(
-                context.name, 'computed-property'
-            )) (
-                ComputedPropertiesMetadata
-                    .findOrBuild(this.constructor as Constructor<T>)
-                    .set(context.name as string, fn)
+        DecoratorMeta
+            .define(context.metadata)
+            .col((target: EntityTarget) => ComputedPropertiesMetadata
+                .findOrBuild(target)
+                .set(context.name as string, fn)
             )
-        })
     }
 }
 

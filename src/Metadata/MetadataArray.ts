@@ -192,13 +192,15 @@ export default abstract class MetadataArray<
         uniqueIn?: [string, any[]][]
     ): T[] {
         return GeneralHelper.objectParents(target).flatMap(
-            parent => (this as C & typeof MetadataArray).find(parent)?.filter(
-                (child: any) => uniqueIn
-                    ? uniqueIn.every(
-                        ([key, values]) => !values.includes(child[key])
-                    )
-                    : true
-            )
+            parent => (this as C & typeof MetadataArray)
+                .find(parent)
+                ?.filter(
+                    (child: any) => uniqueIn
+                        ? uniqueIn.every(
+                            ([key, values]) => !values.includes(child[key])
+                        )
+                        : true
+                )
                 ?? []
         )
     }
