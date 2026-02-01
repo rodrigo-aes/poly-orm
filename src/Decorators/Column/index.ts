@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 
 import { ColumnsMetadata, type DataType } from '../../Metadata'
-import DecoratorMeta from '../DecoratorMetadata'
+import DecoratorMetadata from '../DecoratorMetadata'
 
 import type { EntityTarget, Prop } from '../../types'
 import type { BaseEntity } from '../../Entities'
@@ -12,7 +12,7 @@ export default function Column(dataType: DataType) {
         _: undefined,
         context: EntityFieldDecoratorContext<T, Prop>
     ) {
-        DecoratorMeta
+        DecoratorMetadata
             .define(context.metadata)
             .col((target: EntityTarget) => ColumnsMetadata
                 ?.findOrBuild(target)

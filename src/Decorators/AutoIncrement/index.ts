@@ -1,5 +1,5 @@
 import { ColumnsMetadata } from "../../Metadata"
-import DecoratorMeta from "../DecoratorMetadata"
+import DecoratorMetadata from "../DecoratorMetadata"
 
 import type { EntityTarget, AutoGenProp } from "../../types"
 import type { BaseEntity } from "../../Entities"
@@ -9,7 +9,7 @@ export default function AutoIncrement(autoIncrement: boolean = true) {
         _: undefined,
         context: ClassFieldDecoratorContext<T, AutoGenProp<number>>
     ) {
-        DecoratorMeta
+        DecoratorMetadata
             .define(context.metadata)
             .col((target: EntityTarget) => ColumnsMetadata
                 ?.findOrBuild(target)

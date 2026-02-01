@@ -1,5 +1,5 @@
 import { ColumnsMetadata } from "../../Metadata"
-import DecoratorMeta from "../DecoratorMetadata"
+import DecoratorMetadata from "../DecoratorMetadata"
 
 import type { EntityTarget, Prop } from "../../types"
 import type { BaseEntity } from "../../Entities"
@@ -9,7 +9,7 @@ export default function Check(...constraints: string[]) {
         _: undefined,
         context: ClassFieldDecoratorContext<T, Prop>
     ) {
-        DecoratorMeta
+        DecoratorMetadata
             .define(context.metadata)
             .col((target: EntityTarget) => ColumnsMetadata
                 ?.findOrBuild(target)

@@ -1,5 +1,5 @@
 import { ColumnsMetadata } from "../../Metadata"
-import DecoratorMeta from "../DecoratorMetadata"
+import DecoratorMetadata from "../DecoratorMetadata"
 
 // Types
 import type { EntityTarget, FKProp } from "../../types"
@@ -14,7 +14,7 @@ export default function ForeignId(
         _: undefined,
         context: ClassFieldDecoratorContext<T, FKProp<number>>
     ) {
-        DecoratorMeta
+        DecoratorMetadata
             .define(context.metadata)
             .col((target: EntityTarget) => ColumnsMetadata
                 .findOrBuild(target)

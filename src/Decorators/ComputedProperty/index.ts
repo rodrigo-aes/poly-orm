@@ -2,7 +2,7 @@ import {
     ComputedPropertiesMetadata,
     type ComputedPropertyFunction
 } from "../../Metadata"
-import DecoratorMeta from "../DecoratorMetadata"
+import DecoratorMetadata from "../DecoratorMetadata"
 
 // Types
 import type { Entity, EntityTarget, Constructor, Prop } from "../../types"
@@ -13,7 +13,7 @@ export default function ComputedProperty(fn: ComputedPropertyFunction) {
         _: undefined,
         context: ClassFieldDecoratorContext<T, Prop>
     ) {
-        DecoratorMeta
+        DecoratorMetadata
             .define(context.metadata)
             .col((target: EntityTarget) => ComputedPropertiesMetadata
                 .findOrBuild(target)

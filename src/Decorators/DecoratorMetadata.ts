@@ -1,6 +1,6 @@
 import type { DecoratorFn } from "./types"
 
-export default class DecoratorMeta {
+export default class DecoratorMetadata {
     protected cols: DecoratorFn[] = []
     protected relations: DecoratorFn[] = []
     protected hooks: DecoratorFn[] = []
@@ -31,7 +31,7 @@ export default class DecoratorMeta {
 
     // Static Methods =========================================================
     // Publics ----------------------------------------------------------------
-    public static define(metadata: any): DecoratorMeta {
-        return (metadata.entity ??= new DecoratorMeta())
+    public static define(metadata: any): DecoratorMetadata {
+        return metadata.entity ??= new DecoratorMetadata()
     }
 }

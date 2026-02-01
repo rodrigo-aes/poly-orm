@@ -1,10 +1,10 @@
 import type { Entity, EntityTarget, PolymorphicEntityTarget, CollectionTarget, PaginationTarget } from "../types"
-import type DecoratorMeta from "./DecoratorMetadata"
+import type DecoratorMetadata from "./DecoratorMetadata"
 
 export type EntityDecoratorContext = (
     ClassDecoratorContext & {
         metadata?: {
-            entity: DecoratorMeta
+            entity: DecoratorMetadata
         }
     }
 )
@@ -12,7 +12,7 @@ export type EntityDecoratorContext = (
 export type EntityFieldDecoratorContext<T extends Entity, V = any> = (
     ClassFieldDecoratorContext<T, V> & {
         metadata?: {
-            entity: DecoratorMeta
+            entity: DecoratorMetadata
         }
     }
 )

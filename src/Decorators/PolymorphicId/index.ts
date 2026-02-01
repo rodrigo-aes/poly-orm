@@ -1,5 +1,5 @@
 import { ColumnsMetadata } from "../../Metadata"
-import DecoratorMeta from "../DecoratorMetadata"
+import DecoratorMetadata from "../DecoratorMetadata"
 
 // Types
 import type { EntityTarget, AutoGenProp } from "../../types"
@@ -9,7 +9,7 @@ export default function PolymorphicId<T extends BaseEntity>(
     _: undefined,
     context: ClassFieldDecoratorContext<T, AutoGenProp<string>>
 ) {
-    DecoratorMeta
+    DecoratorMetadata
         .define(context.metadata)
         .col((target: EntityTarget) => ColumnsMetadata
             .findOrBuild(target)

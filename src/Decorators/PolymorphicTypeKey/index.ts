@@ -2,7 +2,7 @@ import {
     ColumnsMetadata,
     type PolymorphicTypeKeyRelateds
 } from "../../Metadata"
-import DecoratorMeta from "../DecoratorMetadata"
+import DecoratorMetadata from "../DecoratorMetadata"
 
 // Types
 import type { EntityTarget, AutoGenProp, TKProp } from "../../types"
@@ -15,7 +15,7 @@ export default function PolymorphicTypeKey<
         _: undefined,
         context: ClassFieldDecoratorContext<T, TKProp<R>>
     ) {
-        DecoratorMeta
+        DecoratorMetadata
             .define(context.metadata)
             .col((target: EntityTarget) => ColumnsMetadata
                 .findOrBuild(target)

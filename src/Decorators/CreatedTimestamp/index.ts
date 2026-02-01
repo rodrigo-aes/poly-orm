@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 
 import { ColumnsMetadata } from '../../Metadata'
-import DecoratorMeta from '../DecoratorMetadata'
+import DecoratorMetadata from '../DecoratorMetadata'
 
 // Types
 import type { EntityTarget, AutoGenProp } from "../../types"
@@ -11,7 +11,7 @@ export default function CreatedTimestamp<T extends BaseEntity>(
     _: undefined,
     context: ClassFieldDecoratorContext<T, AutoGenProp<Date>>
 ) {
-    DecoratorMeta
+    DecoratorMetadata
         .define(context.metadata)
         .col((target: EntityTarget) => ColumnsMetadata
             .findOrBuild(target)

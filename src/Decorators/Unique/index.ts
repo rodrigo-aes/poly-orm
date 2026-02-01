@@ -1,5 +1,5 @@
 import { ColumnsMetadata } from "../../Metadata"
-import DecoratorMeta from "../DecoratorMetadata"
+import DecoratorMetadata from "../DecoratorMetadata"
 
 // Types
 import type { EntityTarget, Prop } from "../../types"
@@ -10,7 +10,7 @@ export default function Unique(unique: boolean = true) {
         _: undefined,
         context: ClassFieldDecoratorContext<T, Prop>
     ) {
-        DecoratorMeta
+        DecoratorMetadata
             .define(context.metadata)
             .col((target: EntityTarget) => ColumnsMetadata
                 .findOrBuild(target)
