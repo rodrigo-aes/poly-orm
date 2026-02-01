@@ -107,6 +107,7 @@ import {
 
 // Decorators
 import {
+    Meta,
     Entity,
     PolymorphicEntity,
 
@@ -163,7 +164,6 @@ import {
     Scopes,
     DefaultScope,
     Triggers,
-    Collections,
     DefaultCollection,
     Paginations,
     DefaultPagination,
@@ -297,6 +297,7 @@ export {
 
     Migration,
 
+    Meta,
     Entity,
     PolymorphicEntity,
 
@@ -353,7 +354,6 @@ export {
     Scopes,
     DefaultScope,
     Triggers,
-    Collections,
     DefaultCollection,
     Paginations,
     DefaultPagination,

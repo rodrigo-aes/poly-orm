@@ -1,5 +1,6 @@
 import '../Metadata'
 
+import Meta from './Meta'
 import Entity from "./Entity"
 import PolymorphicEntity, {
     Column as PolymorphicColumn,
@@ -122,6 +123,7 @@ import {
 } from "./Hooks"
 
 export {
+    Meta,
     Entity,
     PolymorphicEntity,
 
