@@ -14,7 +14,7 @@ export default class CollectionsMetadata<
     T extends Entity = Entity,
     C extends typeof Collection<T> = any
 > extends MetadataArray<C> {
-    public default: typeof Collection = Collection
+    public default: Constructor<Collection<any>> = Collection
 
     constructor(public target: Constructor<T>, ...collections: C[]) {
         super(target, ...collections)
@@ -47,7 +47,7 @@ export default class CollectionsMetadata<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public setDefault(collection: typeof Collection): void {
+    public setDefault(collection: Constructor<Collection<any>>): void {
         this.default = collection
     }
 

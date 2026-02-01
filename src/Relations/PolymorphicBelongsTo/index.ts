@@ -102,5 +102,6 @@ export default function PolymorphicBelongsTo<
 }
 
 export type {
-    PolymorphicBelongsTo
+    PolymorphicBelongsTo,
+    PolymorphicBelongsToRelated
 }

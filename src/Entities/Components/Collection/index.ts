@@ -12,20 +12,23 @@ export default class Collection<T extends Entity> extends Array<T> {
     public static readonly alias: string = this.name
 
     /** @internal */
+    public readonly shouldUpdate: boolean = true
+
+    /** @internal */
     public static readonly __registered = new Set<string>()
+
+    /** @internal */
+    private _CPMeta?: ComputedPropertiesMetadata
+
+    /** @internal */
+    private _CPKeys?: (keyof this)[]
 
     constructor(...entities: T[]) {
         super(...entities)
-        this.assignComputedProperties()
+        this.CPMeta?.assign(this)
     }
 
     // Getters ================================================================
-    // Publics ----------------------------------------------------------------
-    /** @internal */
-    public get shouldUpdate(): boolean {
-        return true
-    }
-
     // Protecteds -------------------------------------------------------------
     /**
      * An array of properties keys that must be hidden in JSON
@@ -43,6 +46,29 @@ export default class Collection<T extends Entity> extends Array<T> {
         return []
     }
 
+    // Privates ---------------------------------------------------------------
+    /** 
+     * Computed properties metadata
+     * @internal
+     * */
+    private get CPMeta(): ComputedPropertiesMetadata | undefined {
+        return this._CPMeta ??= ComputedPropertiesMetadata.find(
+            this.constructor as CollectionTarget
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
+    /** 
+     * Computed properties keys
+     * @internal
+     * */
+    private get CPKeys(): (keyof this)[] {
+        return this._CPKeys ??= Array
+            .from(this.CPMeta?.keys() ?? [])
+            .filter(key => !this.hidden.includes(key)) as (keyof this)[]
+    }
+
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     /**
@@ -51,27 +77,9 @@ export default class Collection<T extends Entity> extends Array<T> {
      * properties
      */
     public toJSON(this: Collection<T>) {
-        return this.hasComputedProperties()
-            ? this.hide({
-                ...this.computedPropertiesJSON(),
-                data: this.map((entity: any) => entity.toJSON())
-            })
-
-            : Array.from(this.map((entity: any) => entity.toJSON()))
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-    * Hidde collection and entity hidden properties
-    * @param json - Optional data to make hidden
-    * @returns A object without hidden properties
-    */
-    public hide(json?: any) {
-        if (!json) json = this.toJSON()
-        for (const key of this.hidden) delete json[key as keyof typeof json]
-
-        return json
+        return this.CPMeta || this.include.length
+            ? this.buildJSON()
+            : this
     }
 
     // ------------------------------------------------------------------------
@@ -81,7 +89,7 @@ export default class Collection<T extends Entity> extends Array<T> {
      * @returns {this} - Same entity instance
      */
     public fill(data: Partial<EntityProperties<T>>): this {
-        for (const entity of this) (entity as any).fill(data)
+        for (const entity of this) entity.fill(data)
         return this
     }
 
@@ -108,10 +116,9 @@ export default class Collection<T extends Entity> extends Array<T> {
      */
     public async update(
         attributes: UpdateAttributes<T>,
-        filter?: (value: T, index: number, array: T[]) => boolean
+        predicate?: (value: T, index: number, array: T[]) => boolean
     ): Promise<T[]> {
-        const entities = filter ? this.filter(filter) : this
-
+        const entities = predicate ? this.filter(predicate) : this
         for (const entity of entities) await (entity as any).update(
             attributes
         )
@@ -124,10 +131,10 @@ export default class Collection<T extends Entity> extends Array<T> {
     /**
      * Delete the register of each entoity instance matched by filter fn
      */
-    public async delete(filter: (value: T, index: number, array: T[]) => (
+    public async delete(predicate: (value: T, index: number, array: T[]) => (
         boolean
     )): Promise<this> {
-        for (const entity of this.filter(filter)) await (
+        for (const entity of this.filter(predicate)) await (
             this.splice(this.indexOf(entity), 1)[0] as any
         )
             .delete()
@@ -135,47 +142,26 @@ export default class Collection<T extends Entity> extends Array<T> {
         return this
     }
 
-    // Protecteds -------------------------------------------------------------
-    /** @internal */
-    protected getComputedPropertiesMetadata(): (
-        ComputedPropertiesMetadata | undefined
-    ) {
-        return ComputedPropertiesMetadata.find(
-            this.constructor as CollectionTarget
-        )
+    // Privates ---------------------------------------------------------------
+    /** 
+     * Collection JSON
+     * @internal
+     * */
+    private buildJSON(): any {
+        return {
+            ...this.CPJSON(),
+            ...this.include.map(key => [key, this[key as keyof this]]),
+            data: this.map(entity => entity.toJSON()),
+        }
     }
 
     // ------------------------------------------------------------------------
 
-    /** @internal */
-    protected assignComputedProperties(): void {
-        this.getComputedPropertiesMetadata()?.assign(this)
-    }
-
-    // ------------------------------------------------------------------------
-
-    /** @internal */
-    protected hasComputedProperties(): boolean {
-        return !!this.getComputedPropertiesMetadata()
-    }
-
-    // ------------------------------------------------------------------------
-
-    /** @internal */
-    protected computedPropertiesKeys(): string[] {
-        return Array
-            .from(this.getComputedPropertiesMetadata()?.keys() ?? []) as (
-                string[]
-            )
-    }
-
-    // ------------------------------------------------------------------------
-
-    /** @internal */
-    protected computedPropertiesJSON(): any {
-        return Object.fromEntries(
-            Object.entries(this)
-                .filter(([key]) => this.computedPropertiesKeys().includes(key))
-        )
+    /** 
+     * Make computed properties JSON object
+     * @internal 
+     * */
+    private CPJSON(): any {
+        return Object.fromEntries(this.CPKeys.map(key => [key, this[key]]))
     }
 }

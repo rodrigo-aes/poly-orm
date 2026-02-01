@@ -1,3 +1,6 @@
+import type OneRelation from "./OneRelation"
+import type ManyRelation from "./ManyRelation"
+
 import HasOneHandler, {
     type HasOne
 } from "./HasOne"
@@ -35,8 +38,13 @@ import PolymorphicHasManyHandler, {
 } from "./PolymorphicHasMany"
 
 import PolymorphicBelongsToHandler, {
-    type PolymorphicBelongsTo
+    type PolymorphicBelongsTo,
+    type PolymorphicBelongsToRelated
 } from "./PolymorphicBelongsTo"
+
+export type RelationHandler = (
+    OneRelation<any, any> | ManyRelation<any, any, any>
+)
 
 export {
     HasOneHandler,
@@ -59,5 +67,7 @@ export {
     type BelongsToMany,
     type PolymorphicHasOne,
     type PolymorphicHasMany,
-    type PolymorphicBelongsTo
+    type PolymorphicBelongsTo,
+
+    type PolymorphicBelongsToRelated
 }

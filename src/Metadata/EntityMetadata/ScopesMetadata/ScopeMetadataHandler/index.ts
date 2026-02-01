@@ -3,13 +3,8 @@ import MetadataHandler from "../../../MetadataHandler"
 import TempMetadata from "../../../TempMetadata"
 
 // Types
-import type ScopeMetadata from "../ScopeMetadata"
-import type {
-    Target,
-    EntityTarget,
-    PolymorphicEntityTarget
-} from "../../../../types"
-
+import type { Target } from "../../../../types"
+import type { MapOptions, CollectMapOptions } from "../../../../Handlers"
 import type {
     FindQueryOptions,
     FindOneQueryOptions,
@@ -18,49 +13,33 @@ import type {
 } from "../../../../SQLBuilders"
 
 export default class ScopeMetadataHandler {
-    public static applyScope<
+    // Static Methods =========================================================
+    // Publics ----------------------------------------------------------------
+    public static apply<
         T extends Target,
-        Type extends 'find' | 'findOne' | 'conditional' | 'relations',
-        Options extends (
-            Type extends 'find'
+        R extends 'find' | 'findOne' | 'conditional' | 'relations',
+        O extends (
+            R extends 'find'
             ? FindQueryOptions<InstanceType<T>>
-            : Type extends 'findOne'
+            : R extends 'findOne'
             ? FindOneQueryOptions<InstanceType<T>>
-            : Type extends 'conditional'
+            : R extends 'conditional'
             ? ConditionalQueryOptions<InstanceType<T>>
-            : Type extends 'relations'
+            : R extends 'relations'
             ? RelationsOptions<InstanceType<T>>
             : never
         )
-    >(
-        target: T,
-        type: Type,
-        options: Options
-    ): Options {
-        const current: ScopeMetadata | undefined = (
+    >(target: T, role: R, options: O): O {
+        return (
             TempMetadata.getScope(target)
-            ?? MetadataHandler.targetMetadata(target).scopes?.default
-        )
-
-        if (current) switch (type) {
-            case 'find': return current.mergeOptions(
-                options as FindQueryOptions<InstanceType<T>>,
-                true
-            ) as Options
-
-            case 'findOne': return current.mergeOptions(
-                options as FindQueryOptions<InstanceType<T>>
-            ) as Options
-
-            case 'conditional': return current.mergeWhereOptions(options) as (
-                Options
-            )
-
-            case 'relations': return current.mergeRelationsOptions(
-                options as RelationsOptions<InstanceType<T>>
-            ) as Options
-        }
-
-        return options
+            ?? MetadataHandler.targetMetadata(target).scopes?.default as any
+        )[(() => {
+            switch (role) {
+                case 'find': return 'mergeFindOptions'
+                case 'findOne': return 'mergeFindOptions'
+                case 'conditional': return 'mergeConditionalOptions'
+                case 'relations': return 'mergeRelationsOptions'
+            }
+        })()](options) ?? options
     }
 }

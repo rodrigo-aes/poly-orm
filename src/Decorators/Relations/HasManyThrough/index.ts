@@ -7,6 +7,7 @@ import DecoratorMetadata from "../../DecoratorMetadata"
 
 // Types
 import type { Entity, EntityTarget } from "../../../types"
+import type { BaseEntity } from "../../../Entities"
 import type { HasManyThrough } from "../../../Relations"
 import type { HasManyThroughOptions } from "./types"
 
@@ -15,7 +16,7 @@ export default function HasManyThrough(
     through: HasManyThroughGetter,
     options: HasManyThroughOptions
 ) {
-    return function <T extends Entity, R extends Entity>(
+    return function <T extends BaseEntity, R extends Entity>(
         _: undefined,
         context: ClassFieldDecoratorContext<T, HasManyThrough<R>>
     ) {
@@ -29,6 +30,13 @@ export default function HasManyThrough(
                     through,
                     ...options
                 }))
+
+        // Auto-initialize ----------------------------------------------------
+        context.addInitializer(function (this: T) {
+            (this[context.name as keyof T] as any) ??= this.hasManyThrough(
+                context.name as string
+            )
+        })
     }
 }
 

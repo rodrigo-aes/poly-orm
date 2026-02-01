@@ -3,6 +3,7 @@ import DecoratorMetadata from "../../../DecoratorMetadata"
 
 // Types
 import type { Entity, EntityTarget } from "../../../../types"
+import type { BaseEntity } from "../../../../Entities"
 import type { PolymorphicChildRelatedGetter } from "../../../../Metadata"
 import type { PolymorphicHasOne } from "../../../../Relations"
 import type { PolymorphicHasOneOptions } from "./types"
@@ -11,7 +12,7 @@ export default function PolymorphicHasOne(
     related: PolymorphicChildRelatedGetter,
     foreignKey: string | PolymorphicHasOneOptions
 ) {
-    return function <T extends Entity, R extends Entity>(
+    return function <T extends BaseEntity, R extends Entity>(
         _: undefined,
         context: ClassFieldDecoratorContext<T, PolymorphicHasOne<R>>
     ) {
@@ -27,6 +28,13 @@ export default function PolymorphicHasOne(
                         : foreignKey
                     )
                 }))
+
+        // Auto-initialize ----------------------------------------------------
+        context.addInitializer(function (this: T) {
+            (this[context.name as keyof T] as any) ??= this.polymorphicHasOne(
+                context.name as string
+            )
+        })
     }
 }
 

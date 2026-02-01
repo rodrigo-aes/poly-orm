@@ -24,7 +24,7 @@ export default class DeleteSQLBuilder<T extends Entity> {
         public alias: string = target.name.toLowerCase()
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
-        if (!this.entity) this.conditional = ScopeMetadataHandler.applyScope(
+        if (!this.entity) this.conditional = ScopeMetadataHandler.apply(
             this.target,
             'conditional',
             this.conditional as ConditionalQueryOptions<T>

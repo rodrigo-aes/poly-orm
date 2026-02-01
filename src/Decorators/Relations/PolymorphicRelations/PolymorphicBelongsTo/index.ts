@@ -13,7 +13,7 @@ export default function PolymorphicBelongsTo(
     foreignKey: string | PolymorphicBelongsToOptions
 ) {
     return function <
-        T extends Entity,
+        T extends BaseEntity,
         R extends BasePolymorphicEntity<any> | BaseEntity[]
     >(
         _: undefined,
@@ -31,6 +31,13 @@ export default function PolymorphicBelongsTo(
                             : foreignKey
                     )
                 }))
+
+        // Auto-initialize ----------------------------------------------------
+        context.addInitializer(function (this: T) {
+            (this[context.name as keyof T] as any) ??= (
+                this.polymorphicBelongsTo(context.name as string)
+            )
+        })
     }
 }
 

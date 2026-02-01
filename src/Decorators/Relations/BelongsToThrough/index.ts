@@ -7,6 +7,7 @@ import DecoratorMetadata from "../../DecoratorMetadata"
 
 // Types
 import type { Entity, EntityTarget } from "../../../types"
+import type { BaseEntity } from "../../../Entities"
 import type { BelongsToThrough } from "../../../Relations"
 import type { BelongsToThroughOptions } from "./types"
 
@@ -15,7 +16,7 @@ export default function BelongsToThrough(
     through: BelongsToThroughGetter,
     options: BelongsToThroughOptions
 ) {
-    return function <T extends Entity, R extends Entity>(
+    return function <T extends BaseEntity, R extends Entity>(
         _: undefined,
         context: ClassFieldDecoratorContext<T, BelongsToThrough<R>>
     ) {
@@ -29,6 +30,13 @@ export default function BelongsToThrough(
                     through,
                     ...options
                 }))
+
+        // Auto-initialize ----------------------------------------------------
+        context.addInitializer(function (this: T) {
+            (this[context.name as keyof T] as any) ??= this.belongsToThrough(
+                context.name as string
+            )
+        })
     }
 }
 

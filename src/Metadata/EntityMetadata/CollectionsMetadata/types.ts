@@ -1,6 +1,7 @@
+import type { Constructor } from "../../../types"
 import type { Collection } from "../../../Entities"
 
 export type CollectionsMetadataJSON = {
-    default: typeof Collection
-    collections: (typeof Collection)[]
+    default: Constructor<Collection<any>>
+    collections: Constructor<Collection<any>>[]
 }

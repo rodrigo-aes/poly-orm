@@ -55,7 +55,7 @@ import ComputedProperty, {
 import Scopes, { DefaultScope } from "./Scopes"
 
 import Triggers from "./Triggers"
-import Collections, { DefaultCollection } from "./Collections"
+import DefaultCollection from "./DefaultCollection"
 import Paginations, { DefaultPagination } from "./Paginations"
 
 import {
@@ -182,7 +182,6 @@ export {
     Scopes,
     DefaultScope,
     Triggers,
-    Collections,
     DefaultCollection,
     Paginations,
     DefaultPagination,

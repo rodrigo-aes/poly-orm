@@ -26,6 +26,13 @@ export default function HasMany(
                         ? { foreignKey }
                         : foreignKey)
                 }))
+
+        // Auto-initialize ----------------------------------------------------
+        context.addInitializer(function (this: T) {
+            (this[context.name as keyof T] as any) ??= this.hasMany(
+                context.name as string
+            )
+        })
     }
 }
 

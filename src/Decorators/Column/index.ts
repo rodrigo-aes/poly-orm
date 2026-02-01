@@ -5,12 +5,11 @@ import DecoratorMetadata from '../DecoratorMetadata'
 
 import type { EntityTarget, Prop } from '../../types'
 import type { BaseEntity } from '../../Entities'
-import type { EntityFieldDecoratorContext } from '../types'
 
 export default function Column(dataType: DataType) {
     return function <T extends BaseEntity>(
         _: undefined,
-        context: EntityFieldDecoratorContext<T, Prop>
+        context: ClassFieldDecoratorContext<T, Prop>
     ) {
         DecoratorMetadata
             .define(context.metadata)

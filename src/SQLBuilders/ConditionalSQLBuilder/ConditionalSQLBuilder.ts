@@ -24,7 +24,7 @@ export default abstract class ConditionalSQLBuilder<T extends Entity> {
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
 
-        if (this.options) ScopeMetadataHandler.applyScope(
+        if (this.options) ScopeMetadataHandler.apply(
             this.target, 'conditional', this.options
         )
     }

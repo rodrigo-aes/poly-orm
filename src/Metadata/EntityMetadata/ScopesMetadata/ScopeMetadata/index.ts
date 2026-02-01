@@ -7,6 +7,8 @@ import type {
     OrderQueryOptions
 } from "../../../../SQLBuilders"
 
+import type { MapOptions, CollectMapOptions } from "../../../../Handlers"
+
 export default class ScopeMetadata {
     public select?: SelectOptions<any>
     public where?: ConditionalQueryOptions<any>
@@ -16,18 +18,20 @@ export default class ScopeMetadata {
     public limit?: number
     public offset?: number
 
-    constructor(scope: FindQueryOptions<any>) {
+    constructor(
+        scope: FindQueryOptions<any>
+    ) {
         Object.assign(this, scope)
     }
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public mergeOptions<T extends FindQueryOptions<any>>(
+    public mergeFindOptions<T extends FindQueryOptions<any>>(
         options: T,
         findMany: boolean = false
     ): T {
         options.select = this.mergeSelectOptions(options.select)
-        options.where = this.mergeWhereOptions(options.where)
+        options.where = this.mergeConditionalOptions(options.where)
         options.relations = this.mergeRelationsOptions(options.relations)
         options.group = this.mergeGroupOptions(options.group)
 
@@ -58,7 +62,7 @@ export default class ScopeMetadata {
 
     // ------------------------------------------------------------------------
 
-    public mergeWhereOptions<T extends ConditionalQueryOptions<any>>(
+    public mergeConditionalOptions<T extends ConditionalQueryOptions<any>>(
         options?: T
     ): T | {} {
 

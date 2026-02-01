@@ -37,7 +37,7 @@ export default class FindOneSQLBuilder<T extends Entity> {
         scope: 'findOne' | 'find' = 'findOne'
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
-        this.options = ScopeMetadataHandler.applyScope(
+        this.options = ScopeMetadataHandler.apply(
             this.target, scope, this.options
         )
 

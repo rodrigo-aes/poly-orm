@@ -1,3 +1,3 @@
 import type { Target, CollectionTarget, PaginationTarget } from "../../types"
 
-export type Recognizable = Target | CollectionTarget | PaginationTarget
+export type MetaTarget = Target | CollectionTarget | PaginationTarget

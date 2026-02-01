@@ -37,7 +37,7 @@ export default class UpdateSQLBuilder<T extends Entity> {
         this.metadata = MetadataHandler.targetMetadata(this.target)
 
         if (this.conditional) this.conditional = (
-            ScopeMetadataHandler.applyScope(
+            ScopeMetadataHandler.apply(
                 this.target, 'conditional', this.conditional
             )
         )

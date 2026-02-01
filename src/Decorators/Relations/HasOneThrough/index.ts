@@ -7,6 +7,7 @@ import DecoratorMetadata from "../../DecoratorMetadata"
 
 // Types
 import type { Entity, EntityTarget } from "../../../types"
+import type { BaseEntity } from "../../../Entities"
 import type { HasOneThrough } from "../../../Relations"
 import type { HasOneThroughOptions } from "./types"
 
@@ -15,7 +16,7 @@ export default function HasOneThrough(
     through: HasOneThroughGetter,
     options: HasOneThroughOptions
 ) {
-    return function <T extends Entity, R extends Entity>(
+    return function <T extends BaseEntity, R extends Entity>(
         _: undefined,
         context: ClassFieldDecoratorContext<T, HasOneThrough<R>>
     ) {
@@ -29,6 +30,13 @@ export default function HasOneThrough(
                     through,
                     ...options
                 }))
+
+        // Auto-initialize ----------------------------------------------------
+        context.addInitializer(function (this: T) {
+            (this[context.name as keyof T] as any) ??= this.hasOneThrough(
+                context.name as string
+            )
+        })
     }
 }
 
