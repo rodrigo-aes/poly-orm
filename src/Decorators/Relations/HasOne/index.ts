@@ -1,4 +1,5 @@
 import { RelationsMetadata } from "../../../Metadata"
+import DecoratorMetadata from "../../DecoratorMetadata"
 
 import type { Entity, EntityTarget } from "../../../types"
 import type { BaseEntity } from "../../../Entities"
@@ -11,24 +12,20 @@ export default function HasOne(
     foreignKey: string | HasOneOptions
 ) {
     return function <T extends BaseEntity, R extends Entity>(
-        relation: undefined,
+        _: undefined,
         context: ClassFieldDecoratorContext<T, HasOne<R>>
     ) {
-        context.addInitializer(function (this: T) {
-            if ((this.constructor as any).shouldRegisterMeta(
-                context.name as string
-            )) (
-                RelationsMetadata
-                    .findOrBuild(this.constructor as EntityTarget)
-                    .addHasOne({
-                        name: context.name as string,
-                        related,
-                        ...typeof foreignKey === 'string'
-                            ? { foreignKey }
-                            : foreignKey
-                    })
-            )
-        })
+        DecoratorMetadata
+            .define(context.metadata)
+            .rel((target: EntityTarget) => RelationsMetadata
+                .findOrBuild(target)
+                .addHasOne({
+                    name: context.name as string,
+                    related,
+                    ...typeof foreignKey === 'string'
+                        ? { foreignKey }
+                        : foreignKey
+                }))
     }
 }
 

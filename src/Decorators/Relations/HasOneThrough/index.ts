@@ -3,9 +3,11 @@ import {
     type HasOneThroughRelatedGetter,
     type HasOneThroughGetter
 } from "../../../Metadata"
+import DecoratorMetadata from "../../DecoratorMetadata"
 
 // Types
 import type { Entity, EntityTarget } from "../../../types"
+import type { HasOneThrough } from "../../../Relations"
 import type { HasOneThroughOptions } from "./types"
 
 export default function HasOneThrough(
@@ -13,12 +15,20 @@ export default function HasOneThrough(
     through: HasOneThroughGetter,
     options: HasOneThroughOptions
 ) {
-    return function <T extends Entity>(
-        target: T,
-        name: string
+    return function <T extends Entity, R extends Entity>(
+        _: undefined,
+        context: ClassFieldDecoratorContext<T, HasOneThrough<R>>
     ) {
-        RelationsMetadata.findOrBuild(target.constructor as EntityTarget)
-            .addHasOneThrough({ name, related, through, ...options })
+        DecoratorMetadata
+            .define(context.metadata)
+            .rel((target: EntityTarget) => RelationsMetadata
+                .findOrBuild(target)
+                .addHasOneThrough({
+                    name: context.name as string,
+                    related,
+                    through,
+                    ...options
+                }))
     }
 }
 

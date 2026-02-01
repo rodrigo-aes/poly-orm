@@ -1,26 +1,32 @@
 import { RelationsMetadata } from "../../../../Metadata"
+import DecoratorMetadata from "../../../DecoratorMetadata"
 
 // Types
 import type { Entity, EntityTarget } from "../../../../types"
 import type { PolymorphicChildRelatedGetter } from "../../../../Metadata"
+import type { PolymorphicHasMany } from "../../../../Relations"
 import type { PolymorphicHasManyOptions } from "./types"
 
 export default function PolymorphicHasMany(
     related: PolymorphicChildRelatedGetter,
     foreignKey: string | PolymorphicHasManyOptions
 ) {
-    return function <T extends Entity>(
-        target: T,
-        name: string
+    return function <T extends Entity, R extends Entity>(
+        _: undefined,
+        context: ClassFieldDecoratorContext<T, PolymorphicHasMany<R>>
     ) {
-        RelationsMetadata.findOrBuild(target.constructor as EntityTarget)
-            .addPolymorphicHasMany({
-                name, related, ...(
-                    typeof foreignKey === 'string'
+        DecoratorMetadata
+            .define(context.metadata)
+            .rel((target: EntityTarget) => RelationsMetadata
+                .findOrBuild(target)
+                .addPolymorphicHasMany({
+                    name: context.name as string,
+                    related,
+                    ...(typeof foreignKey === 'string'
                         ? { foreignKey }
                         : foreignKey
-                )
-            })
+                    )
+                }))
     }
 }
 

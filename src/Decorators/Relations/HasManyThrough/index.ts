@@ -3,9 +3,11 @@ import {
     type HasManyThroughRelatedGetter,
     type HasManyThroughGetter
 } from "../../../Metadata"
+import DecoratorMetadata from "../../DecoratorMetadata"
 
 // Types
 import type { Entity, EntityTarget } from "../../../types"
+import type { HasManyThrough } from "../../../Relations"
 import type { HasManyThroughOptions } from "./types"
 
 export default function HasManyThrough(
@@ -13,12 +15,20 @@ export default function HasManyThrough(
     through: HasManyThroughGetter,
     options: HasManyThroughOptions
 ) {
-    return function <T extends Entity>(
-        target: T,
-        name: string
+    return function <T extends Entity, R extends Entity>(
+        _: undefined,
+        context: ClassFieldDecoratorContext<T, HasManyThrough<R>>
     ) {
-        RelationsMetadata.findOrBuild(target.constructor as EntityTarget)
-            .addHasManyThrough({ name, related, through, ...options })
+        DecoratorMetadata
+            .define(context.metadata)
+            .rel((target: EntityTarget) => RelationsMetadata
+                .findOrBuild(target)
+                .addHasManyThrough({
+                    name: context.name as string,
+                    related,
+                    through,
+                    ...options
+                }))
     }
 }
 
