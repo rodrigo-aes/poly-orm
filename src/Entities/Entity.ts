@@ -20,8 +20,7 @@ import {
 import {
     ColumnsSnapshots,
     Collection,
-
-    type Pagination,
+    Pagination,
 } from "./Components"
 
 // Types
@@ -57,6 +56,7 @@ import {
     PolymorphicHasManyHandler,
     PolymorphicBelongsToHandler,
 
+    type RelationHandler,
     type HasOne,
     type HasMany,
     type BelongsTo,
@@ -76,41 +76,42 @@ import type {
     StaticTarget,
     TargetMetadata,
     TargetRepository,
-    TargetQueryBuilder,
     Constructor,
 
     EntityJSON,
     EntityObject,
     EntityProperties,
     EntityRelations,
-    EntityRelationsKeys
 } from "../types"
 
 // Exceptions
 import PolyORMException from "../Errors"
 
 export default abstract class Entity {
-    /** @internal */
-    declare readonly __defaultCollection: Collection<EntityT>
+    declare readonly __defaultCollection: Collection
+    declare readonly __collections: Collection[]
+
+    declare readonly __defaultPagination: Pagination<any>
+    declare readonly __paginations: Pagination<any>[]
 
     public static readonly INHERIT_HOOKS: boolean = true
     public static readonly INHERIT_ONLY_HOOKS?: HookType[]
 
     /** @internal */
-    public static readonly __registered = new Set<string>()
+    public static readonly __$registered = new Set<string>()
 
     /** @internal */
-    private __pk?: string
+    private __$PK?: string
 
     /** @internal */
-    private __wherePK?: ConditionalQueryOptions<EntityT>
+    private __$WPK?: ConditionalQueryOptions<EntityT>
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     /**
      * An array of properties keys that must be hidden in JSON
      */
-    public get hidden(): string[] {
+    public get hidden(): (keyof EntityT)[] {
         return []
     }
 
@@ -119,30 +120,43 @@ export default abstract class Entity {
     /**
      * An array of properties keys that must be included in JSON
      */
-    public get include(): string[] {
+    public get include(): (keyof EntityT)[] {
         return []
     }
 
     // ------------------------------------------------------------------------
 
     /** @internal */
-    public get shouldUpdate(): boolean {
+    public get __$shouldUpdate(): boolean {
         return ColumnsSnapshots.shouldUpdate(this as any)
     }
 
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected get _pk(): string {
-        return this.__pk ??= (this as any).getTrueMetadata().PK
+    protected __$trueMetadata: TargetMetadata<EntityT> = (
+        (this.constructor as StaticTarget).__$trueMetadata
+    )
+
+    // ------------------------------------------------------------------------
+
+    /** @internal */
+    protected get __$pk(): keyof EntityT {
+        return this.__$PK ??= (this as any).getTrueMetadata().PK
     }
 
     // ------------------------------------------------------------------------
 
     /** @internal */
-    protected get _wherePK(): any {
-        return this.__wherePK ??= {
-            [this._pk]: this[this._pk as keyof this]
-        } as any
+    protected get __$wherePK(): any {
+        return this.__$WPK ??= {
+            [this.__$pk]: this[this.__$pk as keyof this]
+        }
+    }
+
+    // Protecteds -------------------------------------------------------------
+    /** @internal */
+    protected static get __$trueMetadata(): TargetMetadata<EntityT> {
+        return MetadataHandler.targetMetadata(this as any)
     }
 
     // Instance Methods =======================================================
@@ -150,9 +164,9 @@ export default abstract class Entity {
     /**
      * Get entity metadata
      */
-    public getMetadata<T extends EntityT>(this: T): any {
-        return this.getTrueMetadata().toJSON()
-    }
+    public getMetadata: () => any = (
+        (this.constructor as StaticTarget).getMetadata
+    )
 
     // ------------------------------------------------------------------------
 
@@ -179,13 +193,13 @@ export default abstract class Entity {
     // ------------------------------------------------------------------------
 
     public columns<T extends EntityT>(this: T): EntityProperties<T> {
-        return Object.fromEntries(this.colEntries()) as EntityProperties<T>
+        return Object.fromEntries(this.__$colEntries()) as EntityProperties<T>
     }
 
     // ------------------------------------------------------------------------
 
     public relations<T extends EntityT>(this: T): EntityRelations<T> {
-        return Object.fromEntries(this.relEntries()) as EntityRelations<T>
+        return Object.fromEntries(this.__$relEntries()) as EntityRelations<T>
     }
 
     // ------------------------------------------------------------------------
@@ -199,10 +213,10 @@ export default abstract class Entity {
         keyof T, any
     ][] {
         return this
-            .colEntries(hide)
+            .__$colEntries(hide)
             .concat(
-                this.includedEntries(),
-                this.relEntries(hide)
+                this.__$includedEntries(),
+                this.__$relEntries(hide)
             )
     }
 
@@ -220,22 +234,13 @@ export default abstract class Entity {
         return this
     }
 
-    // ------------------------------------------------------------------------
-
-    /** @internal */
-    public getTrueMetadata<T extends EntityT>(this: T): TargetMetadata<T> {
-        return MetadataHandler.targetMetadata(this.constructor as (
-            Constructor<T>
-        ))
-    }
-
     // Protecteds -------------------------------------------------------------
     protected hasOne<
         T extends EntityT,
         R extends EntityT = EntityT
     >(this: T, name: string, entity?: R): HasOne<R> {
         return HasOneHandler<R>(
-            this.validRel(name, HasOneMetadata),
+            this.__$validRel(name, HasOneMetadata),
             this,
             entity
         )
@@ -255,9 +260,9 @@ export default abstract class Entity {
         )
     ): HasMany<R, C> {
         return HasManyHandler<R, C>(
-            this.validRel(name, HasManyMetadata),
+            this.__$validRel(name, HasManyMetadata),
             this,
-            ...this.resolveColl(collection)
+            ...this.__$resolveColl(collection)
         )
     }
 
@@ -272,7 +277,7 @@ export default abstract class Entity {
         entity?: R
     ): BelongsTo<R> {
         return BelongsToHandler<R>(
-            this.validRel(name, BelongsToMetadata),
+            this.__$validRel(name, BelongsToMetadata),
             this,
             undefined,
             entity
@@ -287,7 +292,7 @@ export default abstract class Entity {
         entity?: R
     ): HasOneThrough<R> {
         return HasOneThroughHandler<R>(
-            this.validRel(name, HasOneThroughMetadata),
+            this.__$validRel(name, HasOneThroughMetadata),
             this,
             undefined,
             entity
@@ -308,9 +313,9 @@ export default abstract class Entity {
         )
     ): HasManyThrough<R, C> {
         return HasManyThroughHandler<R, C>(
-            this.validRel(name, HasManyThroughMetadata),
+            this.__$validRel(name, HasManyThroughMetadata),
             this,
-            ...this.resolveColl(collection)
+            ...this.__$resolveColl(collection)
         )
     }
 
@@ -322,7 +327,7 @@ export default abstract class Entity {
         entity?: R
     ): BelongsToThrough<R> {
         return BelongsToThroughHandler<R>(
-            this.validRel(name, BelongsToThroughMetadata),
+            this.__$validRel(name, BelongsToThroughMetadata),
             this,
             undefined,
             entity
@@ -343,9 +348,9 @@ export default abstract class Entity {
         )
     ): BelongsToMany<R, C> {
         return BelongsToManyHandler<R, C>(
-            this.validRel(name, BelongsToManyMetadata),
+            this.__$validRel(name, BelongsToManyMetadata),
             this,
-            ...this.resolveColl(collection)
+            ...this.__$resolveColl(collection)
         )
     }
 
@@ -360,7 +365,7 @@ export default abstract class Entity {
         entity?: R
     ): PolymorphicHasOne<R> {
         return PolymorphicHasOneHandler<R>(
-            this.validRel(name, PolymorphicHasOneMetadata),
+            this.__$validRel(name, PolymorphicHasOneMetadata),
             this,
             undefined,
             entity
@@ -381,9 +386,9 @@ export default abstract class Entity {
         )
     ): PolymorphicHasMany<R, C> {
         return PolymorphicHasManyHandler<R, C>(
-            this.validRel(name, PolymorphicHasManyMetadata),
+            this.__$validRel(name, PolymorphicHasManyMetadata),
             this,
-            ...this.resolveColl(collection)
+            ...this.__$resolveColl(collection)
         )
     }
 
@@ -398,35 +403,53 @@ export default abstract class Entity {
         polymorphicEntity?: PolymorphicBelongsToRelated<R>
     ): PolymorphicBelongsTo<R> {
         return PolymorphicBelongsToHandler<R>(
-            this.validRel(name, PolymorphicBelongsToMetadata),
+            this.__$validRel(name, PolymorphicBelongsToMetadata),
             this,
             undefined,
             polymorphicEntity
         )
     }
 
+    // ---------------------------------------------------------------
+    /** @internal */
+    protected async __$saveRelations<T extends EntityT>(this: T): Promise<
+        void
+    > {
+        for (const { name } of (this as any).__$trueMetadata.relations) if (
+            (this[name as keyof T] as RelationHandler).__$shouldUpdate !== (
+                false
+            )
+        ) (
+            await (this[name as keyof T] as any).save()
+        )
+    }
+
     // ------------------------------------------------------------------------
     /** @internal */
-    private validRel<T extends EntityT, R extends RelationMetadataType>(
+    private __$validRel<T extends EntityT, R extends RelationMetadataType>(
         this: T,
         name: string,
         shouldBe: Constructor<R>
     ): R {
-        const meta = this.getTrueMetadata().relations.findOrThrow(name)
+        const meta = (this as Entity).__$trueMetadata.relations.findOrThrow(
+            name
+        )
         return (
-            meta instanceof shouldBe ? meta : PolyORMException.Metadata.throw(
-                'INVALID_RELATION',
-                meta.type,
-                meta.name,
-                shouldBe.name.replace('Metadata', '')
-            )
+            meta instanceof shouldBe
+                ? meta
+                : PolyORMException.Metadata.throw(
+                    'INVALID_RELATION',
+                    meta.type,
+                    meta.name,
+                    shouldBe.name.replace('Metadata', '')
+                )
         ) as R
     }
 
     // ------------------------------------------------------------------------
 
     /** @internal */
-    private resolveColl<T extends EntityT, C extends Collection<any>>(
+    private __$resolveColl<T extends EntityT, C extends Collection<any>>(
         this: T,
         collection: C | Constructor<C>
     ): [Constructor<C>, C] {
@@ -438,18 +461,18 @@ export default abstract class Entity {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    private colEntries<T extends EntityT>(
+    private __$colEntries<T extends EntityT>(
         this: T,
         hide: boolean = false
     ): [keyof T, any][] {
         return hide
-            ? this.getTrueMetadata().columns.flatMap(({ name }) =>
-                this.hidden.includes(name)
+            ? (this as Entity).__$trueMetadata.columns.flatMap(({ name }) =>
+                this.hidden.includes(name as any)
                     ? []
                     : [[name as keyof T, this[name as keyof T]]]
             )
 
-            : this.getTrueMetadata().columns.map(({ name }) =>
+            : (this as Entity).__$trueMetadata.columns.map(({ name }) =>
                 [name as keyof T, this[name as keyof T]]
             )
     }
@@ -457,13 +480,13 @@ export default abstract class Entity {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    private relEntries<T extends EntityT>(
+    private __$relEntries<T extends EntityT>(
         this: T,
         hide: boolean = false
     ): [keyof T, any][] {
         return hide
-            ? this.getTrueMetadata().relations.flatMap(({ name }) =>
-                this.hidden.includes(name)
+            ? (this as Entity).__$trueMetadata.relations.flatMap(({ name }) =>
+                this.hidden.includes(name as any)
                     ? []
                     : [[
                         name as keyof T,
@@ -471,7 +494,7 @@ export default abstract class Entity {
                     ]]
             )
 
-            : this.getTrueMetadata().relations.map(({ name }) =>
+            : (this as Entity).__$trueMetadata.relations.map(({ name }) =>
                 [name as keyof T, (this[name as keyof T] as any)?.toJSON()]
             )
     }
@@ -479,18 +502,18 @@ export default abstract class Entity {
     // ------------------------------------------------------------------------
 
     /** @internal */
-    private includedEntries<T extends EntityT>(this: T): [
+    private __$includedEntries<T extends EntityT>(this: T): [
         keyof T, any
     ][] {
         return (this.include as (keyof T)[]).map(key =>
-            [key, this.validInclude(this[key as keyof T])]
+            [key, this.__$validInclude(this[key as keyof T])]
         )
     }
 
     // ------------------------------------------------------------------------
 
     /** @internal */
-    private validInclude(prop: any): any {
+    private __$validInclude(prop: any): any {
         return ['symbol', 'function'].includes(typeof prop)
             ? PolyORMException.Metadata.throw(
                 'INVALID_INCLUDED_VALUE',
@@ -525,7 +548,7 @@ export default abstract class Entity {
         name: string,
         ...args: any[]
     ): StaticTarget<T> {
-        const scoped = (this as StaticTarget<T>).reply()
+        const scoped = (this as StaticTarget<T>).__$replyConstructor()
 
         TempMetadata
             .reply(scoped, this)
@@ -552,7 +575,9 @@ export default abstract class Entity {
         attributes: CreationAttributes<T>
     ): T {
         const instance = new this().fill(attributes) as T
-        instance.getTrueMetadata().computedProperties?.assign(instance)
+        (instance as Entity).__$trueMetadata.computedProperties?.assign(
+            instance
+        )
         ColumnsSnapshots.set(instance, instance.columns())
 
         return instance
@@ -609,7 +634,7 @@ export default abstract class Entity {
      */
     public static find<
         T extends EntityT,
-        M extends CollectMapOptions<T> | undefined
+        M extends CollectMapOptions<T>
     >(
         this: Constructor<T>,
         options?: FindQueryOptions<T>,
@@ -629,8 +654,8 @@ export default abstract class Entity {
     */
     public static paginate<T extends EntityT>(
         this: Constructor<T>,
-        options: PaginationQueryOptions<T>
-    ): Promise<Pagination<T, Collection<T>>> {
+        options?: PaginationQueryOptions<T>
+    ): Promise<Pagination<Collection<T>>> {
         return (this as any).getRepository().paginate(options)
     }
 
@@ -666,31 +691,14 @@ export default abstract class Entity {
         return (this as any).getRepository().countMany(options)
     }
 
-    // Protecteds -------------------------------------------------------------
+    // Privates ---------------------------------------------------------------
     /** @internal */
-    protected static getTrueMetadata<T extends EntityT>(
-        this: Constructor<T>
-    ): TargetMetadata<T> {
-        return MetadataHandler.targetMetadata(this)
-    }
-
-    // ------------------------------------------------------------------------
-
-    /** @internal */
-    protected static reply<T extends Constructor<EntityT>>(
+    private static __$replyConstructor<T extends Constructor<EntityT>>(
         this: T
     ): T {
         const replic = class extends (this as new (...args: any[]) => any) { }
         Object.assign(replic, this)
 
         return replic as T
-    }
-
-    // ------------------------------------------------------------------------
-
-    /** @internal */
-    public static shouldRegisterMeta(...keys: string[]): boolean {
-        const key = `${this.name}:${keys.join(':')}`
-        return (!this.__registered.has(key) && !!this.__registered.add(key))
     }
 }

@@ -99,7 +99,7 @@ export default class PolymorphicColumnsMetadata extends MetadataArray<
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public sourceColumns(source: EntityTarget): [string, string][] {
-        switch ((this.target as StaticPolymorphicEntityTarget).__ROLE) {
+        switch ((this.target as StaticPolymorphicEntityTarget).__$ROLE) {
             case 'INTERNAL': return this.internalSourceColumns(source)
             case 'EXTERNAL': return this.externalSourceColumns(source)
         }
@@ -150,7 +150,7 @@ export default class PolymorphicColumnsMetadata extends MetadataArray<
 
     private mergeIncluded(): void {
         this.push(...(() => {
-            switch ((this.target as StaticPolymorphicEntityTarget).__ROLE) {
+            switch ((this.target as StaticPolymorphicEntityTarget).__$ROLE) {
                 case 'INTERNAL': return this.internalIncluded()
                 case 'EXTERNAL': return this.externalIncluded()
             }

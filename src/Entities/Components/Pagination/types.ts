@@ -1,4 +1,6 @@
-import type Entity from "../../Entity"
+import type Collection from "../Collection"
+import type { CollectionJSON } from "../Collection/types"
+import type { EntityJSON } from "../../../types"
 
 export type PaginationInitMap = {
     page: number,
@@ -6,13 +8,13 @@ export type PaginationInitMap = {
     total: number
 }
 
-export type PaginationJSON<T extends Entity> = {
+export type PaginationJSON<D extends Collection> = {
     page: number
     perPage: number
     total: number
     pages: number
     prevPage: number | null
     nextPage: number | null
-    data: T[],
-    [K: string]: any
-}
+} & CollectionJSON<D> extends EntityJSON<any, any>[]
+    ? { data: CollectionJSON<D> }
+    : CollectionJSON<D>

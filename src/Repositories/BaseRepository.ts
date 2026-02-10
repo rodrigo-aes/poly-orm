@@ -20,11 +20,15 @@ import {
 import {
     MySQLOperation,
 
+    type MapOptions,
+    type CollectMapOptions,
+    type PaginateMapOptions,
+    type EntityPaginateOption,
+
     type FindOneResult,
     type FindResult,
+    type PaginateResult,
     type CountManyResult,
-    type MapOptions,
-    type CollectMapOptions
 } from "../Handlers"
 
 // Types
@@ -110,21 +114,15 @@ export default abstract class BaseRepository<T extends Entity> {
     * @default 'entity'
     * @returns - A entity instance pagination collection
     */
-    public paginate<M extends Omit<CollectMapOptions<T>, 'mapTo'>>(
+    public paginate<M extends PaginateMapOptions<T>>(
         options: PaginationQueryOptions<T>,
         mapOptions?: M
-    ) {
+    ): Promise<PaginateResult<T, M>> {
         return MySQLOperation.Paginate.exec({
             target: this.target,
             sqlBuilder: new PaginationSQLBuilder(this.target, options),
-            mapOptions: { ...mapOptions, mapTo: 'entity' }
-        }) as Promise<Pagination<T, (
-            M extends CollectMapOptions<T>
-            ? M['collection'] extends Collection<T>
-            ? M['collection']
-            : Extract<T['__defaultCollection'], Collection<T>>
-            : Extract<T['__defaultCollection'], Collection<T>>
-        )>>
+            mapOptions
+        })
     }
 
     // ------------------------------------------------------------------------

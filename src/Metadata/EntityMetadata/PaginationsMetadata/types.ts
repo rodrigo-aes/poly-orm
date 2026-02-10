@@ -1,6 +1,6 @@
-import type { Pagination } from "../../../Entities"
+import type { Pagination, Collection } from "../../../Entities"
 
 export type PaginationsMetadataJSON = {
-    default: typeof Pagination
-    paginations: (typeof Pagination)[]
+    default: typeof Pagination<Collection>
+    paginations: (typeof Pagination<Collection>)[]
 }

@@ -1,18 +1,19 @@
 import { HooksMetadata } from "../../../Metadata"
 import { Entity as EntityBase, type BaseEntity } from "../../../Entities"
 
-// Types
-import type { Entity, Constructor } from "../../../types"
-
-import type {
+import {
     FindByPkSQLBuilder,
     FindOneSQLBuilder,
-    FindSQLBuilder,
-    PaginationSQLBuilder,
-    CreateSQLBuilder,
-    UpdateSQLBuilder,
-    DeleteSQLBuilder,
+
+    type FindSQLBuilder,
+    type PaginationSQLBuilder,
+    type CreateSQLBuilder,
+    type UpdateSQLBuilder,
+    type DeleteSQLBuilder,
 } from "../../../SQLBuilders"
+
+// Types
+import type { Entity, Constructor } from "../../../types"
 
 import type {
     ExecOptions,
@@ -24,7 +25,6 @@ import type {
     UpdateOperation,
     DeleteOperation,
 
-    FindOneResult,
     DeleteResult,
 } from "../OperationHandlers"
 
@@ -129,14 +129,23 @@ export default class Hooks {
     // Privates ---------------------------------------------------------------
     private static async beforeFind<T extends Entity>(
         target: Constructor<T>,
-        sqlBuilder: (
-            FindByPkSQLBuilder<T> |
-            FindOneSQLBuilder<T>
-        )
+        sqlBuilder: FindByPkSQLBuilder<T> | FindOneSQLBuilder<T>
     ) {
-        if ((sqlBuilder as any).options) await HooksMetadata
+        await HooksMetadata
             .find(target)
-            ?.call('beforeFind', (sqlBuilder as any).options)
+            ?.call('beforeFind', (() => {
+                switch (true) {
+                    case sqlBuilder instanceof FindByPkSQLBuilder: return (
+                        sqlBuilder.pk
+                    )
+
+                    // --------------------------------------------------------
+
+                    case sqlBuilder instanceof FindOneSQLBuilder: return (
+                        sqlBuilder.options
+                    )
+                }
+            })())
     }
 
     // ------------------------------------------------------------------------
@@ -145,10 +154,7 @@ export default class Hooks {
         target: Constructor<T>,
         result: any
     ) {
-        if (result) await HooksMetadata
-            .find(target)
-            ?.call('afterFind', result)
-
+        await HooksMetadata.find(target)?.call('afterFind', result)
         return result
     }
 
@@ -156,14 +162,11 @@ export default class Hooks {
 
     private static async beforeBulkFind<T extends Entity>(
         target: Constructor<T>,
-        sqlBuilder: (
-            FindSQLBuilder<T> |
-            PaginationSQLBuilder<T>
-        )
+        sqlBuilder: FindSQLBuilder<T> | PaginationSQLBuilder<T>
     ) {
-        if ((sqlBuilder as any).options) await HooksMetadata
-            .find(target)
-            ?.call('beforeBulkFind', (sqlBuilder as any).options)
+        await HooksMetadata.find(target)?.call(
+            'beforeBulkFind', sqlBuilder.options
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -172,10 +175,7 @@ export default class Hooks {
         target: Constructor<T>,
         result: any
     ) {
-        if (result) await HooksMetadata
-            .find(target)
-            ?.call('afterBulkFind', result)
-
+        await HooksMetadata.find(target)?.call('afterBulkFind', result)
         return result
     }
 
@@ -185,14 +185,12 @@ export default class Hooks {
         target: Constructor<T>,
         sqlBuilder: CreateSQLBuilder<T>
     ) {
-        await HooksMetadata
-            .find(target)
-            ?.call(
-                Array.isArray(sqlBuilder.attributes)
-                    ? 'beforeBulkCreate'
-                    : 'beforeCreate',
-                sqlBuilder.attributes as any
-            )
+        await HooksMetadata.find(target)?.call(
+            Array.isArray(sqlBuilder.attributes)
+                ? 'beforeBulkCreate'
+                : 'beforeCreate',
+            sqlBuilder.attributes
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -201,12 +199,10 @@ export default class Hooks {
         target: Constructor<T>,
         result: any
     ) {
-        await HooksMetadata
-            .find(target)
-            ?.call(
-                Array.isArray(result) ? 'afterBulkCreate' : 'afterCreate',
-                result
-            )
+        await HooksMetadata.find(target)?.call(
+            Array.isArray(result) ? 'afterBulkCreate' : 'afterCreate',
+            result
+        )
 
         return result
     }
@@ -217,15 +213,13 @@ export default class Hooks {
         target: Constructor<T>,
         sqlBuilder: UpdateSQLBuilder<T>
     ) {
-        await HooksMetadata
-            .find(target)
-            ?.call(
-                sqlBuilder._attributes instanceof EntityBase
-                    ? 'beforeUpdate'
-                    : 'beforeBulkUpdate',
-                sqlBuilder._attributes as any,
-                sqlBuilder.conditional
-            )
+        await HooksMetadata.find(target)?.call(
+            sqlBuilder.attributes instanceof EntityBase
+                ? 'beforeUpdate'
+                : 'beforeBulkUpdate',
+            sqlBuilder.attributes,
+            sqlBuilder.conditional
+        )
     }
 
     // ------------------------------------------------------------------------
@@ -250,14 +244,12 @@ export default class Hooks {
         target: Constructor<T>,
         sqlBuilder: DeleteSQLBuilder<T>
     ) {
-        await HooksMetadata
-            .find(target)
-            ?.call(
-                sqlBuilder.conditional instanceof EntityBase
-                    ? 'beforeDelete'
-                    : 'beforeBulkDelete',
-                sqlBuilder.conditional as any
-            )
+        await HooksMetadata.find(target)?.call(
+            sqlBuilder.conditional instanceof EntityBase
+                ? 'beforeDelete'
+                : 'beforeBulkDelete',
+            sqlBuilder.conditional as any
+        )
     }
 
     // ------------------------------------------------------------------------

@@ -38,6 +38,8 @@ import type {
     EntityPropertiesKeys,
     EntityRelations,
     EntityRelationsKeys,
+    CollectionProperties,
+    CollectionPropertiesKeys,
     ExcludeRelationAttributes,
     ExcludeRelationAttributesKeys,
     OptionalNullable
@@ -81,6 +83,8 @@ export type {
     EntityPropertiesKeys,
     EntityRelations,
     EntityRelationsKeys,
+    CollectionProperties,
+    CollectionPropertiesKeys,
     ExcludeRelationAttributes,
     ExcludeRelationAttributesKeys,
     OptionalNullable

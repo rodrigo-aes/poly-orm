@@ -47,7 +47,7 @@ export default class OperationHandler {
 
     // ------------------------------------------------------------------------
 
-    protected static async execMappedQuery<
+    protected static async execAndMap<
         T extends Entity,
         B extends SQLBuilder,
         M extends MapOptions | CollectMapOptions<T> | never
@@ -66,7 +66,7 @@ export default class OperationHandler {
             fillMethod: this.fillMethod,
             mapOptions,
             toSource,
-            pagination
+            paginationInitMap: pagination
         })
     }
 }

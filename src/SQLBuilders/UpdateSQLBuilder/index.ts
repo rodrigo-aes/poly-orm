@@ -26,55 +26,35 @@ import type { UpdateAttributes, UpdateAttributesKeys } from "./types"
 export default class UpdateSQLBuilder<T extends Entity> {
     protected metadata: TargetMetadata<T>
 
-    private filtered: boolean = false
+    private _att: Entity | UpdateAttributes<T>
 
     constructor(
         public target: Constructor<T>,
-        public _attributes: Entity | UpdateAttributes<T>,
+        attributes: Entity | UpdateAttributes<T>,
         public conditional?: ConditionalQueryOptions<T>,
         public alias: string = target.name.toLowerCase()
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
-
-        if (this.conditional) this.conditional = (
-            ScopeMetadataHandler.apply(
-                this.target, 'conditional', this.conditional
-            )
+        this.conditional = ScopeMetadataHandler.apply(
+            this.target, 'conditional', this.conditional
         )
-
-        if (this._attributes instanceof BasePolymorphicEntity) (
-            this._attributes = this._attributes.toSourceEntity()
-        )
+        this._att = attributes instanceof BasePolymorphicEntity
+            ? attributes.toSourceEntity()
+            : attributes
     }
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     public get attributes(): UpdateAttributes<T> {
-        return (
-            this.filtered
-                ? this._attributes
-                : (() => {
-                    this.filtered = true
-                    return Object.fromEntries(
-                        Object.entries(
-                            this._attributes instanceof EntityBase
-                                ? ColumnsSnapshots.changed(this._attributes)
-                                : this._attributes
-                        )
-                            .filter(([key]) => this.metadata.columns.search(
-                                key
-                            ))
-                    ) as any
-                })()
-        ) as UpdateAttributes<T>
+        return this._att instanceof EntityBase
+            ? ColumnsSnapshots.changed(this._att)
+            : this._att
     }
 
     // Protecteds -------------------------------------------------------------
     protected get targetMetadata(): EntityMetadata {
         return this.metadata instanceof PolymorphicEntityMetadata
-            ? this.metadata.sourcesMetadata[(
-                (this._attributes as BasePolymorphicEntity<any>).entityType
-            )]
+            ? this.metadata.sourcesMetadata[(this._att as any).entityType]
             : this.metadata
     }
 
@@ -123,7 +103,8 @@ export default class UpdateSQLBuilder<T extends Entity> {
     // ------------------------------------------------------------------------
 
     public setValuesSQL(): string {
-        return Object.entries(this.attributes)
+        return Object
+            .entries(this.attributes)
             .map(([col, val]) => `${this.alias}.${col} = ${(
                 SQLString.value(val)
             )}`)

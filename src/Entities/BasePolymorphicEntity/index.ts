@@ -44,6 +44,7 @@ import type {
 } from "../../SQLBuilders"
 
 import type { PolymorphicRepository } from "../../Repositories"
+import type { RelationHandler } from "../../Relations"
 
 import type {
     Source,
@@ -63,138 +64,48 @@ export default abstract class BasePolymorphicEntity<
     S extends BaseEntity[]
 > extends Entity {
     /** @internal */
-    declare readonly __defaultCollection: Collection<any>
+    public static readonly __$ROLE: 'INTERNAL' | 'EXTERNAL' = 'EXTERNAL'
 
-    /** @internal */
-    public static readonly __ROLE: 'INTERNAL' | 'EXTERNAL' = 'EXTERNAL'
+    declare readonly __defaultCollection: Collection<this>
 
     /**
      * Entity primary key
      */
-    public primaryKey!: string | number
+    public $PK!: string | number
 
     /**
      * Entity type
      */
-    public entityType!: EntityNames<S>
+    public $TK!: EntityNames<S>
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     public get sources(): EntitiesMap<S> {
-        return (this.getTrueMetadata() as PolymorphicEntityMetadata)
+        return (this.__$trueMetadata as PolymorphicEntityMetadata)
             .entities as EntitiesMap<S>
     }
 
-    // Protecteds -------------------------------------------------------------
+    // Privates -------------------------------------------------------------
     /** @internal */
-    protected get _sourcePk(): string {
-        return this.getTrueSourceMetadata().PK
+    private get __$SPK(): string {
+        return this.$__sourceTrueMetadata.PK
     }
 
     // ------------------------------------------------------------------------
 
     /** @internal */
-    protected get _whereSourcePk(): ConditionalQueryOptions<SourceEntity<S>> {
-        return { [this._sourcePk]: this[this._pk as keyof this] } as (
+    private get __$whereSPK(): ConditionalQueryOptions<SourceEntity<S>> {
+        return { [this.__$SPK]: this[this.__$pk as keyof this] } as (
             ConditionalQueryOptions<SourceEntity<S>>
         )
     }
 
-    // Instance Methods =======================================================
-    // Publics ----------------------------------------------------------------
-    public getRepository<
-        T extends PolymorphicRepository<this> = PolymorphicRepository<this>
-    >(): T {
-        return this.getTrueMetadata().getRepository() as T
-    }
-
     // ------------------------------------------------------------------------
 
-    public getQueryBuilder<T extends BasePolymorphicEntity<any>>(
-        this: T
-    ): PolymorphicEntityQueryBuilder<T> {
-        return new PolymorphicEntityQueryBuilder(
-            this.constructor as Constructor<T>
-        )
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Convert current polymorphic instance to source entity instance
-     * @returns - A original entity instance
-     */
-    public toSourceEntity<T extends Source<S>>(): ResolveSource<S, T> {
-        return EntityBuilder.buildPolymorphicSource(
-            this.sources[this.entityType],
-            this
-        ) as ResolveSource<S, T>
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Update or create a register of the source entity in database and return
-     * the current polymorphic instance
-     * @returns - Same polymorhic instance
-     */
-    public async save<T extends BasePolymorphicEntity<any>>(this: T): Promise<
-        T
-    > {
-        const t = await this.getRepository().updateOrCreate(
-            this.entityType,
-            this.toSourceEntity(),
-            'this'
-        )
-
-        for (const { name } of this.getTrueMetadata().relations) if (
-            (this[name as keyof T] as Entity | Collection<any>).shouldUpdate
-        ) (
-            await (this[name as keyof T] as any).save()
-        )
-
-        return t
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Update the register of the source entity in database and returns the
-     * current polymorphic instance
-     * @param attributes - Update attributes data
-     * @returns - Same polymorphic instance
-     */
-    public async update<T extends BasePolymorphicEntity<any>>(
-        this: T,
-        attributes: UpdateAttributes<T>
-    ): Promise<ResultSetHeader> {
-        return this.getRepository().update(
-            this.sources[this.entityType],
-            (this.fill(attributes).toSourceEntity() as BaseEntity)
-                .toObject(),
-            this._whereSourcePk as any
-        ) as Promise<ResultSetHeader>
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Delete the register of the source entity in database
-     */
-    public async delete<T extends BasePolymorphicEntity<any>>(
-        this: T
-    ): Promise<void> {
-        await this.getRepository().delete(
-            this.sources[this.entityType],
-            this._whereSourcePk as any
-        )
-    }
-
-    // Privates ---------------------------------------------------------------
     /** @internal */
-    private getTrueSourceMetadata(): EntityMetadata {
+    private get $__sourceTrueMetadata(): EntityMetadata {
         return MetadataHandler.targetMetadata(
-            this.sources[this.entityType] as EntityTarget
+            this.sources[this.$TK] as EntityTarget
         )
     }
 
@@ -225,6 +136,92 @@ export default abstract class BasePolymorphicEntity<
         return PolymorphicRelation
     }
 
+    // Instance Methods =======================================================
+    // Publics ----------------------------------------------------------------
+    public getRepository<
+        T extends PolymorphicRepository<this> = PolymorphicRepository<this>
+    >(): T {
+        return this.__$trueMetadata.getRepository() as T
+    }
+
+    // ------------------------------------------------------------------------
+
+    public getQueryBuilder<T extends BasePolymorphicEntity<any>>(
+        this: T
+    ): PolymorphicEntityQueryBuilder<T> {
+        return new PolymorphicEntityQueryBuilder(
+            this.constructor as Constructor<T>
+        )
+    }
+
+    // ------------------------------------------------------------------------
+
+    /**
+     * Convert current polymorphic instance to source entity instance
+     * @returns - A original entity instance
+     */
+    public toSourceEntity<T extends Source<S>>(): ResolveSource<S, T> {
+        return EntityBuilder.buildPolymorphicSource(
+            this.sources[this.$TK],
+            this
+        ) as ResolveSource<S, T>
+    }
+
+    // ------------------------------------------------------------------------
+
+    /**
+     * Update or create a register of the source entity in database and return
+     * the current polymorphic instance
+     * @returns - Same polymorhic instance
+     */
+    public async save<T extends BasePolymorphicEntity<any>>(this: T): Promise<
+        T
+    > {
+        const instance = await this.getRepository().updateOrCreate(
+            this.$TK, this.toSourceEntity(), 'this'
+        )
+        await this.__$saveRelations()
+
+        return instance
+    }
+
+    // ------------------------------------------------------------------------
+
+    /**
+     * Update the register of the source entity in database and returns the
+     * current polymorphic instance
+     * @param attributes - Update attributes data
+     * @returns - Same polymorphic instance
+     */
+    public async update<T extends BasePolymorphicEntity<any>>(
+        this: T,
+        attributes: UpdateAttributes<T>
+    ): Promise<ResultSetHeader> {
+        return this.getRepository().update(
+            this.sources[this.$TK],
+            (this.fill(attributes).toSourceEntity() as BaseEntity)
+                .toObject(),
+            this.__$whereSPK as any
+        ) as Promise<ResultSetHeader>
+    }
+
+    // ------------------------------------------------------------------------
+
+    /**
+     * Delete the register of the source entity in database
+     */
+    public async delete<T extends BasePolymorphicEntity<any>>(
+        this: T
+    ): Promise<void> {
+        await this.getRepository().delete(
+            this.sources[this.$TK],
+            this.__$whereSPK as any
+        )
+    }
+
+    // Privates ---------------------------------------------------------------
+
+
     // Static Methods =========================================================
     // Publics ----------------------------------------------------------------
     public static getRepository<
@@ -232,7 +229,7 @@ export default abstract class BasePolymorphicEntity<
         R extends PolymorphicRepository<InstanceType<T>>
     >(this: T): R {
         return (this as StaticPolymorphicEntityTarget<T>)
-            .getTrueMetadata()
+            .__$trueMetadata
             .getRepository() as R
     }
 

@@ -19,39 +19,45 @@ export default class UpdateOrCreateSQLBuilder<T extends BaseEntity> {
     private create: CreateSQLBuilder<T>
     private _cols: EntityPropertiesKeys<T>[] = []
     private _vals: any[] = []
-    private merged: boolean = false
+    private _merged: boolean = false
+    private _att: BaseEntity | UpdateOrCreateAttributes<T>
 
     constructor(
         public target: Constructor<T>,
-        public _attributes: BaseEntity | UpdateOrCreateAttributes<T>,
+        attributes: BaseEntity | UpdateOrCreateAttributes<T>,
         public alias: string = target.name.toLowerCase()
     ) {
         this.metadata = EntityMetadata.findOrThrow(this.target)
+        this._att = attributes
         this.create = new CreateSQLBuilder(
-            this.target,
-            this.attributes,
-            this.alias
+            this.target, this.attributes, this.alias
         )
     }
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     public get attributes(): UpdateOrCreateAttributes<T> {
-        return (
-            this.merged
-                ? this._attributes
-                : this._attributes = {
-                    ...(
-                        this._attributes instanceof BaseEntity
-                            ? this._attributes.columns()
-                            : this._attributes
-                    ),
+        return this._att = this._merged ? this._att : this._merge
+    }
 
-                    ...Object.fromEntries(this._cols.map((col, index) => [
-                        col, this._vals[index]
-                    ]))
-                } as any
-        ) as UpdateOrCreateAttributes<T>
+    // Privates ---------------------------------------------------------------
+    private get _merge(): any {
+        this._merged = true
+        return Object.fromEntries(this._attEntries.concat(this._colsEntries))
+    }
+
+    // ------------------------------------------------------------------------
+
+    private get _attEntries(): [string, any][] {
+        return this._att instanceof BaseEntity
+            ? this._att.entries()
+            : Object.entries(this._att)
+    }
+
+    // ------------------------------------------------------------------------
+
+    private get _colsEntries(): [string, any][] {
+        return this._cols.map((col, index) => [col, this._vals[index]])
     }
 
     // Instance Methods =======================================================
@@ -71,8 +77,7 @@ export default class UpdateOrCreateSQLBuilder<T extends BaseEntity> {
     // ------------------------------------------------------------------------
 
     public setData(attributes: UpdateOrCreateAttributes<T>): this {
-        this._attributes = attributes
-
+        this._att = attributes
         return this
     }
 

@@ -21,7 +21,7 @@ export default class PolymorphicHasManyHandlerSQLBuilder<
     // Publics ----------------------------------------------------------------
     public get _targetPrimaryValue(): any {
         return this.target instanceof BasePolymorphicEntity
-            ? this.target.primaryKey
+            ? this.target.$PK
             : this.targetPrimaryValue
     }
 
@@ -54,7 +54,7 @@ export default class PolymorphicHasManyHandlerSQLBuilder<
 
     private get targetType(): string {
         return this.target instanceof BasePolymorphicEntity
-            ? this.target.entityType
+            ? this.target.$TK
             : this.metadata.parentType
     }
 

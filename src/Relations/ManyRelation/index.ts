@@ -1,5 +1,5 @@
 import { MetadataHandler } from "../../Metadata"
-import { Collection } from "../../Entities"
+import { Collection, type CollectionJSON } from "../../Entities"
 
 // Utils
 import ProxyMerge from "../../utils/ProxyMerge"
@@ -9,19 +9,13 @@ import { MySQLOperation, type DeleteResult } from "../../Handlers"
 
 // Types
 import type { ResultSetHeader } from "mysql2"
-import type {
-    Constructor,
-    Entity,
-    TargetMetadata,
-    EntityJSON
-} from "../../types"
+import type { Constructor, Entity, TargetMetadata } from "../../types"
 import type { ManyRelationMetadatatype } from "../../Metadata"
 import type {
     ManyRelationHandlerSQLBuilder,
     FindRelationQueryOptions,
     RelationUpdateAttributes,
-    RelationConditionalQueryOptions,
-    ConditionalQueryOptions
+    RelationConditionalQueryOptions
 } from "../../SQLBuilders"
 
 /** Many relation handler */
@@ -30,6 +24,9 @@ export default abstract class ManyRelation<
     R extends Entity,
     C extends Collection<R> = Collection<R>
 > {
+    /** @internal */
+    declare public __$shouldUpdate?: boolean
+
     /** @internal */
     private _relatedMetadata?: TargetMetadata<R>
 
@@ -150,7 +147,7 @@ export default abstract class ManyRelation<
 
     // ------------------------------------------------------------------------
 
-    public toJSON(): EntityJSON<R, R['hidden']>[] {
+    public toJSON(): CollectionJSON<C> {
         return (this.instances as C).toJSON()
     }
 }

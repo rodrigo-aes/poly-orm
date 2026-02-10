@@ -16,7 +16,7 @@ export default class FindOperation extends OperationHandler {
         B extends FindSQLBuilder<T>,
         M extends CollectMapOptions<T>
     >(options: ExecOptions<T, B, M>): Promise<FindResult<T, M>> {
-        return this.execMappedQuery(options)
+        return this.execAndMap(options)
     }
 }
 

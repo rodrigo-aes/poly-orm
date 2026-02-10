@@ -2,8 +2,13 @@ import SQLString from "./SQLString"
 import MySQLOperation, {
     type MapOptions,
     type CollectMapOptions,
+    type EntityCollectOption,
+    type PaginateMapOptions,
+    type EntityPaginateOption,
+
     type FindOneResult,
     type FindResult,
+    type PaginateResult,
     type CountManyResult,
     type CreateResult,
     type CreateCollectMapOptions,
@@ -24,8 +29,13 @@ export {
 
     type MapOptions,
     type CollectMapOptions,
+    type EntityCollectOption,
+    type PaginateMapOptions,
+    type EntityPaginateOption,
+
     type FindOneResult,
     type FindResult,
+    type PaginateResult,
     type CountManyResult,
     type CreateResult,
     type CreateCollectMapOptions,

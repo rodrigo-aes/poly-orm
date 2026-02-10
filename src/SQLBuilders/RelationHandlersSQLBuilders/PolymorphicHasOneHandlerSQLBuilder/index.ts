@@ -51,7 +51,7 @@ export default class PolymorphicHasOneHandlerSQLBuilder<
 
     private get targetType(): string {
         return this.target instanceof BasePolymorphicEntity
-            ? this.target.entityType
+            ? this.target.$TK
             : this.metadata.parentType
     }
 

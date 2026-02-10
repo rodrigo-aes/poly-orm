@@ -21,6 +21,9 @@ import type {
  */
 export default abstract class OneRelation<T extends Entity, R extends Entity> {
     /** @internal */
+    declare public __$shouldUpdate: boolean
+
+    /** @internal */
     constructor(
         /** @internal */
         protected metadata: OneRelationMetadataType,

@@ -9,14 +9,14 @@ import ConditionalSQLBuilder, {
 
 // Handlers
 import { MetadataHandler, ScopeMetadataHandler } from "../../Metadata"
-import { SQLString, ConditionalQueryJoinsHandler } from "../../Handlers"
+import { ConditionalQueryJoinsHandler } from "../../Handlers"
 
 // Types
 import type { Entity, Constructor, TargetMetadata } from "../../types"
 
 export default class DeleteSQLBuilder<T extends Entity> {
     protected metadata: TargetMetadata<T>
-    private _entity?: boolean
+    private _isEntity?: boolean
 
     constructor(
         public target: Constructor<T>,
@@ -24,24 +24,25 @@ export default class DeleteSQLBuilder<T extends Entity> {
         public alias: string = target.name.toLowerCase()
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
-        if (!this.entity) this.conditional = ScopeMetadataHandler.apply(
-            this.target,
-            'conditional',
-            this.conditional as ConditionalQueryOptions<T>
-        )
+        if (!this.isEntity) this.conditional = ScopeMetadataHandler.apply(
+            this.target, 'conditional', this.conditional as (
+                ConditionalQueryOptions<T>
+            ))
     }
 
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
-    protected get entity(): boolean {
-        return this._entity ??= this.conditional instanceof EntityBase
+    protected get isEntity(): boolean {
+        return this._isEntity ??= this.conditional instanceof EntityBase
     }
 
     // ------------------------------------------------------------------------
 
     protected get targetMetadata(): EntityMetadata {
         return this.metadata instanceof PolymorphicEntityMetadata
-            ? this.metadata.sourcesMetadata[(this.conditional as any).entityType]
+            ? this.metadata.sourcesMetadata[(
+                (this.conditional as any).entityType
+            )]
             : this.metadata
     }
 
@@ -71,7 +72,7 @@ export default class DeleteSQLBuilder<T extends Entity> {
     // ------------------------------------------------------------------------
 
     public joinsSQL(): string {
-        return !this.entity
+        return !this.isEntity
             ? new ConditionalQueryJoinsHandler(
                 this.target,
                 this.conditional as ConditionalQueryOptions<T>,
@@ -97,7 +98,7 @@ export default class DeleteSQLBuilder<T extends Entity> {
 
     // Privates ---------------------------------------------------------------
     private whereOptions(): ConditionalQueryOptions<any> {
-        return this.entity
+        return this.isEntity
             ? { [this.primary]: this.conditional[this.primary] }
             : this.conditional
     }

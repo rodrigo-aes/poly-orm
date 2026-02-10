@@ -16,6 +16,6 @@ export default class FindByPkOperation extends OperationHandler {
         B extends FindByPkSQLBuilder<T>,
         M extends MapOptions
     >(options: ExecOptions<T, B, M>): Promise<FindOneResult<T, M>> {
-        return this.execMappedQuery(options)
+        return this.execAndMap(options)
     }
 }

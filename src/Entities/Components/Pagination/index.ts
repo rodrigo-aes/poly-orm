@@ -1,19 +1,22 @@
 // Utils
 import ProxyMerge from "../../../utils/ProxyMerge"
+import Collection from "../Collection"
 
 // Types
 import type { Entity } from "../../../types"
-import type Collection from "../Collection"
 import type { PaginationInitMap, PaginationJSON } from "./types"
 
 export default class Pagination<
-    T extends Entity,
-    D extends Collection<T> = Collection<T>
+    D extends Collection = Collection,
+    A extends string = string
 > {
     public static readonly alias: string = this.name
 
     /** @internal */
-    public static readonly __registered = new Set<string>()
+    declare readonly __$alias: A
+
+    /** @internal */
+    public static readonly __$registered = new Set<string>()
 
     public page: number = 1
     public perPage: number = 26
@@ -23,17 +26,17 @@ export default class Pagination<
     public nextPage: number | null = null
 
     /** @internal */
-    public data: D
+    private constructor(
+        initMap: PaginationInitMap,
 
-    /** @internal */
-    constructor(initMap: PaginationInitMap, data: D) {
+        /** @internal */
+        public data: D
+    ) {
         Object.assign(this, initMap)
 
         this.pages = Math.ceil(this.total / this.perPage)
         this.prevPage = this.page > 1 ? this.page - 1 : null
         this.nextPage = this.page < this.pages ? this.page + 1 : null
-
-        this.data = data
 
         return new ProxyMerge(this, this.data) as any
     }
@@ -45,7 +48,7 @@ export default class Pagination<
      * @returns - A object with included properties and without hidden
      * properties
      */
-    public toJSON(): PaginationJSON<T> {
+    public toJSON(): PaginationJSON<D> {
         const data = this.data.toJSON()
 
         return {
@@ -56,7 +59,7 @@ export default class Pagination<
             prevPage: this.prevPage,
             nextPage: this.nextPage,
             ...Array.isArray(data) ? { data } : data
-        }
+        } as any
     }
 
     // Static Methods =========================================================
@@ -69,12 +72,18 @@ export default class Pagination<
      */
     public static build<T extends Entity, D extends Collection<T>>(
         initMap: PaginationInitMap,
-        data: D
-    ): Pagination<T, D> & D {
-        return new this(initMap, data) as Pagination<T, D> & D
+        data: D | T[] = new Collection<T>() as D
+    ): Pagination<D> & D {
+        return new this(
+            initMap,
+            data instanceof Collection
+                ? data
+                : new Collection(...data)
+        ) as any
     }
 }
 
 export {
-    type PaginationInitMap
+    type PaginationInitMap,
+    type PaginationJSON
 }

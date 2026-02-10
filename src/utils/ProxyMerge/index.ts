@@ -4,8 +4,8 @@ export default class ProxyMerge<
 > {
     private sources: S
 
-    constructor(target: T, ...sources: S) {
-        this.sources = sources
+    constructor(target: T, ...overrides: S) {
+        this.sources = overrides
 
         return new Proxy(target, {
             get: this.get.bind(this),
@@ -18,9 +18,10 @@ export default class ProxyMerge<
     private get(target: any, prop: string, receiver: any): any {
         const [t, value] = this.handleTargetGetter(target, prop, receiver)
 
-        return typeof value === "function"
-            ? value.bind(t)
-            : value
+        switch (typeof value) {
+            case "function": return value.bind(t)
+            default: return value
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -32,17 +33,16 @@ export default class ProxyMerge<
         receiver: any
     ): boolean {
         for (const source of this.sources) switch (typeof source) {
-            case "string": if (
-                target[source] && prop in target[source]
-            ) return (
-                Reflect.set(target[source], prop, value, receiver)
-            )
+            case "string":
+                if (target[source] && prop in target[source]) return (
+                    Reflect.set(target[source], prop, value, receiver)
+                )
                 break
 
             // ----------------------------------------------------------------
 
-            case "object": if (prop in source) return (
-                Reflect.set(source, prop, value, receiver)
+            case "object": if (prop in source) return Reflect.set(
+                source, prop, value, receiver
             )
                 break
         }
@@ -56,12 +56,11 @@ export default class ProxyMerge<
         any, any
     ] {
         for (const source of this.sources) switch (typeof source) {
-            case "string": if (
-                target[source] && prop in target[source]
-            ) return [
-                target[source],
-                Reflect.get(target[source], prop, receiver)
-            ]
+            case "string":
+                if (target[source] && prop in target[source]) return [
+                    target[source],
+                    Reflect.get(target[source], prop, receiver)
+                ]
                 break
 
             // ----------------------------------------------------------------

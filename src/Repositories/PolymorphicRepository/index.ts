@@ -62,7 +62,10 @@ export default class PolymorphicRepository<
         : ResolveSource<T, S>
     > {
         const target = this.resolveSource(source)
-        return MySQLOperation.Create.exec({
+        return MySQLOperation.Create.exec<
+            ResolveSource<T, S>,
+            CreateSQLBuilder<ResolveSource<T, S>>
+        >({
             target,
             sqlBuilder: new CreateSQLBuilder(target, attributes as any),
             toSource: returns === 'source'
@@ -85,25 +88,25 @@ export default class PolymorphicRepository<
     public createMany<
         S extends Source<T>,
         M extends CreateCollectMapOptions<T>,
-        R extends 'this' | 'source' = 'this'
+        R extends 'this' | 'source'
     >(
         source: S,
         attributes: CreationAttributes<ResolveSource<T, S>>[],
         mapOptions?: M,
         returns: R = 'this' as R
-    ): Promise<CreateResult<
-        R extends 'this'
-        ? T
-        : ResolveSource<T, S>,
-        M
-    >> {
+    ) {
         const target = this.resolveSource(source)
         return MySQLOperation.Create.exec({
             target,
             sqlBuilder: new CreateSQLBuilder(target, attributes as any),
             mapOptions: mapOptions,
             toSource: returns === 'source'
-        })
+        }) as Promise<CreateResult<
+            R extends 'this'
+            ? T
+            : ResolveSource<T, S>,
+            M
+        >>
     }
 
     // ------------------------------------------------------------------------

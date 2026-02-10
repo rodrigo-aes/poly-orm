@@ -7,8 +7,6 @@ import type {
     OrderQueryOptions
 } from "../../../../SQLBuilders"
 
-import type { MapOptions, CollectMapOptions } from "../../../../Handlers"
-
 export default class ScopeMetadata {
     public select?: SelectOptions<any>
     public where?: ConditionalQueryOptions<any>
@@ -18,16 +16,14 @@ export default class ScopeMetadata {
     public limit?: number
     public offset?: number
 
-    constructor(
-        scope: FindQueryOptions<any>
-    ) {
+    constructor(scope: FindQueryOptions<any>) {
         Object.assign(this, scope)
     }
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public mergeFindOptions<T extends FindQueryOptions<any>>(
-        options: T,
+        options: T = {} as T,
         findMany: boolean = false
     ): T {
         options.select = this.mergeSelectOptions(options.select)
@@ -48,14 +44,9 @@ export default class ScopeMetadata {
 
     public mergeSelectOptions<
         T extends SelectOptions<any>
-    >(options?: T): T | undefined {
-        if (!options) return
+    >(options: T = {} as T): T {
         if (!options.properties) options.properties = this.select?.properties
-
-        options.count = {
-            ...this.select?.count,
-            ...options.count
-        }
+        options.count = { ...this.select?.count, ...options.count }
 
         return options
     }
@@ -63,24 +54,17 @@ export default class ScopeMetadata {
     // ------------------------------------------------------------------------
 
     public mergeConditionalOptions<T extends ConditionalQueryOptions<any>>(
-        options?: T
-    ): T | {} {
-
-        return {
-            ...this.where,
-            ...options
-        }
+        options: T = {} as T
+    ): T {
+        return { ...this.where, ...options }
     }
 
     // ------------------------------------------------------------------------
 
     public mergeRelationsOptions<T extends RelationsOptions<any>>(
-        options?: T
-    ): T | {} {
-        return {
-            ...this.relations,
-            ...options
-        }
+        options: T = {} as T
+    ): T {
+        return { ...this.relations, ...options }
     }
 
     // ------------------------------------------------------------------------
@@ -88,9 +72,8 @@ export default class ScopeMetadata {
     public mergeGroupOptions<T extends GroupQueryOptions<any>>(options?: T): (
         T
     ) {
-        return Array.from(
-            new Set([...this.group ?? [], ...options ?? []])
-        ) as T
+        return Array
+            .from(new Set(...this.group ?? [], ...options ?? [])) as T
     }
 
     // ------------------------------------------------------------------------

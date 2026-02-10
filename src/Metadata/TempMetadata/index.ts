@@ -46,18 +46,6 @@ class TempMetadata extends WeakMap<Target, TempMetadataValue> {
 
     // ------------------------------------------------------------------------
 
-    public getCollection(target: Target): typeof Collection | undefined {
-        return this.get(target)?.collection
-    }
-
-    // ------------------------------------------------------------------------
-
-    public getPagination(target: Target): typeof Pagination | undefined {
-        return this.get(target)?.pagination
-    }
-
-    // ------------------------------------------------------------------------
-
     public setConnection(target: Target, connection: PolyORMConnection): this {
         this.set(target, { ...this.get(target), connection })
         return this
@@ -77,13 +65,6 @@ class TempMetadata extends WeakMap<Target, TempMetadataValue> {
 
     public setScope(target: Target, scope: ScopeMetadata): this {
         this.set(target, { ...this.get(target), scope })
-        return this
-    }
-
-    // ------------------------------------------------------------------------
-
-    public setCollection(target: Target, collection: typeof Collection): this {
-        this.set(target, { ...this.get(target), collection })
         return this
     }
 }

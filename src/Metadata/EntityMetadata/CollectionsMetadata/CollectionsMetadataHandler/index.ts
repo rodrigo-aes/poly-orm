@@ -1,25 +1,40 @@
 import { Collection } from "../../../../Entities"
 import CollectionsMetadata from ".."
-import TempMetadata from "../../../TempMetadata"
 
 // Types
-import type { Target } from "../../../../types"
+import type { Entity, Constructor } from "../../../../types"
+import type { EntityCollectOption } from "../../../../Handlers"
 
 export default class CollectionsMetadataHandler {
-    public static loadCollection(target: Target): typeof Collection {
-        return TempMetadata.getCollection(target)
-            ?? CollectionsMetadata.find(target)?.default
-            ?? Collection
+    // Static Methods =========================================================
+    // Publics ----------------------------------------------------------------
+    public static loadCollection<T extends Entity>(
+        target: Constructor<T>,
+        collection: EntityCollectOption<T> = Collection
+    ): Constructor<Collection<T>> {
+        switch (typeof collection) {
+            case "function": return collection as any
+
+            // ----------------------------------------------------------------
+
+            case "string": return CollectionsMetadata
+                .findOrBuild(target)
+                .findOrThrow(collection) as any
+
+            // ----------------------------------------------------------------
+
+            default: return CollectionsMetadata.find(target)?.default
+                ?? Collection
+        }
     }
 
     // ------------------------------------------------------------------------
 
-    public static build<T extends Target>(
-        target: T,
-        entities: InstanceType<T>[]
-    ): Collection<InstanceType<T>> {
-        return new (this.loadCollection(target))(...entities) as Collection<
-            InstanceType<T>
-        >
+    public static build<T extends Entity>(
+        target: Constructor<T>,
+        collection: EntityCollectOption<T> = Collection,
+        entities: T[] = []
+    ): Collection<T> {
+        return new (this.loadCollection(target, collection))(...entities)
     }
 }

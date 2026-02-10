@@ -9,10 +9,10 @@ import type { ResultSetHeader } from "mysql2"
 import type {
     EntityTarget,
     Constructor,
-    StaticEntityTarget
+    StaticEntityTarget,
 } from "../../types"
 
-import type { Collection } from "../Components"
+import type { Collection, Pagination } from "../Components"
 import type { DeleteResult } from "../../Handlers"
 
 import type {
@@ -23,6 +23,7 @@ import type {
 } from "../../SQLBuilders"
 
 import type { Repository } from "../../Repositories"
+import type { RelationHandler } from "../../Relations"
 
 /**
  * All entities needs to extends BaseEntity class
@@ -30,11 +31,11 @@ import type { Repository } from "../../Repositories"
  * class User extends BaseEntity {}
  */
 export default abstract class BaseEntity extends Entity {
-    /** @internal */
     declare readonly __name: string
-
-    /** @internal */
     declare readonly __defaultCollection: Collection<this>
+    declare readonly __defaultPagination: Pagination<
+        this['__defaultCollection']
+    >
 
     public static readonly INHERIT_POLYMORPHIC_RELATIONS = false
 
@@ -50,7 +51,7 @@ export default abstract class BaseEntity extends Entity {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public getRepository<T extends Repository<this> = Repository<this>>(): T {
-        return this.getTrueMetadata().getRepository() as T
+        return this.__$trueMetadata.getRepository() as T
     }
 
     // ------------------------------------------------------------------------
@@ -68,15 +69,10 @@ export default abstract class BaseEntity extends Entity {
      * @returns {this} - Same entity instance
      */
     public async save<T extends BaseEntity>(this: T): Promise<T> {
-        const t = await this.getRepository().updateOrCreate(this)
+        const instance = await this.getRepository().updateOrCreate(this)
+        await this.__$saveRelations()
 
-        for (const { name } of this.getTrueMetadata().relations) if (
-            (this[name as keyof T] as Entity | Collection<any>).shouldUpdate
-        ) (
-            await (this[name as keyof T] as any).save()
-        )
-
-        return t
+        return instance
     }
 
     // ------------------------------------------------------------------------
@@ -90,7 +86,7 @@ export default abstract class BaseEntity extends Entity {
         this: T,
         attributes: UpdateAttributes<T>
     ): Promise<ResultSetHeader> {
-        return this.getRepository().update(attributes, this._wherePK) as (
+        return this.getRepository().update(attributes, this.__$wherePK) as (
             Promise<ResultSetHeader>
         )
     }
@@ -101,7 +97,7 @@ export default abstract class BaseEntity extends Entity {
      * Delete the register of the current instance in database
      */
     public async delete<T extends BaseEntity>(this: T): Promise<void> {
-        await this.getRepository().delete(this._wherePK)
+        await this.getRepository().delete(this.__$wherePK)
     }
 
     // Static Methods =========================================================
@@ -111,7 +107,7 @@ export default abstract class BaseEntity extends Entity {
         R extends Repository<InstanceType<T>>
     >(this: T): R {
         return (this as StaticEntityTarget<T>)
-            .getTrueMetadata()
+            .__$trueMetadata
             .getRepository() as R
     }
 

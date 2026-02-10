@@ -134,8 +134,9 @@ export default class PolymorphicEntityMetadata extends Metadata {
     // ------------------------------------------------------------------------
 
     public get Repository(): typeof PolymorphicRepository<any> {
-        return MetadataHandler.getRepository(this.target)
-            ?? PolymorphicRepository
+        throw new Error('Method not implemented.')
+        // return MetadataHandler.getRepository(this.target)
+        //     ?? PolymorphicRepository
     }
 
     // ------------------------------------------------------------------------

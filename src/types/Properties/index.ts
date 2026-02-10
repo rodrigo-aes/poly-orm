@@ -1,5 +1,6 @@
 import type { Entity } from "../General"
 import type { EntityTarget, InstancesOf } from "../General"
+import type { Collection } from "../../Entities"
 import type { RelationHandler } from "../../Relations"
 
 type PropertyMetadata = { __property?: true }
@@ -54,6 +55,21 @@ export type EntityRelationsKeys<T extends Entity> = {
 export type EntityRelations<T extends Entity> = Pick<
     T,
     EntityRelationsKeys<T>
+>
+
+// ----------------------------------------------------------------------------
+
+export type CollectionPropertiesKeys<T extends Collection> = {
+    [K in keyof T]: (
+        T[K] extends PropertyMetadata
+        ? Extract<K, string>
+        : never
+    )
+}[keyof T]
+
+export type CollectionProperties<T extends Collection> = Pick<
+    T,
+    CollectionPropertiesKeys<T>
 >
 
 // ----------------------------------------------------------------------------

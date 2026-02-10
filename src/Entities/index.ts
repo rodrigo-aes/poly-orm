@@ -16,7 +16,9 @@ import {
     Collection,
     Pagination,
 
-    type PaginationInitMap
+    type PaginationInitMap,
+    type CollectionJSON,
+    type PaginationJSON
 } from "./Components"
 
 export {
@@ -36,5 +38,7 @@ export {
     type SourceEntity,
     type EntitiesMap,
     type EntityNames,
-    type PaginationInitMap
+    type PaginationInitMap,
+    type CollectionJSON,
+    type PaginationJSON
 }

@@ -1,5 +1,5 @@
 import MetadataArray from "../../MetadataArray"
-import { Pagination } from "../../../Entities"
+import { Pagination, type Collection } from "../../../Entities"
 
 // Handlers
 import PaginationMetadataHandler from "./PaginationMetadataHandler"
@@ -12,9 +12,9 @@ import type { MetadataErrorCode } from "../../../Errors"
 
 export default class PaginationsMetadata<
     T extends Entity = Entity,
-    P extends typeof Pagination<T> = any
+    P extends typeof Pagination = any
 > extends MetadataArray<P> {
-    public default: typeof Pagination = Pagination
+    public default: typeof Pagination<Collection> = Pagination
 
     constructor(public target: Constructor<T>, ...collections: P[]) {
         super(target, ...collections)

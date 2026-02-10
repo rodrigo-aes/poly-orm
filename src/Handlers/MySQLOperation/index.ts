@@ -11,8 +11,13 @@ import {
 
     type MapOptions,
     type CollectMapOptions,
+    type EntityCollectOption,
+    type PaginateMapOptions,
+    type EntityPaginateOption,
+
     type FindOneResult,
     type FindResult,
+    type PaginateResult,
     type CountManyResult,
     type CreateResult,
     type CreateCollectMapOptions,
@@ -38,8 +43,13 @@ export default abstract class MySQLOperation {
 export type {
     MapOptions,
     CollectMapOptions,
+    EntityCollectOption,
+    PaginateMapOptions,
+    EntityPaginateOption,
+
     FindOneResult,
     FindResult,
+    PaginateResult,
     CountManyResult,
     CreateResult,
     CreateCollectMapOptions,

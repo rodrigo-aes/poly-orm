@@ -14,7 +14,7 @@ import {
     type PaginationInitMap
 } from "../../Entities"
 
-import * as Relations from "../../Relations"
+import * as RelationHandlers from "../../Relations"
 
 // Types
 import type {
@@ -23,6 +23,12 @@ import type {
     StaticPolymorphicEntityTarget,
     Constructor
 } from "../../types"
+
+import type {
+    MapOptions,
+    CollectMapOptions,
+    PaginateMapOptions
+} from "../MySQLOperation"
 
 import type {
     EntityData,
@@ -51,20 +57,30 @@ export default class MySQLDataHandler {
             raw,
             fillMethod,
             mapOptions,
-            pagination,
-            toSource,
+            paginationInitMap,
+            toSource
         }: ParseOptions<T>
     ) {
-        switch (typeof mapOptions?.mapTo) {
+        switch (typeof (mapOptions as any)?.mapTo) {
             case 'undefined': return this.entity(
-                target, fillMethod, raw, toSource, pagination
+                target,
+                fillMethod,
+                raw,
+                mapOptions,
+                toSource,
+                paginationInitMap
             )
 
             // ----------------------------------------------------------------
 
-            case "string": switch (mapOptions.mapTo) {
+            case "string": switch ((mapOptions as any).mapTo) {
                 case "entity": return this.entity(
-                    target, fillMethod, raw, toSource, pagination
+                    target,
+                    fillMethod,
+                    raw,
+                    mapOptions,
+                    toSource,
+                    paginationInitMap
                 )
 
                 // ------------------------------------------------------------
@@ -79,7 +95,12 @@ export default class MySQLDataHandler {
             // ----------------------------------------------------------------
 
             case "object": return this.entity(
-                mapOptions.mapTo!, fillMethod, raw, toSource, pagination
+                (mapOptions as any).mapTo!,
+                fillMethod,
+                raw,
+                mapOptions,
+                toSource,
+                paginationInitMap
             )
         }
     }
@@ -89,18 +110,21 @@ export default class MySQLDataHandler {
         target: Constructor<T>,
         fillMethod: FillMethod,
         raw: any[],
+        mapOptions?: MapOptions | CollectMapOptions<T>,
         toSource: boolean = false,
-        pagination?: PaginationInitMap
+        paginationInitMap?: PaginationInitMap
     ): EntityData<T> {
         return this.fill(
             target,
             fillMethod,
             this.reduce({ target, raw, toSource }),
-            pagination
+            mapOptions,
+            paginationInitMap
         )
     }
 
     // ------------------------------------------------------------------------
+
     private static json<T extends Entity>(
         target: Constructor<T>,
         raw: any[],
@@ -126,19 +150,28 @@ export default class MySQLDataHandler {
         target: Constructor<T>,
         method: FillMethod,
         data: T[],
-        pagination?: PaginationInitMap
+        mapOptions?: MapOptions | CollectMapOptions<T> | PaginateMapOptions<T>,
+        paginationInitMap?: PaginationInitMap
     ): EntityData<T> {
         switch (method) {
             case "One": return data[0] ?? null
 
             // ----------------------------------------------------------------
 
-            case "Many": return CollectionsMetadataHandler.build(target, data)
+            case "Many": return CollectionsMetadataHandler.build(
+                target,
+                (mapOptions as CollectMapOptions<T> | undefined)?.collection,
+                data
+            )
 
             // ----------------------------------------------------------------
 
             case "Paginate": return PaginationMetadataHandler.build(
-                target, pagination!, data
+                target,
+                (mapOptions as PaginateMapOptions<T> | undefined)?.pagination,
+                (mapOptions as PaginateMapOptions<T> | undefined)?.collection,
+                paginationInitMap!,
+                data
             )
         }
     }
@@ -165,16 +198,14 @@ export default class MySQLDataHandler {
         const mapped = new Set<string>()
 
         for (const data of raw) {
-            const mapKey = data.entityType ?? '' + data[metadata.PK]
+            const mapKey = (data.entityType ?? '') + data[metadata.PK]
             if (mapped.has(mapKey)) continue
             mapped.add(mapKey)
 
-            const line = raw.filter(
-                item => (
-                    item[metadata.PK] === data[metadata.PK] &&
-                    item.entityType === data.entityType
-                )
-            )
+            const line = raw.filter(item => (
+                item[metadata.PK] === data[metadata.PK] &&
+                item.entityType === data.entityType
+            ))
 
             switch (method) {
                 case "json": reduced.push({
@@ -185,16 +216,17 @@ export default class MySQLDataHandler {
 
                 // ------------------------------------------------------------
 
-                case "entity":
-                    const entity = this.buildEntity(
+                case "entity": reduced.push((() => {
+                    const instance = this.buildEntity(
                         target,
                         this.filterColumns(line[0]),
                         (relation as any)?.shouldMapToSource ?? toSource
                     )
 
-                    reduced.push(entity.fill(this.filterRelations({
-                        line, metadata, method, parent: entity
-                    })))
+                    return instance.fill(this.filterRelations({
+                        line, metadata, method, parent: instance
+                    }))
+                })())
                     break
             }
         }
@@ -296,8 +328,8 @@ export default class MySQLDataHandler {
             // ----------------------------------------------------------------
 
             case 'entity': return (
-                Relations[(
-                    relation.type + 'Handler' as keyof typeof Relations
+                RelationHandlers[(
+                    relation.type + 'Handler' as keyof typeof RelationHandlers
                 )] as any
             )(
                 ...(() => {

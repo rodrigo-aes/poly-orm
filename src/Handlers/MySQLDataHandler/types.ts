@@ -6,8 +6,12 @@ import type {
     TargetMetadata
 } from "../../types"
 import type { RelationMetadataType } from "../../Metadata"
-import type { MapOptions, CollectMapOptions } from "../MySQLOperation"
 import type { Collection, Pagination, PaginationInitMap } from "../../Entities"
+import type {
+    MapOptions,
+    CollectMapOptions,
+    PaginateMapOptions
+} from "../MySQLOperation"
 
 export type FillMethod = 'One' | 'Many' | 'Paginate'
 
@@ -19,16 +23,16 @@ export type JSONData<T extends Entity> = (
 export type EntityData<T extends Entity> = (
     (T | null) |
     Collection<T> |
-    Pagination<T>
+    Pagination<Collection<T>>
 )
 
 export type ParseOptions<T extends Entity> = {
     target: Constructor<T>,
     fillMethod: FillMethod,
     raw: any[],
-    mapOptions?: MapOptions | CollectMapOptions<T>,
+    mapOptions?: MapOptions | CollectMapOptions<T> | PaginateMapOptions<T>,
     toSource?: boolean,
-    pagination?: PaginationInitMap
+    paginationInitMap?: PaginationInitMap
 }
 
 export type ReduceOptions<T extends Entity> = {

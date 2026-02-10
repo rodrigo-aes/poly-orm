@@ -1,7 +1,8 @@
 import ColumnsSnapshots from "./ColumnsSnapshot";
-import Collection from "./Collection";
+import Collection, { type CollectionJSON } from "./Collection";
 import Pagination, {
-    type PaginationInitMap
+    type PaginationInitMap,
+    type PaginationJSON
 } from "./Pagination";
 
 export {
@@ -9,5 +10,7 @@ export {
     Collection,
     Pagination,
 
-    type PaginationInitMap
+    type PaginationInitMap,
+    type CollectionJSON,
+    type PaginationJSON
 }

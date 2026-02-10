@@ -13,7 +13,7 @@ export default class BeforeFindMetadata extends HookMetadata {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public call(options: FindQueryOptions<any>): void | Promise<void> {
+    public call(options?: FindQueryOptions<any>): void | Promise<void> {
         return this.hookFn(options)
     }
 }

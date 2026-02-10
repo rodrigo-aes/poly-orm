@@ -26,12 +26,12 @@ export default class CreateOperation extends OperationHandler {
     >(options: ExecOptions<T, B, M>): Promise<CreateResult<T, M>> {
         return EntityBuilder.build(
             options.target,
-            await this.execMappedQuery(options)
+            await this.execAndMap(options)
         ) as CreateResult<T, M>
     }
 
     // Protecteds -------------------------------------------------------------
-    protected static override async execMappedQuery(
+    protected static override async execAndMap(
         { target, sqlBuilder }: ExecOptions<any, any, any>
     ): Promise<CreationAttributesOptions<any>> {
         const { insertId, affectedRows } = await this.execQuery(

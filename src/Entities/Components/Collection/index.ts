@@ -4,36 +4,43 @@ import { ComputedPropertiesMetadata } from "../../../Metadata"
 import type {
     Entity,
     CollectionTarget,
-    EntityProperties,
+    EntityProperties
 } from "../../../types"
+
 import type { UpdateAttributes } from "../../../SQLBuilders"
+import type { CollectionJSON } from "./types"
 
-export default class Collection<T extends Entity> extends Array<T> {
-    public static readonly alias: string = this.name
-
-    /** @internal */
-    public readonly shouldUpdate: boolean = true
-
-    /** @internal */
-    public static readonly __registered = new Set<string>()
+export default class Collection<
+    T extends Entity = Entity,
+    A extends string = string
+> extends Array<T> {
+    public static readonly __alias: string = this.name
 
     /** @internal */
-    private _CPMeta?: ComputedPropertiesMetadata
+    declare readonly __$alias: A
+
+    // ------------------------------------------------------------------------
 
     /** @internal */
-    private _CPKeys?: (keyof this)[]
+    public static readonly __$registered = new Set<string>()
+
+    /** @internal */
+    private __$CPMeta?: ComputedPropertiesMetadata
+
+    /** @internal */
+    private __$CPKeys?: (keyof this)[]
 
     constructor(...entities: T[]) {
         super(...entities)
-        this.CPMeta?.assign(this)
+        this.__$cpMeta?.assign(this)
     }
 
     // Getters ================================================================
-    // Protecteds -------------------------------------------------------------
+    // Publics ---------------------------------------------------------------
     /**
      * An array of properties keys that must be hidden in JSON
      */
-    protected get hidden(): string[] {
+    public get hidden(): (keyof this)[] {
         return []
     }
 
@@ -42,7 +49,7 @@ export default class Collection<T extends Entity> extends Array<T> {
     /**
      * An array of properties keys that must be included in JSON
      */
-    protected get include(): string[] {
+    public get include(): (keyof this)[] {
         return []
     }
 
@@ -51,8 +58,8 @@ export default class Collection<T extends Entity> extends Array<T> {
      * Computed properties metadata
      * @internal
      * */
-    private get CPMeta(): ComputedPropertiesMetadata | undefined {
-        return this._CPMeta ??= ComputedPropertiesMetadata.find(
+    private get __$cpMeta(): ComputedPropertiesMetadata | undefined {
+        return this.__$CPMeta ??= ComputedPropertiesMetadata.find(
             this.constructor as CollectionTarget
         )
     }
@@ -63,10 +70,12 @@ export default class Collection<T extends Entity> extends Array<T> {
      * Computed properties keys
      * @internal
      * */
-    private get CPKeys(): (keyof this)[] {
-        return this._CPKeys ??= Array
-            .from(this.CPMeta?.keys() ?? [])
-            .filter(key => !this.hidden.includes(key)) as (keyof this)[]
+    private get __$cpKeys(): (keyof this)[] {
+        return this.__$CPKeys ??= Array
+            .from(this.__$cpMeta?.keys() ?? [])
+            .filter(key => !this.hidden.includes(key as keyof this)) as (
+                keyof this
+            )[]
     }
 
     // Instance Methods =======================================================
@@ -76,10 +85,10 @@ export default class Collection<T extends Entity> extends Array<T> {
      * @returns - A object with included properties and without hidden
      * properties
      */
-    public toJSON(this: Collection<T>) {
-        return this.CPMeta || this.include.length
-            ? this.buildJSON()
-            : this
+    public toJSON<T extends Collection>(this: T): CollectionJSON<T> {
+        return this.__$cpMeta || this.include.length
+            ? this.__$buildJSON()
+            : Array.from(this) as any
     }
 
     // ------------------------------------------------------------------------
@@ -100,7 +109,7 @@ export default class Collection<T extends Entity> extends Array<T> {
      * @returns {this} - Same collection instance
      */
     public async save(): Promise<this> {
-        for (const entity of this) if (entity.shouldUpdate) (
+        for (const entity of this) if (entity.__$shouldUpdate) (
             await (entity as any).save()
         )
 
@@ -131,13 +140,12 @@ export default class Collection<T extends Entity> extends Array<T> {
     /**
      * Delete the register of each entoity instance matched by filter fn
      */
-    public async delete(predicate: (value: T, index: number, array: T[]) => (
-        boolean
-    )): Promise<this> {
-        for (const entity of this.filter(predicate)) await (
-            this.splice(this.indexOf(entity), 1)[0] as any
+    public async delete(
+        predicate: (value: T, index: number, array: T[]) => boolean
+    ): Promise<this> {
+        for (const entity of this.filter(predicate)) (
+            await (this.splice(this.indexOf(entity), 1)[0] as any).delete()
         )
-            .delete()
 
         return this
     }
@@ -147,10 +155,10 @@ export default class Collection<T extends Entity> extends Array<T> {
      * Collection JSON
      * @internal
      * */
-    private buildJSON(): any {
+    private __$buildJSON(): any {
         return {
-            ...this.CPJSON(),
-            ...this.include.map(key => [key, this[key as keyof this]]),
+            ...this.__$cpJSON(),
+            ...this.__$includedJSON(),
             data: this.map(entity => entity.toJSON()),
         }
     }
@@ -161,7 +169,25 @@ export default class Collection<T extends Entity> extends Array<T> {
      * Make computed properties JSON object
      * @internal 
      * */
-    private CPJSON(): any {
-        return Object.fromEntries(this.CPKeys.map(key => [key, this[key]]))
+    private __$cpJSON(): any {
+        return Object.fromEntries(this.__$cpKeys.flatMap(
+            key => this.hidden.includes(key)
+                ? []
+                : [[key, this[key]]]
+        ))
     }
+
+    // ------------------------------------------------------------------------
+
+    private __$includedJSON(): any {
+        return Object.fromEntries(this.include.flatMap(
+            key => this.hidden.includes(key)
+                ? []
+                : [[key, this[key]]]
+        ))
+    }
+}
+
+export type {
+    CollectionJSON
 }

@@ -13,6 +13,6 @@ export default class UpdateOrCreateOperation extends OperationHandler {
         B extends UpdateOrCreateSQLBuilder<T>,
         M extends never
     >(options: ExecOptions<T, B, M>): Promise<T> {
-        return this.execMappedQuery(options)
+        return this.execAndMap(options)
     }
 }

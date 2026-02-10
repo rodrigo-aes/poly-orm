@@ -4,7 +4,6 @@ import TempMetadata from "../../../TempMetadata"
 
 // Types
 import type { Target } from "../../../../types"
-import type { MapOptions, CollectMapOptions } from "../../../../Handlers"
 import type {
     FindQueryOptions,
     FindOneQueryOptions,
@@ -29,7 +28,7 @@ export default class ScopeMetadataHandler {
             ? RelationsOptions<InstanceType<T>>
             : never
         )
-    >(target: T, role: R, options: O): O {
+    >(target: T, role: R, options?: O): O {
         return (
             TempMetadata.getScope(target)
             ?? MetadataHandler.targetMetadata(target).scopes?.default as any

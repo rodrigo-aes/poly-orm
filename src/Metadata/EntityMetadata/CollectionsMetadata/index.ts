@@ -4,7 +4,7 @@ import { Collection } from "../../../Entities"
 import CollectionsMetadataHandler from "./CollectionsMetadataHandler"
 
 // Types
-import type { Entity, Target, Constructor } from "../../../types"
+import type { Entity, Constructor } from "../../../types"
 import type { CollectionsMetadataJSON } from "./types"
 
 // Exceptions
@@ -24,7 +24,7 @@ export default class CollectionsMetadata<
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     protected override get SEARCH_KEYS(): (keyof C | 'name')[] {
-        return ['name', 'alias']
+        return ['name', '__alias']
     }
 
     // ------------------------------------------------------------------------
@@ -63,6 +63,5 @@ export default class CollectionsMetadata<
 
 export {
     CollectionsMetadataHandler,
-
     type CollectionsMetadataJSON
 }

@@ -25,10 +25,10 @@ export default class UpdateOperation extends OperationHandler {
         { target, sqlBuilder }: ExecOptions<T, UpdateSQLBuilder<T>, never>
     ): Promise<UpdateResult<T, S>> {
         return (
-            sqlBuilder._attributes instanceof EntityClass
+            sqlBuilder.attributes instanceof EntityClass
                 ? (async () => {
                     await this.execQuery(target, sqlBuilder)
-                    return sqlBuilder._attributes
+                    return sqlBuilder.attributes
                 })()
                 : this.execQuery(target, sqlBuilder)
         ) as Promise<UpdateResult<T, S>>
