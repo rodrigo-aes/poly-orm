@@ -7,7 +7,7 @@ import {
 } from "../../Entities"
 
 // Handlers
-import { MetadataHandler } from "../../Metadata"
+import { MetadataHandler, CollectionsMetadataHandler } from "../../Metadata"
 
 // Types
 import type {
@@ -25,6 +25,7 @@ import type {
     CreationAttributes,
     CreationAttributesOptions
 } from "../../SQLBuilders"
+import { CreateCollectMapOptions } from "../MySQLOperation"
 
 export default class EntityBuilder<T extends EntityTarget> {
     public static readonly entityNamePattern = /^[A-Z][A-Za-z0-9]*$/
@@ -43,7 +44,8 @@ export default class EntityBuilder<T extends EntityTarget> {
     // Publics ----------------------------------------------------------------
     public static build<T extends Entity>(
         target: Target<T>,
-        attributes: CreationAttributesOptions<T>
+        attributes: CreationAttributesOptions<T>,
+        options?: CreateCollectMapOptions<T>
     ): T | Collection<T> {
         return Array.isArray(attributes)
             ? this.buildManyEntities(target, attributes)
@@ -97,23 +99,24 @@ export default class EntityBuilder<T extends EntityTarget> {
 
     // Privates ---------------------------------------------------------------
     private static buildEntity<T extends Entity>(
-        target: Target<T>,
+        target: Constructor<T>,
         attributes: CreationAttributes<T>
     ): T {
-        console.log(attributes)
-        console.log((target as StaticTarget<T>).build<Entity>(attributes))
         return (target as StaticTarget<T>).build<Entity>(attributes) as T
     }
 
     // ------------------------------------------------------------------------
 
     private static buildManyEntities<T extends Entity>(
-        target: Target<T>,
-        attributes: CreationAttributes<T>[]
+        target: Constructor<T>,
+        attributes: CreationAttributes<T>[],
+        options?: CreateCollectMapOptions<T>
     ): Collection<T> {
-        return new Collection(...attributes.map(
-            att => this.buildEntity(target, att)
-        ))
+        return CollectionsMetadataHandler.build(
+            target,
+            options?.collection,
+            attributes.map(att => this.buildEntity(target, att))
+        )
     }
 
     // ------------------------------------------------------------------------

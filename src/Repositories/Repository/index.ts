@@ -63,7 +63,7 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
     public createMany<M extends CreateCollectMapOptions<T>>(
         attributes: CreationAttributes<T>[],
         mapOptions?: M
-    ): Promise<CreateResult<T, M>> {
+    ): Promise<CreateResult<T, M['collection']>> {
         return MySQLOperation.Create.exec({
             target: this.target,
             sqlBuilder: new CreateSQLBuilder(this.target, attributes),
@@ -80,10 +80,10 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
      * @param where - Conditional where options
      * @returns - A result set header with the count of affected registers
      */
-    public async update<S extends T | UpdateAttributes<T>>(
-        attributes: S,
+    public async update<A extends T | UpdateAttributes<T>>(
+        attributes: A,
         where?: ConditionalQueryOptions<T>,
-    ): Promise<UpdateResult<T, S>> {
+    ): Promise<UpdateResult<T, A>> {
         return MySQLOperation.Update.exec({
             target: this.target,
             sqlBuilder: new UpdateSQLBuilder(this.target, attributes, where)

@@ -17,7 +17,6 @@ export type EntityMetadataJSON = {
     columns: ColumnsMetadataJSON
     relations?: RelationsMetadataJSON
     joinTables?: JoinTableMetadataJSON[]
-    Repository: typeof Repository
     hooks?: HooksMetadataJSON
     scopes?: ScopesMetadataJSON
     computedProperties?: ComputedPropertiesJSON

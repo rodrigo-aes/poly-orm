@@ -133,14 +133,6 @@ export default class PolymorphicEntityMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public get Repository(): typeof PolymorphicRepository<any> {
-        throw new Error('Method not implemented.')
-        // return MetadataHandler.getRepository(this.target)
-        //     ?? PolymorphicRepository
-    }
-
-    // ------------------------------------------------------------------------
-
     public get hooks(): HooksMetadata {
         return HooksMetadata.findOrBuild(this.target!)
     }
@@ -194,12 +186,6 @@ export default class PolymorphicEntityMetadata extends Metadata {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public getRepository(): PolymorphicRepository<any> {
-        return new this.Repository(this.target)
-    }
-
-    // ------------------------------------------------------------------------
-
     public defineDefaultConnection(
         connection: PolyORMConnection | string
     ): void {
@@ -210,14 +196,6 @@ export default class PolymorphicEntityMetadata extends Metadata {
 
     public defineTempConnection(connection: PolyORMConnection | string): void {
         return MetadataHandler.setTempConnection(connection, this.target)
-    }
-
-    // ------------------------------------------------------------------------
-
-    public defineRepository(
-        repository: typeof PolymorphicRepository<any>
-    ): void {
-        return MetadataHandler.setRepository(repository, this.target)
     }
 
     // ------------------------------------------------------------------------
@@ -237,7 +215,6 @@ export default class PolymorphicEntityMetadata extends Metadata {
             tableName: this.tableName,
             columns: this.columns.toJSON(),
             relations: this.relations?.toJSON(),
-            repository: this.Repository,
             hooks: this.hooks?.toJSON(),
             scopes: this.scopes?.toJSON(),
             computedProperties: this.computedProperties?.toJSON(),

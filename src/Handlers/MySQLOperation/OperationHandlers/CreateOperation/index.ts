@@ -11,7 +11,7 @@ import type {
     CreationAttributesOptions
 } from "../../../../SQLBuilders"
 import type { ExecOptions } from "../types"
-import type { CreateResult, CreateCollectMapOptions } from "./types"
+import type { CreateResult, CreationCollectMapOptions } from "./types"
 
 export default class CreateOperation extends OperationHandler {
     public static readonly fillMethod = 'One'
@@ -22,12 +22,12 @@ export default class CreateOperation extends OperationHandler {
     public static async exec<
         T extends BaseEntity,
         B extends CreateSQLBuilder<T>,
-        M extends CreateCollectMapOptions<T> = never
-    >(options: ExecOptions<T, B, M>): Promise<CreateResult<T, M>> {
+        M extends CreationCollectMapOptions<T> = never
+    >(options: ExecOptions<T, B, M>): Promise<CreateResult<T, M['collection']>> {
         return EntityBuilder.build(
             options.target,
             await this.execAndMap(options)
-        ) as CreateResult<T, M>
+        )
     }
 
     // Protecteds -------------------------------------------------------------
@@ -68,5 +68,5 @@ export default class CreateOperation extends OperationHandler {
 
 export type {
     CreateResult,
-    CreateCollectMapOptions
+    CreationCollectMapOptions as CreatinoCollectMapOptions
 }

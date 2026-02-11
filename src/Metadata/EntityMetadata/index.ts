@@ -192,12 +192,6 @@ export default class EntityMetadata extends Metadata {
 
     // ------------------------------------------------------------------------
 
-    public get Repository(): Constructor<Repository<any>> {
-        return MetadataHandler.getRepository(this.target) ?? Repository
-    }
-
-    // ------------------------------------------------------------------------
-
     public get columns(): ColumnsMetadata {
         return ColumnsMetadata.findOrBuild(this.target)
     }
@@ -289,12 +283,6 @@ export default class EntityMetadata extends Metadata {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public getRepository(): Repository<any> {
-        return new this.Repository(this.target)
-    }
-
-    // ------------------------------------------------------------------------
-
     public defineDefaultConnection(
         connection: PolyORMConnection | string
     ): void {
@@ -306,14 +294,6 @@ export default class EntityMetadata extends Metadata {
     public defineTempConnection(connection: PolyORMConnection | string): void {
         return MetadataHandler.setTempConnection(connection, this.target)
     }
-
-    // ------------------------------------------------------------------------
-
-    public defineRepository(repository: Constructor<Repository<any>>): void {
-        MetadataHandler.setRepository(repository, this.target)
-    }
-
-    // ------------------------------------------------------------------------
 
     public addJoinTable(
         relateds: JoinTableRelatedsGetter,
@@ -339,7 +319,6 @@ export default class EntityMetadata extends Metadata {
             target: this.target,
             name: this.name,
             tableName: this.tableName,
-            Repository: this.Repository,
             columns: this.columns.toJSON(),
             relations: this.relations?.toJSON(),
             joinTables: this.joinTables?.map(table => table.toJSON()),

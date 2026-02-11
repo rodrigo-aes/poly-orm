@@ -15,6 +15,6 @@ export type PaginationJSON<D extends Collection> = {
     pages: number
     prevPage: number | null
     nextPage: number | null
-} & CollectionJSON<D> extends EntityJSON<any, any>[]
+} & CollectionJSON<D> extends EntityJSON<any>[]
     ? { data: CollectionJSON<D> }
     : CollectionJSON<D>

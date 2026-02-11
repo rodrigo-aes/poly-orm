@@ -32,7 +32,7 @@ import type {
     Constructor,
 } from "../../types"
 
-import type BaseEntity from "../BaseEntity"
+import BaseEntity from "../BaseEntity"
 import type { ResultSetHeader } from "mysql2"
 import type { DeleteResult } from "../../Handlers"
 
@@ -43,8 +43,8 @@ import type {
     ConditionalQueryOptions,
 } from "../../SQLBuilders"
 
-import type { PolymorphicRepository } from "../../Repositories"
-import type { RelationHandler } from "../../Relations"
+import { PolymorphicRepository } from "../../Repositories"
+import type { CreateCollectMapOptions } from "../../Handlers"
 
 import type {
     Source,
@@ -110,6 +110,11 @@ export default abstract class BasePolymorphicEntity<
     }
 
     // Static Getters =========================================================
+    // Publics ----------------------------------------------------------------
+    public static get Repository(): typeof PolymorphicRepository {
+        return PolymorphicRepository
+    }
+
     // Decorators -------------------------------------------------------------
     /**
      * Define polymorphic column to include decorator
@@ -138,14 +143,6 @@ export default abstract class BasePolymorphicEntity<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public getRepository<
-        T extends PolymorphicRepository<this> = PolymorphicRepository<this>
-    >(): T {
-        return this.__$trueMetadata.getRepository() as T
-    }
-
-    // ------------------------------------------------------------------------
-
     public getQueryBuilder<T extends BasePolymorphicEntity<any>>(
         this: T
     ): PolymorphicEntityQueryBuilder<T> {
@@ -160,11 +157,19 @@ export default abstract class BasePolymorphicEntity<
      * Convert current polymorphic instance to source entity instance
      * @returns - A original entity instance
      */
-    public toSourceEntity<T extends Source<S>>(): ResolveSource<S, T> {
+    public toSourceEntity<T extends Source<S> | undefined = undefined>(): (
+        T extends Source<S>
+        ? ResolveSource<S, T>
+        : SourceEntities<this>
+    ) {
         return EntityBuilder.buildPolymorphicSource(
             this.sources[this.$TK],
             this
-        ) as ResolveSource<S, T>
+        ) as (
+                T extends Source<S>
+                ? ResolveSource<S, T>
+                : SourceEntities<this>
+            )
     }
 
     // ------------------------------------------------------------------------
@@ -174,35 +179,23 @@ export default abstract class BasePolymorphicEntity<
      * the current polymorphic instance
      * @returns - Same polymorhic instance
      */
-    public async save<T extends BasePolymorphicEntity<any>>(this: T): Promise<
-        T
-    > {
-        const instance = await this.getRepository().updateOrCreate(
-            this.$TK, this.toSourceEntity(), 'this'
-        )
+    public async save<T extends BasePolymorphicEntity<any>>(
+        this: T,
+        attributes?: UpdateAttributes<T>
+    ): Promise<T> {
+        const instance = await new BasePolymorphicEntity
+            .Repository(this.constructor as Constructor<T>)
+            .updateOrCreate(
+                this.$TK,
+                attributes
+                    ? this.fill(attributes).toSourceEntity()
+                    : this.toSourceEntity(),
+                'this'
+            )
+
         await this.__$saveRelations()
 
         return instance
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Update the register of the source entity in database and returns the
-     * current polymorphic instance
-     * @param attributes - Update attributes data
-     * @returns - Same polymorphic instance
-     */
-    public async update<T extends BasePolymorphicEntity<any>>(
-        this: T,
-        attributes: UpdateAttributes<T>
-    ): Promise<ResultSetHeader> {
-        return this.getRepository().update(
-            this.sources[this.$TK],
-            (this.fill(attributes).toSourceEntity() as BaseEntity)
-                .toObject(),
-            this.__$whereSPK as any
-        ) as Promise<ResultSetHeader>
     }
 
     // ------------------------------------------------------------------------
@@ -213,10 +206,9 @@ export default abstract class BasePolymorphicEntity<
     public async delete<T extends BasePolymorphicEntity<any>>(
         this: T
     ): Promise<void> {
-        await this.getRepository().delete(
-            this.sources[this.$TK],
-            this.__$whereSPK as any
-        )
+        await new BasePolymorphicEntity
+            .Repository(this.constructor as Constructor<T>)
+            .delete(this.sources[this.$TK], this.__$whereSPK as any)
     }
 
     // Privates ---------------------------------------------------------------
@@ -224,17 +216,6 @@ export default abstract class BasePolymorphicEntity<
 
     // Static Methods =========================================================
     // Publics ----------------------------------------------------------------
-    public static getRepository<
-        T extends PolymorphicEntityTarget,
-        R extends PolymorphicRepository<InstanceType<T>>
-    >(this: T): R {
-        return (this as StaticPolymorphicEntityTarget<T>)
-            .__$trueMetadata
-            .getRepository() as R
-    }
-
-    // ------------------------------------------------------------------------
-
     public static getQueryBuilder<T extends PolymorphicEntityTarget>(
         this: T
     ): PolymorphicEntityQueryBuilder<InstanceType<T>> {
@@ -261,7 +242,9 @@ export default abstract class BasePolymorphicEntity<
         attributes: CreationAttributes<ResolveSource<T, S>>,
         mapTo: 'this' | 'source' = 'this'
     ): Promise<T> {
-        return (this as any).getRepository().create(source, attributes, mapTo)
+        return new (this as StaticPolymorphicEntityTarget<T>)
+            .Repository(this)
+            .create(source, attributes, mapTo)
     }
 
     // ------------------------------------------------------------------------
@@ -279,16 +262,19 @@ export default abstract class BasePolymorphicEntity<
      */
     public static createMany<
         T extends BasePolymorphicEntity<any>,
-        S extends Source<T>
+        S extends Source<T>,
+        M extends CreateCollectMapOptions<T>,
+        R extends 'this' | 'source'
     >(
         this: Constructor<T>,
         source: S,
         attributes: CreationAttributes<ResolveSource<T, S>>[],
-        returns: 'this' | 'source' = 'this'
-    ): Promise<Collection<T>> {
-        return (this as any).getRepository().createMany(
-            source, attributes, undefined, returns
-        )
+        mapOptions?: M,
+        returns: R = 'this' as R
+    ) {
+        return new (this as StaticPolymorphicEntityTarget<T>)
+            .Repository(this)
+            .createMany(source, attributes, mapOptions, returns)
     }
 
     // ------------------------------------------------------------------------
@@ -310,7 +296,9 @@ export default abstract class BasePolymorphicEntity<
         attributes: UpdateAttributes<ResolveSource<T, S>>,
         where: ConditionalQueryOptions<ResolveSource<T, S>>
     ): Promise<ResultSetHeader> {
-        return (this as any).getRepository().update(source, attributes, where)
+        return new (this as StaticPolymorphicEntityTarget<T>)
+            .Repository(this)
+            .update(source, attributes, where)
     }
 
     // ------------------------------------------------------------------------
@@ -327,16 +315,21 @@ export default abstract class BasePolymorphicEntity<
      */
     public static updateOrCreate<
         T extends BasePolymorphicEntity<any>,
-        S extends Source<T>
+        S extends Source<T>,
+        R extends 'this' | 'source'
     >(
         this: Constructor<T>,
         source: S,
         attributes: UpdateOrCreateAttributes<ResolveSource<T, S>>,
-        mapTo: 'this' | 'source' = 'this'
-    ): Promise<Collection<T>> {
-        return (this as any).getRepository().updateOrCreate(
-            source, attributes, mapTo
-        )
+        returns: R = 'this' as R
+    ): Promise<
+        R extends 'this'
+        ? T
+        : ResolveSource<T, S>
+    > {
+        return new (this as StaticPolymorphicEntityTarget<T>)
+            .Repository(this)
+            .updateOrCreate(source, attributes, returns)
     }
 
     // ------------------------------------------------------------------------
@@ -356,7 +349,9 @@ export default abstract class BasePolymorphicEntity<
         source: S,
         where: ConditionalQueryOptions<ResolveSource<T, S>>
     ): Promise<DeleteResult> {
-        return (this as any).getRepository().delete(source, where)
+        return new (this as StaticPolymorphicEntityTarget<T>)
+            .Repository(this)
+            .delete(source, where)
     }
 }
 

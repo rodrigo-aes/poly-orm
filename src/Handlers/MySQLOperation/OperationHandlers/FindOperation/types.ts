@@ -9,7 +9,7 @@ export type FindResult<
     ? M['mapTo'] extends 'entity'
     ? ResolveCollection<T, M['collection']>
     : M['mapTo'] extends 'json'
-    ? EntityJSON<T, T['hidden']>[]
+    ? EntityJSON<T>[]
     : M['mapTo'] extends 'raw'
     ? any[]
     : ResolveCollection<T, M['collection']>

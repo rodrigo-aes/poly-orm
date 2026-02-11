@@ -5,7 +5,7 @@ import PaginateOperation, { type PaginateResult } from "./PaginateOperation"
 import CountOperation, { type CountManyResult } from "./CountOperation"
 import CreateOperation, {
     type CreateResult,
-    type CreateCollectMapOptions
+    type CreatinoCollectMapOptions
 } from "./CreateOperation"
 import UpdateOperation, { type UpdateResult } from "./UpdateOperation"
 import UpdateOrCreateOperation from "./UpdateOrCreateOperation"
@@ -43,7 +43,7 @@ export {
     type PaginateResult,
     type CountManyResult,
     type CreateResult,
-    type CreateCollectMapOptions,
+    type CreatinoCollectMapOptions,
     type UpdateResult,
     type DeleteResult
 }

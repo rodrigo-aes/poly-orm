@@ -33,11 +33,13 @@ export type StaticTarget<T extends Target | Entity = Target> = (
 
 export type EntityObject<T extends Entity> = (
     EntityProperties<T> &
-    EntityRelations<T>
+    EntityRelations<T> & {
+        [K in T['include'][number]]: T[K]
+    }
 )
 
-export type EntityJSON<T extends Entity, Hidden extends string[]> = Omit<
-    EntityObject<T>, Hidden[number]
+export type EntityJSON<T extends Entity> = Omit<
+    EntityObject<T>, Extract<T['hidden'], string>
 >
 
 // Entity Target ==============================================================
@@ -58,9 +60,17 @@ export type PolymorphicEntityTarget<T
     extends BasePolymorphicEntity<any> = BasePolymorphicEntity<any>
 > = Constructor<T>
 export type AsPolymorphicEntityTarget<T> = Extract<T, PolymorphicEntityTarget>
-export type StaticPolymorphicEntityTarget<T extends PolymorphicEntityTarget = (
-    PolymorphicEntityTarget
-)> = T & typeof BasePolymorphicEntity<any>
+export type StaticPolymorphicEntityTarget<
+    T extends PolymorphicEntityTarget | BasePolymorphicEntity<any> = (
+        PolymorphicEntityTarget
+    )
+> = (
+    T extends PolymorphicEntityTarget
+    ? T
+    : T extends BasePolymorphicEntity<any>
+    ? PolymorphicEntityTarget<T>
+    : never
+) & typeof BasePolymorphicEntity<any>
 
 
 // Targets Components =========================================================

@@ -4,10 +4,10 @@ import type { UpdateAttributes } from "../../../../SQLBuilders"
 
 export type UpdateResult<
     T extends Entity,
-    S extends T | UpdateAttributes<T>
-> = S extends T
+    A extends T | UpdateAttributes<T>
+> = A extends T
     ? T
-    : S extends UpdateAttributes<T>
+    : A extends UpdateAttributes<T>
     ? ResultSetHeader
     : never
 

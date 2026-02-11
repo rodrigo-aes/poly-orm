@@ -29,7 +29,6 @@ export type PolymorphicEntityMetadataJSON = {
     tableName: string
     columns: PolymorphicColumnsMetadataJSON
     relations?: RelationsMetadataJSON
-    repository: typeof PolymorphicRepository
     hooks?: HooksMetadataJSON
     scopes?: ScopesMetadataJSON
     computedProperties?: ComputedPropertiesJSON

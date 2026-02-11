@@ -27,10 +27,12 @@ import {
 import type BasePolymorphicEntity from "./BasePolymorphicEntity"
 import type BaseEntity from "./BaseEntity"
 import type {
-    FindOneResult,
-    FindResult,
     MapOptions,
     CollectMapOptions,
+    PaginateMapOptions,
+    FindOneResult,
+    FindResult,
+    PaginateResult,
     CountManyResult
 } from "../Handlers"
 
@@ -141,22 +143,28 @@ export default abstract class Entity {
 
     /** @internal */
     protected get __$pk(): keyof EntityT {
-        return this.__$PK ??= (this as any).getTrueMetadata().PK
+        return this.__$PK ??= this.__$trueMetadata.PK as any
     }
 
     // ------------------------------------------------------------------------
 
     /** @internal */
     protected get __$wherePK(): any {
-        return this.__$WPK ??= {
-            [this.__$pk]: this[this.__$pk as keyof this]
-        }
+        return this.__$WPK ??= { [this.__$pk]: this[this.__$pk as keyof this] }
     }
 
     // Protecteds -------------------------------------------------------------
     /** @internal */
     protected static get __$trueMetadata(): TargetMetadata<EntityT> {
         return MetadataHandler.targetMetadata(this as any)
+    }
+
+    // Static Getters =========================================================
+    // Publics ----------------------------------------------------------------
+    public static get Repository(): Constructor<TargetRepository<EntityT>> {
+        throw PolyORMException.Common.instantiate(
+            'UNIMPLEMENTED_GET', 'Repository', this.name
+        )
     }
 
     // Instance Methods =======================================================
@@ -174,10 +182,8 @@ export default abstract class Entity {
      * Make a JSON object of entity properties and relations
      * @returns - Entity object without hidden properties and relations
      */
-    public toJSON<T extends EntityT>(this: T): EntityJSON<T, T['hidden']> {
-        return Object.fromEntries(this.entries(true)) as (
-            EntityJSON<T, T['hidden']>
-        )
+    public toJSON<T extends EntityT>(this: T): EntityJSON<T> {
+        return Object.fromEntries(this.entries(true)) as EntityJSON<T>
     }
 
     // ------------------------------------------------------------------------
@@ -410,12 +416,12 @@ export default abstract class Entity {
         )
     }
 
-    // ---------------------------------------------------------------
+    // ------------------------------------------------------------------------
     /** @internal */
     protected async __$saveRelations<T extends EntityT>(this: T): Promise<
         void
     > {
-        for (const { name } of (this as any).__$trueMetadata.relations) if (
+        for (const { name } of (this as Entity).__$trueMetadata.relations) if (
             (this[name as keyof T] as RelationHandler).__$shouldUpdate !== (
                 false
             )
@@ -530,9 +536,27 @@ export default abstract class Entity {
      * Get entity metadata
      */
     public static getMetadata<T extends Target>(this: T) {
-        return (this as any)
-            .getTrueMetadata()
-            .toJSON()
+        return (this as StaticTarget<T>).__$trueMetadata.toJSON()
+    }
+
+    // ------------------------------------------------------------------------
+
+    /**
+     * Build a instance of entity with attributes data
+     * @param attributes - Entity attributes
+     * @returns - Entity instance
+     */
+    public static build<T extends EntityT>(
+        this: Constructor<T>,
+        attributes: CreationAttributes<T>
+    ): T {
+        const instance = new this().fill(attributes) as T
+        (instance as Entity).__$trueMetadata.computedProperties?.assign(
+            instance
+        )
+        ColumnsSnapshots.set(instance, instance.columns())
+
+        return instance
     }
 
     // ------------------------------------------------------------------------
@@ -566,26 +590,6 @@ export default abstract class Entity {
     // ------------------------------------------------------------------------
 
     /**
-     * Build a instance of entity with attributes data
-     * @param attributes - Entity attributes
-     * @returns - Entity instance
-     */
-    public static build<T extends EntityT>(
-        this: Constructor<T>,
-        attributes: CreationAttributes<T>
-    ): T {
-        const instance = new this().fill(attributes) as T
-        (instance as Entity).__$trueMetadata.computedProperties?.assign(
-            instance
-        )
-        ColumnsSnapshots.set(instance, instance.columns())
-
-        return instance
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
      * Search a entity register in database and return a instance case finded
      * @param pk - Entity primary key
      * @param mapTo - Switch data mapped return
@@ -600,7 +604,9 @@ export default abstract class Entity {
         pk: any,
         mapTo?: M
     ): Promise<FindOneResult<T, M>> {
-        return (this as any).getRepository().findByPk(pk, mapTo)
+        return new (this as StaticTarget<T>)
+            .Repository(this)
+            .findByPk(pk, mapTo) as Promise<FindOneResult<T, M>>
     }
 
     // ------------------------------------------------------------------------
@@ -620,7 +626,9 @@ export default abstract class Entity {
         options?: FindOneQueryOptions<T>,
         mapTo?: M
     ): Promise<FindOneResult<T, M>> {
-        return (this as any).getRepository().findOne(options as any, mapTo)
+        return new (this as StaticTarget<T>)
+            .Repository(this)
+            .findOne(options as any, mapTo) as Promise<FindOneResult<T, M>>
     }
 
     // ------------------------------------------------------------------------
@@ -640,7 +648,9 @@ export default abstract class Entity {
         options?: FindQueryOptions<T>,
         mapTo?: M
     ): Promise<FindResult<T, M>> {
-        return (this as any).getRepository().find(options, mapTo)
+        return new (this as StaticTarget<T>)
+            .Repository(this)
+            .find(options as any, mapTo) as Promise<FindResult<T, M>>
     }
 
     // ------------------------------------------------------------------------
@@ -648,15 +658,23 @@ export default abstract class Entity {
     /**
     *  Search all register matched by options in database and paginate
     * @param options - Find options
-    * @param mapTo - Switch data mapped return
+    * @param mapOptions - Switch data mapped return
     * @default 'entity'
     * @returns - A entity instance pagination collection
     */
-    public static paginate<T extends EntityT>(
+    public static paginate<
+        T extends EntityT,
+        M extends PaginateMapOptions<T>
+    >(
         this: Constructor<T>,
-        options?: PaginationQueryOptions<T>
-    ): Promise<Pagination<Collection<T>>> {
-        return (this as any).getRepository().paginate(options)
+        options?: PaginationQueryOptions<T>,
+        mapOptions?: M
+    ): Promise<PaginateResult<T, M>> {
+        return new (this as StaticTarget<T>)
+            .Repository(this)
+            .paginate(options as any, mapOptions) as Promise<
+                PaginateResult<T, M>
+            >
     }
 
     // ------------------------------------------------------------------------
@@ -670,7 +688,9 @@ export default abstract class Entity {
         this: Constructor<T>,
         options: CountQueryOption<T>
     ): Promise<number> {
-        return (this as any).getRepository().count(options)
+        return new (this as StaticTarget<T>)
+            .Repository(this)
+            .count(options)
     }
 
     // ------------------------------------------------------------------------
@@ -688,7 +708,9 @@ export default abstract class Entity {
         this: Constructor<T>,
         options: O
     ): Promise<CountManyResult<T, O>> {
-        return (this as any).getRepository().countMany(options)
+        return (new (this as StaticTarget<T>)
+            .Repository(this) as any)
+            .countMany(options) as Promise<CountManyResult<T, O>>
     }
 
     // Privates ---------------------------------------------------------------

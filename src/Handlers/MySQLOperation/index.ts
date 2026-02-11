@@ -20,7 +20,7 @@ import {
     type PaginateResult,
     type CountManyResult,
     type CreateResult,
-    type CreateCollectMapOptions,
+    type CreatinoCollectMapOptions,
     type UpdateResult,
     type DeleteResult
 } from "./OperationHandlers"
@@ -52,7 +52,7 @@ export type {
     PaginateResult,
     CountManyResult,
     CreateResult,
-    CreateCollectMapOptions,
+    CreatinoCollectMapOptions as CreateCollectMapOptions,
     UpdateResult,
     DeleteResult
 }

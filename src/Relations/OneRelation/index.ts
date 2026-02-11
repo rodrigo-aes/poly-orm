@@ -96,7 +96,7 @@ export default abstract class OneRelation<T extends Entity, R extends Entity> {
 
     // ------------------------------------------------------------------------
 
-    public toJSON(): EntityJSON<R, R['hidden']> | null {
+    public toJSON(): EntityJSON<R> | null {
         return (this.instance as R | undefined)?.toJSON() ?? null
     }
 }

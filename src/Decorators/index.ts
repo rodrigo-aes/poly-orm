@@ -47,8 +47,6 @@ import PolymorphicTypeKey, {
 import CreatedTimestamp from "./CreatedTimestamp"
 import UpdatedTimestamp from "./UpdatedTimestamp"
 
-import UseRepository from "./UseRepository"
-
 import ComputedProperty, {
     type ComputedPropertyFunction
 } from "./ComputedProperty"
@@ -180,7 +178,6 @@ export {
     AfterBulkDelete,
 
     ComputedProperty,
-    UseRepository,
     Scopes,
     DefaultScope,
     Triggers,

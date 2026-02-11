@@ -7,9 +7,9 @@ type EmptyKeys<T> = keyof T extends [never] ? true : false
 export type CollectionJSON<T extends Collection> = (
     T extends Collection<infer E>
     ? EmptyKeys<CollectionProperties<Extract<T, Collection>>> extends true
-    ? EntityJSON<E, E['hidden']>[]
+    ? EntityJSON<E>[]
     : CollectionProperties<Extract<T, Collection>> & {
-        data: EntityJSON<E, E['hidden']>[]
+        data: EntityJSON<E>[]
     }
     : never
 )

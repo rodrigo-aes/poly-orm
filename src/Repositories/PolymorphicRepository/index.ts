@@ -61,7 +61,7 @@ export default class PolymorphicRepository<
         ? T
         : ResolveSource<T, S>
     > {
-        const target = this.resolveSource(source)
+        const target = this.__$resolveSource(source)
         return MySQLOperation.Create.exec<
             ResolveSource<T, S>,
             CreateSQLBuilder<ResolveSource<T, S>>
@@ -95,7 +95,7 @@ export default class PolymorphicRepository<
         mapOptions?: M,
         returns: R = 'this' as R
     ) {
-        const target = this.resolveSource(source)
+        const target = this.__$resolveSource(source)
         return MySQLOperation.Create.exec({
             target,
             sqlBuilder: new CreateSQLBuilder(target, attributes as any),
@@ -121,14 +121,14 @@ export default class PolymorphicRepository<
      */
     public update<
         S extends Source<T>,
-        A extends T | UpdateAttributes<ResolveSource<T, S>>
+        A extends ResolveSource<T, S> | UpdateAttributes<ResolveSource<T, S>>
     >(
         source: S,
         attributes: A,
         where?: ConditionalQueryOptions<ResolveSource<T, S>>
-    ): Promise<UpdateResult<T, A>> {
-        const target = this.resolveSource(source)
-        return MySQLOperation.Update.exec<T, A>({
+    ): Promise<UpdateResult<ResolveSource<T, S>, A>> {
+        const target = this.__$resolveSource(source)
+        return MySQLOperation.Update.exec({
             target,
             sqlBuilder: new UpdateSQLBuilder(
                 target,
@@ -154,20 +154,20 @@ export default class PolymorphicRepository<
      */
     public updateOrCreate<
         S extends Source<T>,
-        R extends 'this' | 'source' = 'this'
+        R extends 'this' | 'source'
     >(
         source: S,
         attributes: UpdateOrCreateAttributes<ResolveSource<T, S>>,
-        returns: R
+        returns: R = 'this' as R
     ): Promise<
         R extends 'this'
         ? T
         : ResolveSource<T, S>
     > {
-        const target = this.resolveSource(source)
+        const target = this.__$resolveSource(source)
         return MySQLOperation.UpdateOrCreate.exec({
             target,
-            sqlBuilder: new UpdateOrCreateSQLBuilder<any>(target, attributes),
+            sqlBuilder: new UpdateOrCreateSQLBuilder(target, attributes),
             toSource: returns === 'source'
         })
     }
@@ -185,7 +185,7 @@ export default class PolymorphicRepository<
         source: S,
         where: ConditionalQueryOptions<ResolveSource<T, S>>
     ): Promise<DeleteResult> {
-        const target = this.resolveSource(source)
+        const target = this.__$resolveSource(source)
         return MySQLOperation.Delete.exec({
             target,
             sqlBuilder: new DeleteSQLBuilder(target, where),
@@ -194,7 +194,7 @@ export default class PolymorphicRepository<
 
     // Privates ---------------------------------------------------------------
     /** @internal */
-    private resolveSource<S extends Source<T>>(source: S): Constructor<
+    private __$resolveSource<S extends Source<T>>(source: S): Constructor<
         ResolveSource<T, S>
     > {
         return this.metadata.entities[(() => {

@@ -32,7 +32,7 @@ export default class PaginationMetadataHandler {
 
             default: return (
                 PaginationsMetadata.find(target)?.default ?? Pagination
-            ) as typeof Pagination<Collection<T>>
+            ) as any
         }
     }
 

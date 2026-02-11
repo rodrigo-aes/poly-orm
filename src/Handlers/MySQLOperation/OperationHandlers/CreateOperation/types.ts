@@ -1,19 +1,17 @@
 import type { Entity } from "../../../../types"
 import type { Collection } from "../../../../Entities"
-import type { CollectMapOptions } from "../types"
+import type {
+    CollectMapOptions,
+    ResolveCollection,
+    EntityCollectOption
+} from "../types"
 
-export type CreateCollectMapOptions<T extends Entity> = Omit<
+export type CreationCollectMapOptions<T extends Entity> = Omit<
     CollectMapOptions<T>,
     'mapTo'
 >
 
 export type CreateResult<
     T extends Entity,
-    M extends CreateCollectMapOptions<T> | never
-> = M extends never ?
-    T
-    : M extends CreateCollectMapOptions<T>
-    ? M["collection"] extends Collection<any>
-    ? M["collection"]
-    : T['__defaultCollection']
-    : never
+    M extends EntityCollectOption<T>
+> = ResolveCollection<T, M>

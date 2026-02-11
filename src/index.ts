@@ -159,7 +159,6 @@ import {
     BeforeBulkDelete,
     AfterBulkDelete,
 
-    UseRepository,
     ComputedProperty,
     Scopes,
     DefaultScope,
@@ -349,7 +348,6 @@ export {
     BeforeBulkDelete,
     AfterBulkDelete,
 
-    UseRepository,
     ComputedProperty,
     Scopes,
     DefaultScope,

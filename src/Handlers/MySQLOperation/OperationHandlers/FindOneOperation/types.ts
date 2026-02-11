@@ -9,7 +9,7 @@ export type FindOneResult<
         M['mapTo'] extends 'entity' | undefined
         ? T | null
         : M['mapTo'] extends 'json'
-        ? EntityJSON<T, T['hidden']>
+        ? EntityJSON<T>
         : M['mapTo'] extends 'raw'
         ? any[]
         : T

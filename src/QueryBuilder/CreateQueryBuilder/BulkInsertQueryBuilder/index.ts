@@ -47,7 +47,7 @@ export default class BulkInsertQueryBuilder<
     */
     public exec<M extends CreateCollectMapOptions<T>>(
         mapOptions?: M
-    ): Promise<CreateResult<T, M>> {
+    ): Promise<CreateResult<T, M['collection']>> {
         this.sqlBuilder.bulk = true
 
         return MySQLOperation.Create.exec({
