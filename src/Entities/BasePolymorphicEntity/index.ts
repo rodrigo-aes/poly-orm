@@ -9,7 +9,7 @@ import {
 
 // Childs
 import { InternalPolymorphicEntities } from "./Components"
-import type { Collection } from "../Components"
+import type { Collection, Pagination } from "../Components"
 
 // Query Builder
 import { PolymorphicEntityQueryBuilder } from "../../QueryBuilder"
@@ -67,6 +67,9 @@ export default abstract class BasePolymorphicEntity<
     public static readonly __$ROLE: 'INTERNAL' | 'EXTERNAL' = 'EXTERNAL'
 
     declare readonly __defaultCollection: Collection<this>
+    declare readonly __defaultPagination: Pagination<
+        this['__defaultCollection']
+    >
 
     /**
      * Entity primary key

@@ -7,8 +7,6 @@ import { Repository } from "../../Repositories"
 import { EntityQueryBuilder } from "../../QueryBuilder"
 
 // Types
-import type { ResultSetHeader } from "mysql2"
-
 import type {
     EntityTarget,
     Constructor,
@@ -24,12 +22,12 @@ import type {
     UpdateOrCreateAttributes,
     ConditionalQueryOptions
 } from "../../SQLBuilders"
+
 import type {
     CreateResult,
     UpdateResult,
     CreateCollectMapOptions
 } from "../../Handlers"
-
 
 /**
  * All entities needs to extends BaseEntity class
@@ -78,13 +76,12 @@ export default abstract class BaseEntity extends Entity {
         this: T,
         attributes?: UpdateAttributes<T>
     ): Promise<T> {
-        const instance = new BaseEntity
-            .Repository(this.constructor as Constructor<T>)
-            .updateOrCreate(attributes ? this.fill(attributes) : this)
-
-        await this.__$saveRelations()
-
-        return instance
+        return (await
+            new BaseEntity
+                .Repository(this.constructor as Constructor<T>)
+                .updateOrCreate(attributes ? this.fill(attributes) : this)
+        )
+            .__$saveRelations()
     }
 
     // ------------------------------------------------------------------------

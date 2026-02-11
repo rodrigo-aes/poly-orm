@@ -43,7 +43,8 @@ import type {
     CountQueryOption,
     CountQueryOptions,
     ConditionalQueryOptions,
-    CreationAttributes
+    UpdateAttributes,
+    CreationAttributes,
 } from "../SQLBuilders"
 
 import {
@@ -113,7 +114,7 @@ export default abstract class Entity {
     /**
      * An array of properties keys that must be hidden in JSON
      */
-    public get hidden(): (keyof EntityT)[] {
+    public get hidden(): string[] {
         return []
     }
 
@@ -122,7 +123,7 @@ export default abstract class Entity {
     /**
      * An array of properties keys that must be included in JSON
      */
-    public get include(): (keyof EntityT)[] {
+    public get include(): string[] {
         return []
     }
 
@@ -234,7 +235,7 @@ export default abstract class Entity {
      */
     public fill<T extends EntityT>(
         this: T,
-        data: Partial<CreationAttributes<T>>
+        data: UpdateAttributes<T>
     ): T {
         Object.assign(this, data)
         return this
@@ -418,9 +419,7 @@ export default abstract class Entity {
 
     // ------------------------------------------------------------------------
     /** @internal */
-    protected async __$saveRelations<T extends EntityT>(this: T): Promise<
-        void
-    > {
+    protected async __$saveRelations<T extends EntityT>(this: T): Promise<T> {
         for (const { name } of (this as Entity).__$trueMetadata.relations) if (
             (this[name as keyof T] as RelationHandler).__$shouldUpdate !== (
                 false
@@ -428,6 +427,8 @@ export default abstract class Entity {
         ) (
             await (this[name as keyof T] as any).save()
         )
+
+        return this
     }
 
     // ------------------------------------------------------------------------

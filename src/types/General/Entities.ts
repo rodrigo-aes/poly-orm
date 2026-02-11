@@ -34,12 +34,12 @@ export type StaticTarget<T extends Target | Entity = Target> = (
 export type EntityObject<T extends Entity> = (
     EntityProperties<T> &
     EntityRelations<T> & {
-        [K in T['include'][number]]: T[K]
+        [K in Extract<T['include'], keyof T>]: T[K]
     }
 )
 
 export type EntityJSON<T extends Entity> = Omit<
-    EntityObject<T>, Extract<T['hidden'], string>
+    EntityObject<T>, Extract<T['hidden'], keyof T>
 >
 
 // Entity Target ==============================================================

@@ -3,11 +3,10 @@ import { ComputedPropertiesMetadata } from "../../../Metadata"
 // Types
 import type {
     Entity,
-    CollectionTarget,
-    EntityProperties
+    CollectionTarget
 } from "../../../types"
 
-import type { UpdateAttributes } from "../../../SQLBuilders"
+import type { CreationAttributes, UpdateAttributes } from "../../../SQLBuilders"
 import type { CollectionJSON } from "./types"
 
 export default class Collection<
@@ -97,7 +96,7 @@ export default class Collection<
      * Fill entities properties with a data object
      * @returns {this} - Same entity instance
      */
-    public fill(data: Partial<EntityProperties<T>>): this {
+    public fillAll(data: UpdateAttributes<T>): this {
         for (const entity of this) entity.fill(data)
         return this
     }

@@ -7,9 +7,9 @@ export type RelationCreationAttributes<T extends Entity = Entity> = (
     ExcludeRelationAttributes<CreationAttributes<T>>
 )
 
-export type RelationUpdateAttributes<T extends Entity = Entity> = (
-    ExcludeRelationAttributes<UpdateAttributes<T>>
-)
+export type RelationUpdateAttributes<T extends Entity = Entity> = Partial<
+    RelationCreationAttributes<T>
+>
 
 export type RelationUpdateOrCreateAttributes<T extends Entity = Entity> = (
     ExcludeRelationAttributes<UpdateOrCreateAttibutes<T>>
