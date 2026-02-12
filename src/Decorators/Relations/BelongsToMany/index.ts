@@ -14,7 +14,7 @@ export default function BelongsToMany(
     related: BelongsToManyRelatedGetter,
     options?: BelongsToManyOptions
 ) {
-    return function <T extends BaseEntity, R extends Entity>(
+    return function <T extends BaseEntity, R extends Partial<Entity>>(
         _: undefined,
         context: ClassFieldDecoratorContext<T, BelongsToMany<R>>
     ) {

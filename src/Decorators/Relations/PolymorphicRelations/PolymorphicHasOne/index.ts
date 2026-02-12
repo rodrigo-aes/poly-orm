@@ -12,7 +12,7 @@ export default function PolymorphicHasOne(
     related: PolymorphicChildRelatedGetter,
     foreignKey: string | PolymorphicHasOneOptions
 ) {
-    return function <T extends BaseEntity, R extends Entity>(
+    return function <T extends BaseEntity, R extends Partial<Entity>>(
         _: undefined,
         context: ClassFieldDecoratorContext<T, PolymorphicHasOne<R>>
     ) {

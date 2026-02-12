@@ -22,14 +22,14 @@ export type SourceEntity<T extends BasePolymorphicEntity<any> | BaseEntity[]> =
 
 export type EntityNames<
     T extends BasePolymorphicEntity<any> | BaseEntity[]
-> = T extends BasePolymorphicEntity<any>
-    ? SourceEntities<T>[number]['__name']
+> = T extends BasePolymorphicEntity<infer U>
+    ? U[number]['__name']
     : T extends BaseEntity[]
     ? T[number]['__name']
     : never
 
 export type EntitiesMap<
-    T extends BasePolymorphicEntity<any> | BaseEntity[]
+    T extends BaseEntity[]
 > = {
         [K in EntityNames<T>]: Constructor<Extract<
             T extends BasePolymorphicEntity<any>
@@ -51,7 +51,11 @@ export type ResolveSource<
     T extends BasePolymorphicEntity<any> | BaseEntity[],
     S extends Source<T>
 > = S extends EntityNames<T>
-    ? InstanceType<EntitiesMap<T>[S]>
+    ? InstanceType<EntitiesMap<(
+        T extends BasePolymorphicEntity<infer U>
+        ? U
+        : T
+    )>[S]>
     : S extends SourceEntity<T>
     ? S
     : S extends Constructor<SourceEntity<T>>

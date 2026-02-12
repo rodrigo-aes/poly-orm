@@ -44,15 +44,18 @@ export class HasOneHandler<
 
 // ----------------------------------------------------------------------------
 
-export default function HasOne<T extends Entity>(
+export default function HasOne<T extends Entity, R extends Partial<Entity>>(
     metadata: HasOneMetadata,
-    target: Entity,
-    instance?: T | null,
-    related: Constructor<T> = metadata.relatedTarget as Constructor<T>
-): HasOne<T> {
-    return new HasOneHandler(metadata, target, related, instance) as (
-        HasOne<T>
-    )
+    target: T,
+    instance?: R | null,
+    related: Constructor<R> = metadata.relatedTarget as Constructor<R & Entity>
+): HasOne<R> {
+    return new HasOneHandler(
+        metadata,
+        target,
+        related as Constructor<R & Entity>,
+        instance as (R & Entity) | null
+    ) as unknown as HasOne<R>
 }
 
 export type {

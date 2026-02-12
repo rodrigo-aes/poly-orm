@@ -14,7 +14,7 @@ export default function PolymorphicBelongsTo(
 ) {
     return function <
         T extends BaseEntity,
-        R extends BasePolymorphicEntity<any> | BaseEntity[]
+        R extends Partial<BasePolymorphicEntity<any>> | Partial<BaseEntity>[]
     >(
         _: undefined,
         context: ClassFieldDecoratorContext<T, PolymorphicBelongsTo<R>>

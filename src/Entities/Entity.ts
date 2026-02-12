@@ -244,9 +244,9 @@ export default abstract class Entity {
     // Protecteds -------------------------------------------------------------
     protected hasOne<
         T extends EntityT,
-        R extends EntityT = EntityT
+        R extends Partial<EntityT> = Partial<EntityT>
     >(this: T, name: string, entity?: R): HasOne<R> {
-        return HasOneHandler<R>(
+        return HasOneHandler<T, R>(
             this.__$validRel(name, HasOneMetadata),
             this,
             entity
@@ -257,8 +257,8 @@ export default abstract class Entity {
 
     protected hasMany<
         T extends EntityT,
-        R extends EntityT = EntityT,
-        C extends Collection<R> = Collection<R>
+        R extends Partial<EntityT> = Partial<EntityT>,
+        C extends Collection<any> = Collection<any>
     >(
         this: T,
         name: string,
@@ -266,7 +266,7 @@ export default abstract class Entity {
             Constructor<C> & typeof Collection
         )
     ): HasMany<R, C> {
-        return HasManyHandler<R, C>(
+        return HasManyHandler<T, R, C>(
             this.__$validRel(name, HasManyMetadata),
             this,
             ...this.__$resolveColl(collection)
@@ -277,13 +277,13 @@ export default abstract class Entity {
 
     protected belongsTo<
         T extends EntityT,
-        R extends EntityT = EntityT
+        R extends Partial<EntityT> = Partial<EntityT>
     >(
         this: T,
         name: string,
         entity?: R
     ): BelongsTo<R> {
-        return BelongsToHandler<R>(
+        return BelongsToHandler<T, R>(
             this.__$validRel(name, BelongsToMetadata),
             this,
             undefined,
@@ -293,12 +293,15 @@ export default abstract class Entity {
 
     // ------------------------------------------------------------------------
 
-    protected hasOneThrough<T extends EntityT, R extends EntityT = EntityT>(
+    protected hasOneThrough<
+        T extends EntityT,
+        R extends Partial<EntityT> = Partial<EntityT>
+    >(
         this: T,
         name: string,
         entity?: R
     ): HasOneThrough<R> {
-        return HasOneThroughHandler<R>(
+        return HasOneThroughHandler<T, R>(
             this.__$validRel(name, HasOneThroughMetadata),
             this,
             undefined,
@@ -310,8 +313,8 @@ export default abstract class Entity {
 
     protected hasManyThrough<
         T extends EntityT,
-        R extends EntityT = EntityT,
-        C extends Collection<R> = Collection<R>
+        R extends Partial<EntityT> = Partial<EntityT>,
+        C extends Collection<any> = Collection<any>
     >(
         this: T,
         name: string,
@@ -319,7 +322,7 @@ export default abstract class Entity {
             Constructor<C> & typeof Collection
         )
     ): HasManyThrough<R, C> {
-        return HasManyThroughHandler<R, C>(
+        return HasManyThroughHandler<T, R, C>(
             this.__$validRel(name, HasManyThroughMetadata),
             this,
             ...this.__$resolveColl(collection)
@@ -328,12 +331,15 @@ export default abstract class Entity {
 
     // ------------------------------------------------------------------------
 
-    protected belongsToThrough<T extends EntityT, R extends EntityT = EntityT>(
+    protected belongsToThrough<
+        T extends EntityT,
+        R extends Partial<EntityT> = Partial<EntityT>
+    >(
         this: T,
         name: string,
         entity?: R
     ): BelongsToThrough<R> {
-        return BelongsToThroughHandler<R>(
+        return BelongsToThroughHandler<T, R>(
             this.__$validRel(name, BelongsToThroughMetadata),
             this,
             undefined,
@@ -345,8 +351,8 @@ export default abstract class Entity {
 
     protected belongsToMany<
         T extends EntityT,
-        R extends EntityT = EntityT,
-        C extends Collection<R> = Collection<R>
+        R extends Partial<EntityT> = Partial<EntityT>,
+        C extends Collection<any> = Collection<any>
     >(
         this: T,
         name: string,
@@ -354,7 +360,7 @@ export default abstract class Entity {
             Constructor<C> & typeof Collection
         )
     ): BelongsToMany<R, C> {
-        return BelongsToManyHandler<R, C>(
+        return BelongsToManyHandler<T, R, C>(
             this.__$validRel(name, BelongsToManyMetadata),
             this,
             ...this.__$resolveColl(collection)
@@ -365,13 +371,13 @@ export default abstract class Entity {
 
     protected polymorphicHasOne<
         T extends EntityT,
-        R extends EntityT = EntityT
+        R extends Partial<EntityT> = Partial<EntityT>
     >(
         this: T,
         name: string,
         entity?: R
     ): PolymorphicHasOne<R> {
-        return PolymorphicHasOneHandler<R>(
+        return PolymorphicHasOneHandler<T, R>(
             this.__$validRel(name, PolymorphicHasOneMetadata),
             this,
             undefined,
@@ -383,8 +389,8 @@ export default abstract class Entity {
 
     protected polymorphicHasMany<
         T extends EntityT,
-        R extends EntityT = EntityT,
-        C extends Collection<R> = Collection<R>
+        R extends Partial<EntityT> = Partial<EntityT>,
+        C extends Collection<any> = Collection<any>
     >(
         this: T,
         name: string,
@@ -392,7 +398,7 @@ export default abstract class Entity {
             Constructor<C> & typeof Collection
         )
     ): PolymorphicHasMany<R, C> {
-        return PolymorphicHasManyHandler<R, C>(
+        return PolymorphicHasManyHandler<T, R, C>(
             this.__$validRel(name, PolymorphicHasManyMetadata),
             this,
             ...this.__$resolveColl(collection)
@@ -403,11 +409,11 @@ export default abstract class Entity {
 
     protected polymorphicBelongsTo<
         T extends EntityT,
-        R extends BasePolymorphicEntity<any> | BaseEntity[]
+        R extends Partial<BasePolymorphicEntity<any>> | Partial<BaseEntity>[]
     >(
         this: T,
         name: string,
-        polymorphicEntity?: PolymorphicBelongsToRelated<R>
+        polymorphicEntity?: BasePolymorphicEntity<any>
     ): PolymorphicBelongsTo<R> {
         return PolymorphicBelongsToHandler<R>(
             this.__$validRel(name, PolymorphicBelongsToMetadata),
@@ -421,9 +427,7 @@ export default abstract class Entity {
     /** @internal */
     protected async __$saveRelations<T extends EntityT>(this: T): Promise<T> {
         for (const { name } of (this as Entity).__$trueMetadata.relations) if (
-            (this[name as keyof T] as RelationHandler).__$shouldUpdate !== (
-                false
-            )
+            (this[name as keyof T] as any).__$shouldUpdate !== false
         ) (
             await (this[name as keyof T] as any).save()
         )

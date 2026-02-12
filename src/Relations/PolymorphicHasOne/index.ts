@@ -43,18 +43,21 @@ export class PolymorphicHasOneHandler<
 
 // ----------------------------------------------------------------------------
 
-export default function PolymorphicHasOne<T extends Entity>(
+export default function PolymorphicHasOne<
+    T extends Entity,
+    R extends Partial<Entity>
+>(
     metadata: PolymorphicHasOneMetadata,
-    target: Entity,
-    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
-    instance?: T | null
-): PolymorphicHasOne<T> {
+    target: T,
+    related: Constructor<R> = metadata.relatedTarget as Constructor<R & Entity>,
+    instance?: R | null
+): PolymorphicHasOne<R> {
     return new PolymorphicHasOneHandler(
         metadata,
         target,
-        related,
-        instance
-    ) as PolymorphicHasOne<T>
+        related as Constructor<R & Entity>,
+        instance as R & Entity
+    ) as unknown as PolymorphicHasOne<R>
 }
 
 export type {

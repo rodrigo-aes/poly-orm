@@ -7,8 +7,7 @@ export type RelationConditionalQueryOptions<T extends Entity> = (
     ExcludeRelationAttributes<ConditionalQueryOptions<T>>
 )
 
-export interface FindRelationQueryOptions<T extends Entity
-> {
+export interface FindRelationQueryOptions<T extends Entity> {
     where?: RelationConditionalQueryOptions<T>
     relations?: RelationOptions<T>
 }

@@ -91,7 +91,7 @@ export default abstract class HasManyRelation<
     public async createMany(attributes: RelationCreationAttributes<R>[]): Promise<R[]> {
         const instances = await MySQLOperation.Relation.createMany(
             this.related as EntityTarget,
-            this.sqlBuilder.createManySQL(attributes),
+            (this.sqlBuilder as any).createManySQL(attributes),
             (this.sqlBuilder.creationAttributes as any)(attributes)
         ) as Collection<R>
 

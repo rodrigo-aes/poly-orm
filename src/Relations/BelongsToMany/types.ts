@@ -3,8 +3,8 @@ import type { BelongsToManyHandler } from "./index"
 import type { Collection } from "../../Entities"
 
 export type BelongsToMany<
-    T extends Entity,
-    C extends Collection<T> = Collection<T>
+    T extends Partial<Entity>,
+    C extends Collection<any> = Collection<T & Entity>
 > = (
-        BelongsToManyHandler<Entity, T, C> & C
+        BelongsToManyHandler<Entity, T & Entity, C> & C
     )

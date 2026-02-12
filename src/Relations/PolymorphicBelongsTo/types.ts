@@ -14,9 +14,9 @@ export type PolymorphicBelongsToRelated<
     : T
 
 export type PolymorphicBelongsTo<
-    T extends BasePolymorphicEntity<any> | BaseEntity[]
-> = PolymorphicBelongsToHandler<Entity, T> & (
-    T extends BaseEntity[]
-    ? SourceEntity<T>
-    : T
+    T extends Partial<BasePolymorphicEntity<any>> | Partial<BaseEntity>[]
+> = PolymorphicBelongsToHandler<Entity, T & any> & (
+    T extends Partial<BaseEntity[]>
+    ? SourceEntity<T & any>
+    : T & any
 )

@@ -53,23 +53,24 @@ export class PolymorphicHasManyHandler<
 
 export default function PolymorphicHasMany<
     T extends Entity,
-    C extends Collection<T> = Collection<T>
+    R extends Partial<Entity>,
+    C extends Collection<any> = Collection<any>
 >(
     metadata: PolymorphicHasManyMetadata,
-    target: Entity,
+    target: T,
     collection: Constructor<C> = Collection as (
         Constructor<C> & typeof Collection
     ),
     instances: C = new collection,
-    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
-): PolymorphicHasMany<T, C> {
+    related: Constructor<R> = metadata.relatedTarget as Constructor<R & Entity>,
+): PolymorphicHasMany<R, C> {
     return new PolymorphicHasManyHandler(
         metadata,
         target,
-        related,
+        related as Constructor<R & Entity>,
         collection,
         instances
-    ) as PolymorphicHasMany<T, C>
+    ) as unknown as PolymorphicHasMany<R, C>
 }
 
 export type {

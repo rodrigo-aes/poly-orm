@@ -12,7 +12,7 @@ export default function PolymorphicHasMany(
     related: PolymorphicChildRelatedGetter,
     foreignKey: string | PolymorphicHasManyOptions
 ) {
-    return function <T extends BaseEntity, R extends Entity>(
+    return function <T extends BaseEntity, R extends Partial<Entity>>(
         _: undefined,
         context: ClassFieldDecoratorContext<T, PolymorphicHasMany<R>>
     ) {

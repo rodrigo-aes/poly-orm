@@ -44,18 +44,21 @@ export class BelongsToThroughHandler<
 
 // ----------------------------------------------------------------------------
 
-export default function BelongsToThrough<T extends Entity>(
+export default function BelongsToThrough<
+    T extends Entity,
+    R extends Partial<Entity>
+>(
     metadata: BelongsToThroughMetadata,
-    target: Entity,
-    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
-    instance?: T | null
-): BelongsToThrough<T> {
+    target: T,
+    related: Constructor<R> = metadata.relatedTarget as Constructor<R & Entity>,
+    instance?: R | null
+): BelongsToThrough<R> {
     return new BelongsToThroughHandler(
         metadata,
         target,
-        related,
-        instance
-    ) as BelongsToThrough<T>
+        related as Constructor<R & Entity>,
+        instance as (R & Entity) | null
+    ) as unknown as BelongsToThrough<R>
 }
 
 export type {

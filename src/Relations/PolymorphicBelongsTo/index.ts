@@ -82,23 +82,27 @@ export class PolymorphicBelongsToHandler<
 // ----------------------------------------------------------------------------
 
 export default function PolymorphicBelongsTo<
-    T extends BasePolymorphicEntity<any> | BaseEntity[]
+    T extends Partial<BasePolymorphicEntity<any>> | Partial<BaseEntity>[]
 >(
     metadata: PolymorphicBelongsToMetadata,
     target: Entity,
-    related: Constructor<PolymorphicBelongsToRelated<T>> = (
-        metadata.relatedTarget as Constructor<
-            PolymorphicBelongsToRelated<T>
-        >
-    ),
-    instance?: PolymorphicBelongsToRelated<T> | null
+    related: Constructor<PolymorphicBelongsToRelated<
+        T & (BasePolymorphicEntity<any> | BaseEntity[])
+    >> = (
+            metadata.relatedTarget as Constructor<
+                PolymorphicBelongsToRelated<
+                    T & (BasePolymorphicEntity<any> | BaseEntity[])
+                >
+            >
+        ),
+    instance?: PolymorphicBelongsToRelated<T & any> | null
 ): PolymorphicBelongsTo<T> {
     return new PolymorphicBelongsToHandler(
         metadata,
         target,
         related,
         instance as any
-    ) as PolymorphicBelongsTo<T>
+    ) as unknown as PolymorphicBelongsTo<T>
 }
 
 export type {

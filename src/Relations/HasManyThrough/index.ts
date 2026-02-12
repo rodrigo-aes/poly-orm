@@ -53,23 +53,24 @@ export class HasManyThroughHandler<
 
 export default function HasManyThrough<
     T extends Entity,
-    C extends Collection<T> = Collection<T>
+    R extends Partial<Entity>,
+    C extends Collection<any> = Collection<any>
 >(
     metadata: HasManyThroughMetadata,
-    target: Entity,
+    target: T,
     collection: Constructor<C> = Collection as (
         Constructor<C> & typeof Collection
     ),
     instances: C = new collection,
-    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
-): HasManyThrough<T, C> {
+    related: Constructor<R> = metadata.relatedTarget as Constructor<R & Entity>,
+): HasManyThrough<R, C> {
     return new HasManyThroughHandler(
         metadata,
         target,
-        related,
+        related as Constructor<R & Entity>,
         collection,
         instances
-    ) as HasManyThrough<T, C>
+    ) as unknown as HasManyThrough<R, C>
 }
 
 export type {

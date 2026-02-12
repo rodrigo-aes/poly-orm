@@ -85,7 +85,7 @@ export default abstract class BasePolymorphicEntity<
     // Publics ----------------------------------------------------------------
     public get sources(): EntitiesMap<S> {
         return (this.__$trueMetadata as PolymorphicEntityMetadata)
-            .entities as EntitiesMap<S>
+            .entities as any
     }
 
     // Privates -------------------------------------------------------------

@@ -12,9 +12,9 @@ import type { HasMany } from "./types"
 /** HasMany relation handler */
 export class HasManyHandler<
     T extends Entity,
-    R extends Entity,
-    C extends Collection<R> = Collection<R>
-> extends HasManyRelation<T, R, C> {
+    R extends Partial<Entity>,
+    C extends Collection<any> = Collection<any>
+> extends HasManyRelation<T, R & Entity, C> {
     /** @internal */
     constructor(
         /** @internal */
@@ -24,7 +24,7 @@ export class HasManyHandler<
         protected target: T,
 
         /** @internal */
-        protected related: Constructor<R>,
+        protected related: Constructor<R & Entity>,
 
         /** @internal */
         protected collection: Constructor<C> = Collection as (
@@ -34,17 +34,17 @@ export class HasManyHandler<
         /** @internal */
         protected instances: C = new collection
     ) {
-        super(metadata, target, related, collection, instances)
+        super(metadata, target, related as Constructor<R & Entity>, collection, instances)
     }
 
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected get sqlBuilder(): HasManyHandlerSQLBuilder<T, R> {
+    protected get sqlBuilder(): HasManyHandlerSQLBuilder<T, R & Entity> {
         return new HasManyHandlerSQLBuilder(
             this.metadata,
             this.target,
-            this.related
+            this.related as Constructor<R & Entity>
         )
     }
 }
@@ -53,23 +53,24 @@ export class HasManyHandler<
 
 export default function HasMany<
     T extends Entity,
-    C extends Collection<T> = Collection<T>
+    R extends Partial<Entity>,
+    C extends Collection<any> = Collection<any>
 >(
     metadata: HasManyMetadata,
-    target: Entity,
+    target: T,
     collection: Constructor<C> = Collection as (
         Constructor<C> & typeof Collection
     ),
     instances: C = new collection,
-    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
-): HasMany<T, C> {
+    related: Constructor<R> = metadata.relatedTarget as Constructor<R & Entity>,
+): HasMany<R, C> {
     return new HasManyHandler(
         metadata,
         target,
-        related,
+        related as Constructor<R & Entity>,
         collection,
         instances
-    ) as HasMany<T, C>
+    ) as unknown as HasMany<R, C>
 }
 
 export type {

@@ -11,7 +11,7 @@ export default function HasOne(
     related: HasOneRelatedGetter,
     foreignKey: string | HasOneOptions
 ) {
-    return function <T extends BaseEntity, R extends Entity>(
+    return function <T extends BaseEntity, R extends Partial<Entity>>(
         _: undefined,
         context: ClassFieldDecoratorContext<T, HasOne<R>>
     ) {

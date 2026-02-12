@@ -46,7 +46,7 @@ export type EntityRelationsKeys<T extends Entity> = {
     [K in keyof T]: (
         T[K] extends null
         ? never
-        : T[K] extends RelationHandler
+        : T[K] extends RelationHandler<any>
         ? Extract<K, string>
         : never
     )

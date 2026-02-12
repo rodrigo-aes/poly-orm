@@ -1,6 +1,6 @@
 import type { Entity } from "../../types"
 import type { HasOneHandler } from "./index"
 
-export type HasOne<T extends Entity> = (
-    HasOneHandler<Entity, T> & T
+export type HasOne<T extends Partial<Entity>> = (
+    HasOneHandler<Entity, T & Entity> & T
 )

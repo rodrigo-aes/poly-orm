@@ -127,23 +127,24 @@ export class BelongsToManyHandler<
 
 export default function BelongsToMany<
     T extends Entity,
-    C extends Collection<T> = Collection<T>
+    R extends Partial<Entity>,
+    C extends Collection<any> = Collection<any>
 >(
     metadata: BelongsToManyMetadata,
-    target: Entity,
+    target: T,
     collection: Constructor<C> = Collection as (
         Constructor<C> & typeof Collection
     ),
     instances: C = new collection,
-    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
-): BelongsToMany<T, C> {
+    related: Constructor<R> = metadata.relatedTarget as Constructor<R & Entity>,
+): BelongsToMany<R, C> {
     return new BelongsToManyHandler(
         metadata,
         target,
-        related,
+        related as Constructor<R & Entity>,
         collection,
         instances
-    ) as BelongsToMany<T, C>
+    ) as unknown as BelongsToMany<R, C>
 }
 
 export type {

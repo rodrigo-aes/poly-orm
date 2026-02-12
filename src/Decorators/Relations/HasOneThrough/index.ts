@@ -16,7 +16,7 @@ export default function HasOneThrough(
     through: HasOneThroughGetter,
     options: HasOneThroughOptions
 ) {
-    return function <T extends BaseEntity, R extends Entity>(
+    return function <T extends BaseEntity, R extends Partial<Entity>>(
         _: undefined,
         context: ClassFieldDecoratorContext<T, HasOneThrough<R>>
     ) {

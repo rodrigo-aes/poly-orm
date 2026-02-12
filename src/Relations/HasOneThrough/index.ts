@@ -44,15 +44,21 @@ export class HasOneThroughHandler<
 
 // ----------------------------------------------------------------------------
 
-export default function HasOneThrough<T extends Entity>(
+export default function HasOneThrough<
+    T extends Entity,
+    R extends Partial<Entity>
+>(
     metadata: HasOneThroughMetadata,
-    target: Entity,
-    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
-    instance?: T | null
-): HasOneThrough<T> {
-    return new HasOneThroughHandler(metadata, target, related, instance) as (
-        HasOneThrough<T>
-    )
+    target: T,
+    related: Constructor<R> = metadata.relatedTarget as Constructor<R & Entity>,
+    instance?: R | null
+): HasOneThrough<R> {
+    return new HasOneThroughHandler(
+        metadata,
+        target,
+        related as Constructor<R & Entity>,
+        instance as (R & Entity) | null
+    ) as unknown as HasOneThrough<R>
 }
 
 export type {

@@ -11,7 +11,7 @@ export default function BelongsTo(
     related: BelongsToRelatedGetter,
     foreignKey: string | BelongToOptions
 ) {
-    return function <T extends BaseEntity, R extends Entity>(
+    return function <T extends BaseEntity, R extends Partial<Entity>>(
         _: undefined,
         context: ClassFieldDecoratorContext<T, BelongsTo<R>>
     ) {

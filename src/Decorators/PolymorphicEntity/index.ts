@@ -1,5 +1,5 @@
 import { PolymorphicEntityMetadata } from "../../Metadata"
-
+import DecoratorMetadata from "../DecoratorMetadata"
 // Decorators
 import Column, { type IncludeColumnOptions } from "./Column"
 
@@ -12,15 +12,27 @@ import CommonRelation, {
 } from "./CommonRelation"
 
 // Types
-import type { PolymorphicEntityTarget, EntityTarget } from "../../types"
+import type {
+    Constructor,
+    EntityTarget,
+    InstancesOf
+} from "../../types"
+import type { BasePolymorphicEntity } from "../../Entities"
 
-export default function PolymorphicEntity(...entities: EntityTarget[]) {
-    return function (target: PolymorphicEntityTarget) {
+export default function PolymorphicEntity<
+    S extends EntityTarget[],
+    T extends BasePolymorphicEntity<InstancesOf<S>>
+>(...entities: S) {
+    return function (
+        target: Constructor<T>,
+        context: ClassDecoratorContext<Constructor<T>>
+    ) {
         PolymorphicEntityMetadata.findOrBuild(
             target,
             target.name.toLowerCase(),
             entities
         )
+        DecoratorMetadata.define(context.metadata).register(target)
     }
 }
 

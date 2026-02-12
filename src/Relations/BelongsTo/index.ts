@@ -44,15 +44,18 @@ export class BelongsToHandler<
 
 // ----------------------------------------------------------------------------
 
-export default function BelongsTo<T extends Entity>(
+export default function BelongsTo<T extends Entity, R extends Partial<Entity>>(
     metadata: BelongsToMetadata,
-    target: Entity,
-    related: Constructor<T> = metadata.relatedTarget as Constructor<T>,
-    instance?: T | null
-): BelongsTo<T> {
-    return new BelongsToHandler(metadata, target, related, instance) as (
-        BelongsTo<T>
-    )
+    target: T,
+    related: Constructor<R> = metadata.relatedTarget as Constructor<R & Entity>,
+    instance?: R | null
+): BelongsTo<R> {
+    return new BelongsToHandler(
+        metadata,
+        target,
+        related as Constructor<R & Entity>,
+        instance as R & Entity
+    ) as unknown as BelongsTo<R>
 }
 
 export type {
