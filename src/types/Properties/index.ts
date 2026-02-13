@@ -42,17 +42,17 @@ export type EntityProperties<T extends Entity> = Pick<
 
 // ----------------------------------------------------------------------------
 
-export type EntityRelationsKeys<T extends Entity> = {
+export type EntityRelationsKeys<T extends Partial<Entity>> = {
     [K in keyof T]: (
         T[K] extends null
         ? never
-        : T[K] extends RelationHandler<any>
+        : T[K] extends RelationHandler<Entity>
         ? Extract<K, string>
         : never
     )
 }[keyof T]
 
-export type EntityRelations<T extends Entity> = Pick<
+export type EntityRelations<T extends Partial<Entity>> = Pick<
     T,
     EntityRelationsKeys<T>
 >

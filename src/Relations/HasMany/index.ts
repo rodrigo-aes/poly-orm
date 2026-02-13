@@ -12,9 +12,9 @@ import type { HasMany } from "./types"
 /** HasMany relation handler */
 export class HasManyHandler<
     T extends Entity,
-    R extends Partial<Entity>,
-    C extends Collection<any> = Collection<any>
-> extends HasManyRelation<T, R & Entity, C> {
+    R extends Entity,
+    C extends Collection<R> = Collection<R>
+> extends HasManyRelation<T, R, C> {
     /** @internal */
     constructor(
         /** @internal */
@@ -24,7 +24,7 @@ export class HasManyHandler<
         protected target: T,
 
         /** @internal */
-        protected related: Constructor<R & Entity>,
+        protected related: Constructor<R>,
 
         /** @internal */
         protected collection: Constructor<C> = Collection as (
@@ -34,17 +34,17 @@ export class HasManyHandler<
         /** @internal */
         protected instances: C = new collection
     ) {
-        super(metadata, target, related as Constructor<R & Entity>, collection, instances)
+        super(metadata, target, related as Constructor<R>, collection, instances)
     }
 
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     /** @internal */
-    protected get sqlBuilder(): HasManyHandlerSQLBuilder<T, R & Entity> {
+    protected get sqlBuilder(): HasManyHandlerSQLBuilder<T, R> {
         return new HasManyHandlerSQLBuilder(
             this.metadata,
             this.target,
-            this.related as Constructor<R & Entity>
+            this.related as Constructor<R>
         )
     }
 }

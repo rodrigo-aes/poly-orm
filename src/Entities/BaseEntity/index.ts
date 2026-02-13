@@ -37,9 +37,7 @@ import type {
 export default abstract class BaseEntity extends Entity {
     declare readonly __name: string
     declare readonly __defaultCollection: Collection<this>
-    declare readonly __defaultPagination: Pagination<
-        this['__defaultCollection']
-    >
+    declare readonly __defaultPagination: Pagination<Collection<this>>
 
     public static readonly INHERIT_POLYMORPHIC_RELATIONS = false
 

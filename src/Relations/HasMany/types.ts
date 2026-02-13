@@ -1,7 +1,6 @@
 import type { Entity } from "../../types"
 import type { HasManyHandler } from "./index"
 import type { Collection } from "../../Entities"
-import type { Related } from "../types"
 
 export type HasMany<
     T extends Partial<Entity>,
