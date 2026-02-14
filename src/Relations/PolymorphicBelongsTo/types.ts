@@ -15,8 +15,15 @@ export type PolymorphicBelongsToRelated<
 
 export type PolymorphicBelongsTo<
     T extends Partial<BasePolymorphicEntity<any>> | Partial<BaseEntity>[]
-> = PolymorphicBelongsToHandler<Entity, T & any> & (
+> = PolymorphicBelongsToHandler<Entity, PolymorphicBelongsToRelated<(
     T extends Partial<BaseEntity[]>
-    ? SourceEntity<T & any>
-    : T & any
-)
+    ? Extract<T, BaseEntity[]>
+    : T extends BasePolymorphicEntity<any>
+    ? Extract<T, BasePolymorphicEntity<any>>
+    : never
+)>>
+
+import type { Source } from "../../Entities"
+import { Foo, Baz } from "../../TestTools/Entities"
+
+type a = Source<[Foo, Baz]>

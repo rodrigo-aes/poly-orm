@@ -1,5 +1,5 @@
 import type BaseEntity from "../BaseEntity"
-import type BasePolymorphicEntity from "."
+import BasePolymorphicEntity from "."
 import type { EntityTarget, Constructor } from "../../types"
 
 export type SourceEntities<T extends BasePolymorphicEntity<any>> =
@@ -20,18 +20,24 @@ export type SourceEntity<T extends BasePolymorphicEntity<any> | BaseEntity[]> =
     : never
     : never
 
-export type EntityNames<T extends BaseEntity[]> = T[number]['__name']
+export type EntityNames<T extends BasePolymorphicEntity<any> | BaseEntity[]> = (
+    T extends BasePolymorphicEntity<infer U>
+    ? U[number]['__name']
+    : T extends BaseEntity[]
+    ? T[number]['__name']
+    : never
+)
 
 export type EntitiesMap<
-    T extends BaseEntity[]
+    T extends BasePolymorphicEntity<any> | BaseEntity[]
 > = {
         [K in EntityNames<T>]: Constructor<Extract<
-            T extends BasePolymorphicEntity<any>
-            ? SourceEntities<T>[number]
+            T extends BasePolymorphicEntity<infer U>
+            ? U[number]
             : T extends BaseEntity[]
             ? T[number]
             : never,
-            { name: K }
+            { __name: K }
         >>
     }
 

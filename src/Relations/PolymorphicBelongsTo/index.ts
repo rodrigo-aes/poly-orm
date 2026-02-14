@@ -67,10 +67,8 @@ export class PolymorphicBelongsToHandler<
 
     // ------------------------------------------------------------------------
 
-    public update<S extends Source<R> = Source<R>>(
-        attributes: UpdateAttributes<Extract<
-            ResolveSource<R, S>, PolymorphicBelongsToRelated<R>
-        >>
+    public update<S extends Source<R>>(
+        attributes: UpdateAttributes<ResolveSource<R, S>>
     ): Promise<ResultSetHeader> {
         return MySQLOperation.Relation.update(
             this.related,
