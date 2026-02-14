@@ -14,8 +14,8 @@ import type {
     Constructor,
     Entity,
     TargetMetadata,
-    EntityProperties,
-    EntityPropertiesKeys
+    EntityProps,
+    EntityPropsKeys
 } from "../../types"
 
 import type { ConditionalQueryOptions } from "../../SQLBuilders"
@@ -61,10 +61,10 @@ export default class ConditionalQueryBuilder<T extends Entity> {
      * @returns {this} - `this`
      */
     public where<
-        K extends EntityPropertiesKeys<T>,
+        K extends EntityPropsKeys<T>,
         Cond extends (
-            EntityProperties<T>[K] |
-            CompatibleOperators<EntityProperties<T>[K]>
+            EntityProps<T>[K] |
+            CompatibleOperators<EntityProps<T>[K]>
         )
     >(
         propertie: K | string,
@@ -100,10 +100,10 @@ export default class ConditionalQueryBuilder<T extends Entity> {
      * @returns {this} - `this`
      */
     public orWhere<
-        K extends EntityPropertiesKeys<T>,
+        K extends EntityPropsKeys<T>,
         Cond extends (
-            EntityProperties<T>[K] |
-            CompatibleOperators<EntityProperties<T>[K]>
+            EntityProps<T>[K] |
+            CompatibleOperators<EntityProps<T>[K]>
         )
     >(
         propertie: K | string,

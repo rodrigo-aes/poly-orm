@@ -8,7 +8,7 @@ import type { Constructor } from "../../../../types"
 import type { BaseEntity } from "../../../../Entities"
 import type {
     CreateSQLBuilder,
-    CreationAttributesOptions
+    CreateOneOrManyAttributes
 } from "../../../../SQLBuilders"
 import type { ExecOptions } from "../types"
 import type { CreateResult, CreationCollectMapOptions } from "./types"
@@ -33,7 +33,7 @@ export default class CreateOperation extends OperationHandler {
     // Protecteds -------------------------------------------------------------
     protected static override async execAndMap(
         { target, sqlBuilder }: ExecOptions<any, any, any>
-    ): Promise<CreationAttributesOptions<any>> {
+    ): Promise<CreateOneOrManyAttributes<any>> {
         const { insertId, affectedRows } = await this.execQuery(
             target, sqlBuilder
         )
@@ -48,10 +48,10 @@ export default class CreateOperation extends OperationHandler {
     // Privates ---------------------------------------------------------------
     private static fillPrimaries<T extends BaseEntity>(
         target: Constructor<T>,
-        attributes: CreationAttributesOptions<T>,
+        attributes: CreateOneOrManyAttributes<T>,
         insertId: number,
         affectedRows: number
-    ): CreationAttributesOptions<T> {
+    ): CreateOneOrManyAttributes<T> {
         if (Array.isArray(attributes)) {
             const pk = MetadataHandler.targetMetadata(target).PK
             for (let r = 0; r < affectedRows; r++) (

@@ -10,7 +10,7 @@ import {
 
 // Types
 import type { BaseEntity } from "../../../Entities"
-import type { CreationAttributes } from "../../../SQLBuilders"
+import type { CreateAttributes } from "../../../SQLBuilders"
 
 /**
  * Build a `BULK INSERT` query
@@ -32,7 +32,7 @@ export default class BulkInsertQueryBuilder<
 
     // ------------------------------------------------------------------------
 
-    public data(attributes: CreationAttributes<T>[]): Omit<
+    public data(attributes: CreateAttributes<T>[]): Omit<
         this, "fields" | "values"
     > {
         this.sqlBuilder.setData(attributes)

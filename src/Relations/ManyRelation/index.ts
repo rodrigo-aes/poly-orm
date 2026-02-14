@@ -14,8 +14,8 @@ import type { ManyRelationMetadatatype } from "../../Metadata"
 import type {
     ManyRelationHandlerSQLBuilder,
     FindRelationQueryOptions,
-    RelationUpdateAttributes,
-    RelationConditionalQueryOptions
+    UpdateAttributes,
+    ConditionalQueryOptions
 } from "../../SQLBuilders"
 
 /** Many relation handler */
@@ -119,8 +119,8 @@ export default abstract class ManyRelation<
      * @returns - A result header with details of operation
      */
     public update(
-        attributes: RelationUpdateAttributes<R>,
-        where?: RelationConditionalQueryOptions<R>
+        attributes: UpdateAttributes<R>,
+        where?: ConditionalQueryOptions<R>
     ): Promise<ResultSetHeader> {
         return MySQLOperation.Relation.update(
             this.related,
@@ -136,7 +136,7 @@ export default abstract class ManyRelation<
      * @param where - Conditional where options
      * @returns - Delete result
      */
-    public delete(where?: RelationConditionalQueryOptions<R>): Promise<
+    public delete(where?: ConditionalQueryOptions<R>): Promise<
         DeleteResult
     > {
         return MySQLOperation.Relation.delete(

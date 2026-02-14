@@ -1,9 +1,9 @@
-import type { Entity, EntityPropertiesKeys } from "../../../types"
+import type { Entity, EntityPropsKeys } from "../../../types"
 import type { CompatibleOperators } from "../Operator"
 import type { ConditionalQueryOptions } from "../types"
 
 export type EntityWhenQueryOptions<T extends Entity> = Partial<{
-    [K in EntityPropertiesKeys<T>]: (
+    [K in EntityPropsKeys<T>]: (
         T[K] |
         Partial<CompatibleOperators<T[K]>>
     )

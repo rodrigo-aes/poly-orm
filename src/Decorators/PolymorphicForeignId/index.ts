@@ -2,7 +2,7 @@ import { ColumnsMetadata } from "../../Metadata"
 import DecoratorMetadata from "../DecoratorMetadata"
 
 // Types
-import type { EntityTarget, FKProp } from "../../types"
+import type { EntityTarget, Prop } from "../../types"
 import type { BaseEntity } from "../../Entities"
 import type {
     PolymorphicForeignIdRelatedGetter,
@@ -15,7 +15,7 @@ export default function PolymorphicForeignId(
 ) {
     return function <T extends BaseEntity>(
         _: undefined,
-        context: ClassFieldDecoratorContext<T, FKProp<string>>
+        context: ClassFieldDecoratorContext<T, Prop<string>>
     ) {
         DecoratorMetadata
             .define(context.metadata)

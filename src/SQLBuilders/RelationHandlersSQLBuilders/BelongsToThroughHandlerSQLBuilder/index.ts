@@ -3,13 +3,8 @@ import OneRelationHandlerSQLBuilder from "../OneRelationHandlerSQLBuilder"
 // Types
 import type { BelongsToThroughMetadata } from "../../../Metadata"
 import type { Entity, Constructor } from "../../../types"
-
-import type {
-    RelationCreationAttributes,
-    RelationUpdateOrCreateAttributes
-} from "../OneRelationHandlerSQLBuilder"
-
-import type { EntityProperties, OptionalNullable } from "../../../types"
+import type { CreateAttributes } from "../../CreateSQLBuilder"
+import type { UpdateAttributes } from "../../UpdateSQLBuilder"
 
 // Exceptions
 import PolyORMException from "../../../Errors"
@@ -65,7 +60,7 @@ export default class BelongsToThroughHandlerSQLBuilder<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public override createSQL(_: RelationCreationAttributes<R>): string {
+    public override createSQL(_: CreateAttributes<R>): string {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'createSQL', this.constructor.name
         )
@@ -73,9 +68,7 @@ export default class BelongsToThroughHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public override updateOrCreateSQL(
-        _: RelationUpdateOrCreateAttributes<R>
-    ): string {
+    public override updateOrCreateSQL(_: CreateAttributes<R>): string {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'updateOrCreateSQL', this.constructor.name
         )

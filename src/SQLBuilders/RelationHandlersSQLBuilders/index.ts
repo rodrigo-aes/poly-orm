@@ -27,17 +27,7 @@ import type {
     ManyRelationHandlerSQLBuilder
 } from './types'
 
-import type {
-    RelationCreationAttributes,
-    RelationUpdateAttributes,
-    RelationUpdateOrCreateAttributes
-} from "./OneRelationHandlerSQLBuilder"
-
-import type {
-    FindRelationQueryOptions,
-    RelationCreateManyAttributes,
-    RelationConditionalQueryOptions
-} from "./ManyRelationHandlerSQLBuilder"
+import type { FindRelationQueryOptions } from "./ManyRelationHandlerSQLBuilder"
 
 export {
     HasOneHandlerSQLBuilder,
@@ -55,10 +45,5 @@ export {
     type OneRelationHandlerSQLBuilder,
     type ManyRelationHandlerSQLBuilder,
 
-    type RelationCreationAttributes,
-    type RelationUpdateAttributes,
-    type RelationUpdateOrCreateAttributes,
-    type FindRelationQueryOptions,
-    type RelationCreateManyAttributes,
-    type RelationConditionalQueryOptions
+    type FindRelationQueryOptions
 }

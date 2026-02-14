@@ -1,10 +1,10 @@
-import type { Entity, EntityPropertiesKeys, EntityRelationsKeys } from "../../types"
+import type { Entity, EntityPropsKeys, EntityRelationsKeys } from "../../types"
 import type { Case, CaseQueryOptions } from "../ConditionalSQLBuilder"
 
 export type OrderDirection = 'ASC' | 'DESC'
 
 export type OrderQueryOption<T extends Entity> = [
-    EntityPropertiesKeys<T> | string,
+    EntityPropsKeys<T> | string,
     OrderDirection
 ]
 

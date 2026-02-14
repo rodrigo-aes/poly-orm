@@ -2,7 +2,7 @@ import type { Constructor } from "../types"
 import type { BaseEntity, Entity } from "../Entities"
 import type { Old, New } from './Symbols'
 import type {
-    CreationAttributesOptions,
+    CreateOneOrManyAttributes,
     UpdateAttributes,
     ConditionalQueryOptions
 } from "../SQLBuilders"
@@ -19,7 +19,7 @@ export type TriggerActionType = (
 )
 
 export type TriggerActionOptions<O extends (
-    CreationAttributesOptions<any> |
+    CreateOneOrManyAttributes<any> |
     UpdateAttributes<any> |
     ConditionalQueryOptions<any>
 )> = {
@@ -39,7 +39,7 @@ export type InsertIntoTableAction<T extends BaseEntity = BaseEntity> = {
     type: 'INSERT INTO'
     target: Constructor<T>,
     attributes: TriggerActionOptions<
-        CreationAttributesOptions<T>
+        CreateOneOrManyAttributes<T>
     >
 }
 

@@ -17,12 +17,13 @@ import type {
     EntityTarget,
     InstancesOf
 } from "../../types"
-import type { BasePolymorphicEntity } from "../../Entities"
+
+import type { BaseEntity, BasePolymorphicEntity } from "../../Entities"
 
 export default function PolymorphicEntity<
-    S extends EntityTarget[],
-    T extends BasePolymorphicEntity<InstancesOf<S>>
->(...entities: S) {
+    S extends BaseEntity[],
+    T extends BasePolymorphicEntity<S>
+>(...entities: Constructor<S[number]>[]) {
     return function (
         target: Constructor<T>,
         context: ClassDecoratorContext<Constructor<T>>

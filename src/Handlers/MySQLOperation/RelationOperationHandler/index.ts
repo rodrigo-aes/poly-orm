@@ -7,7 +7,7 @@ import { MetadataHandler } from "../../../Metadata"
 import type { ResultSetHeader } from "mysql2"
 import type { Entity, Target, Constructor } from "../../../types"
 import type { BaseEntity, Collection } from "../../../Entities"
-import type { CreationAttributes } from "../../../SQLBuilders"
+import type { CreateAttributes } from "../../../SQLBuilders"
 import type { DeleteResult } from "../OperationHandlers"
 
 export default class RelationOperationHandler {
@@ -48,7 +48,7 @@ export default class RelationOperationHandler {
     public static async create<T extends BaseEntity>(
         target: Constructor<T>,
         sql: string,
-        attributes: CreationAttributes<T>
+        attributes: CreateAttributes<T>
     ): Promise<T> {
         await this.query(target, sql)
         return EntityBuilder.build(target, attributes) as T
@@ -59,7 +59,7 @@ export default class RelationOperationHandler {
     public static async createMany<T extends BaseEntity>(
         target: Constructor<T>,
         sql: string,
-        attributes: CreationAttributes<T>[]
+        attributes: CreateAttributes<T>[]
     ): Promise<Collection<T>> {
         await this.query(target, sql)
         return EntityBuilder.build(target, attributes) as Collection<T>
@@ -70,7 +70,7 @@ export default class RelationOperationHandler {
     public static async updateOrCreate<T extends BaseEntity>(
         target: Constructor<T>,
         sql: string,
-        attributes: CreationAttributes<T>
+        attributes: CreateAttributes<T>
     ): Promise<T> {
         await this.query(target, sql)
         return EntityBuilder.build(target, attributes) as T

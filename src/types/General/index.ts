@@ -25,12 +25,8 @@ import type { CollectionTarget } from './Collections'
 import type { PaginationTarget } from './Paginations'
 
 export type Constructor<T extends object> = new (...args: any[]) => T
-export type ConstructorsOf<T extends object[]> = {
-    [K in keyof T]: Constructor<T>
-}
-export type InstancesOf<T extends Constructor<any>[]> = {
-    [K in keyof T]: InstanceType<T[K]>
-}
+export type ConstructorsOf<T extends object[]> = Constructor<T[number]>
+export type InstancesOf<T extends Constructor<any>[]> = InstanceType<T[number]>
 
 export type Primitive = string | number | boolean | Date | null
 

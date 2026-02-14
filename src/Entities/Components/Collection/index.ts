@@ -6,7 +6,7 @@ import type {
     CollectionTarget
 } from "../../../types"
 
-import type { CreationAttributes, UpdateAttributes } from "../../../SQLBuilders"
+import type { CreateAttributes, UpdateAttributes } from "../../../SQLBuilders"
 import type { CollectionJSON } from "./types"
 
 export default class Collection<

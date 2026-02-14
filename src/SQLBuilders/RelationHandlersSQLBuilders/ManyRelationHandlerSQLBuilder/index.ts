@@ -13,15 +13,13 @@ import type { ManyRelationMetadatatype } from "../../../Metadata"
 import type { Entity, EntityTarget } from "../../../types"
 
 import type {
-    RelationCreationAttributes,
-    RelationUpdateAttributes,
-    RelationUpdateOrCreateAttributes
-} from "../OneRelationHandlerSQLBuilder"
+    CreateAttributes,
+    UpdateAttributes,
+    UpdateOrCreateAttributes,
+} from "../../../SQLBuilders"
 
 import type {
     FindRelationQueryOptions,
-    RelationCreateManyAttributes,
-    RelationConditionalQueryOptions,
 } from "./types"
 
 export default abstract class ManyRelationHandlerSQLBuilder<
@@ -47,7 +45,7 @@ export default abstract class ManyRelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public createSQL(attributes: RelationCreationAttributes<R>): string {
+    public createSQL(attributes: CreateAttributes<R>): string {
         return `INSERT INTO ${this.relatedTable} (${(
             this.insertColumnsSQL(attributes)
         )}) VALUES (${this.insertValuesSQL(attributes)})`
@@ -55,9 +53,7 @@ export default abstract class ManyRelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public createManySQL(
-        attributes: RelationCreateManyAttributes<R>
-    ): string {
+    public createManySQL(attributes: CreateAttributes<R>[]): string {
         return `INSERT INTO ${this.relatedTable} (${(
             this.bulkInsertColumns(attributes)
         )}) VALUES ${this.bulkInsertValuesSQL(attributes)}`
@@ -65,9 +61,7 @@ export default abstract class ManyRelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public updateOrCreateSQL(
-        attributes: RelationUpdateOrCreateAttributes<R>
-    ): string {
+    public updateOrCreateSQL(attributes: UpdateOrCreateAttributes<R>): string {
         return new UpdateOrCreateSQLBuilder(
             this.related as EntityTarget,
             this.creationAttributes(attributes)
@@ -78,8 +72,8 @@ export default abstract class ManyRelationHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     public updateSQL(
-        attributes: RelationUpdateAttributes<R>,
-        where?: RelationConditionalQueryOptions<R>
+        attributes: UpdateAttributes<R>,
+        where?: ConditionalQueryOptions<R>
     ): string {
         return `UPDATE ${this.relatedTable} ${this.setSQL(attributes)} ${(
             this.whereSQL(where)
@@ -88,18 +82,18 @@ export default abstract class ManyRelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public deleteSQL(where?: RelationConditionalQueryOptions<R>): string {
+    public deleteSQL(where?: ConditionalQueryOptions<R>): string {
         return `DELETE FROM ${this.relatedTable} ${this.whereSQL(where)}`
     }
 
     // Protecteds -------------------------------------------------------------
-    protected whereSQL(where?: RelationConditionalQueryOptions<R>): string {
+    protected whereSQL(where?: ConditionalQueryOptions<R>): string {
         return this.fixedWhereSQL() + this.andSQL(where)
     }
 
     // ------------------------------------------------------------------------
 
-    protected andSQL(where?: RelationConditionalQueryOptions<R>): string {
+    protected andSQL(where?: ConditionalQueryOptions<R>): string {
         return where
             ? ` AND ${(
                 new WhereSQLBuilder(
@@ -113,9 +107,7 @@ export default abstract class ManyRelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected bulkInsertColumns(
-        attributes: RelationCreateManyAttributes<R>
-    ): string {
+    protected bulkInsertColumns(attributes: CreateAttributes<R>[]): string {
         return Array
             .from(new Set(attributes.flatMap(
                 att => Object.keys(this.creationAttributes(att))
@@ -125,9 +117,7 @@ export default abstract class ManyRelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected bulkInsertValuesSQL(
-        attributes: RelationCreateManyAttributes<R>
-    ): string {
+    protected bulkInsertValuesSQL(attributes: CreateAttributes<R>[]): string {
         return attributes
             .map(att => `(${this.insertValuesSQL(att)})`)
             .join(', ')
@@ -135,7 +125,5 @@ export default abstract class ManyRelationHandlerSQLBuilder<
 }
 
 export type {
-    FindRelationQueryOptions,
-    RelationCreateManyAttributes,
-    RelationConditionalQueryOptions,
+    FindRelationQueryOptions
 }

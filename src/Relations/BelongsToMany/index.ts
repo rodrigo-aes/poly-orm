@@ -6,7 +6,7 @@ import { MySQLOperation } from "../../Handlers"
 // SQL Builders
 import {
     BelongsToManyHandlerSQLBuilder,
-    type CreationAttributes
+    type CreateAttributes
 } from "../../SQLBuilders"
 
 // Types
@@ -57,7 +57,7 @@ export class BelongsToManyHandler<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public override async create(attributes: CreationAttributes<R>): Promise<R> {
+    public override async create(attributes: CreateAttributes<R>): Promise<R> {
         const entity = await super.create(attributes)
 
         await MySQLOperation.Relation.voidOperation(
@@ -71,7 +71,7 @@ export class BelongsToManyHandler<
     // ------------------------------------------------------------------------
 
     public override async createMany(
-        attributes: CreationAttributes<R>[]
+        attributes: CreateAttributes<R>[]
     ): Promise<R[]> {
         const entities = await super.createMany(attributes)
 

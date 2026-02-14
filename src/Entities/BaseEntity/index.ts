@@ -17,7 +17,7 @@ import type { Collection, Pagination } from "../Components"
 import type { DeleteResult } from "../../Handlers"
 
 import type {
-    CreationAttributes,
+    CreateAttributes,
     UpdateAttributes,
     UpdateOrCreateAttributes,
     ConditionalQueryOptions
@@ -111,7 +111,7 @@ export default abstract class BaseEntity extends Entity {
      */
     public static create<T extends BaseEntity>(
         this: Constructor<T>,
-        attributes: CreationAttributes<T>
+        attributes: CreateAttributes<T>
     ): Promise<T> {
         return new (this as StaticEntityTarget<T>)
             .Repository(this)
@@ -132,7 +132,7 @@ export default abstract class BaseEntity extends Entity {
         M extends CreateCollectMapOptions<T>
     >(
         this: Constructor<T>,
-        attributes: CreationAttributes<T>[],
+        attributes: CreateAttributes<T>[],
         options?: M
     ): Promise<CreateResult<T, M['collection']>> {
         return new (this as StaticEntityTarget<T>)
@@ -171,7 +171,7 @@ export default abstract class BaseEntity extends Entity {
      */
     public static updateOrCreate<T extends BaseEntity>(
         this: Constructor<T>,
-        attributes: UpdateOrCreateAttributes<T>,
+        attributes: CreateAttributes<T>,
     ): Promise<T> {
         return new (this as StaticEntityTarget<T>)
             .Repository(this)

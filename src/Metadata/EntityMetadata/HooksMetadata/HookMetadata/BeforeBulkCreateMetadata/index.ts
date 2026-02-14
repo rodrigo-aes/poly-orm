@@ -2,7 +2,7 @@ import HookMetadata from "../HookMetadata"
 import type { HookType } from "../types"
 
 // Types
-import type { CreationAttributes } from "../../../../../SQLBuilders"
+import type { CreateAttributes } from "../../../../../SQLBuilders"
 
 export default class BeforeBulkCreateMetadata extends HookMetadata {
     // Static Getters =========================================================
@@ -13,7 +13,7 @@ export default class BeforeBulkCreateMetadata extends HookMetadata {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public call(attributes: CreationAttributes<any>[]) {
+    public call(attributes: CreateAttributes<any>[]) {
         return this.hookFn(attributes)
     }
 }

@@ -15,8 +15,8 @@ import { MySQLOperation } from "../../Handlers"
 import type { ResultSetHeader } from "mysql2"
 import type {
     Constructor,
-    EntityProperties,
-    EntityPropertiesKeys
+    EntityProps,
+    EntityPropsKeys
 } from "../../types"
 import type { BaseEntity } from "../../Entities"
 
@@ -73,10 +73,10 @@ export default class UpdateQueryBuilder<T extends BaseEntity> {
      * @returns {this} - `this`
      */
     public where<
-        K extends EntityPropertiesKeys<T>,
+        K extends EntityPropsKeys<T>,
         Cond extends (
-            EntityProperties<T>[K] |
-            CompatibleOperators<EntityProperties<T>[K]>
+            EntityProps<T>[K] |
+            CompatibleOperators<EntityProps<T>[K]>
         )
     >(
         propertie: K | string,
@@ -112,10 +112,10 @@ export default class UpdateQueryBuilder<T extends BaseEntity> {
      * @returns {this} - `this`
      */
     public orWhere<
-        K extends EntityPropertiesKeys<T>,
+        K extends EntityPropsKeys<T>,
         Cond extends (
-            EntityProperties<T>[K] |
-            CompatibleOperators<EntityProperties<T>[K]>
+            EntityProps<T>[K] |
+            CompatibleOperators<EntityProps<T>[K]>
         )
     >(
         propertie: K | string,

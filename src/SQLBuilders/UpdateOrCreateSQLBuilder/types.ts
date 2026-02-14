@@ -1,9 +1,5 @@
-import type {
-    Entity,
-    OptionalNullable,
-    EntityProperties
-} from "../../types"
+import type { Entity, RequiredProps } from "../../types"
 
 export type UpdateOrCreateAttributes<T extends Entity = Entity> = (
-    OptionalNullable<EntityProperties<T>>
+    RequiredProps<T>
 )

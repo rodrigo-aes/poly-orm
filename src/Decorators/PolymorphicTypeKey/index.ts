@@ -2,18 +2,19 @@ import {
     ColumnsMetadata,
     type PolymorphicTypeKeyRelateds
 } from "../../Metadata"
+
 import DecoratorMetadata from "../DecoratorMetadata"
 
 // Types
-import type { EntityTarget, AutoGenProp, TKProp } from "../../types"
+import type { EntityTarget, TK, Constructor } from "../../types"
 import type { BaseEntity } from "../../Entities"
 
-export default function PolymorphicTypeKey<
-    R extends PolymorphicTypeKeyRelateds
->(...relateds: R) {
+export default function PolymorphicTypeKey<R extends BaseEntity[]>(
+    ...relateds: Constructor<R[number]>[]
+) {
     return function <T extends BaseEntity>(
         _: undefined,
-        context: ClassFieldDecoratorContext<T, TKProp<R>>
+        context: ClassFieldDecoratorContext<T, TK<R>>
     ) {
         DecoratorMetadata
             .define(context.metadata)

@@ -34,8 +34,8 @@ import type {
     Target,
     TargetMetadata,
     EntityTarget,
-    EntityProperties,
-    EntityPropertiesKeys,
+    EntityProps,
+    EntityPropsKeys,
     Constructor,
 } from "../../types"
 
@@ -147,10 +147,10 @@ export default abstract class FindQueryBuilder<T extends Entity> {
      * @returns {this} - `this`
      */
     public where<
-        K extends EntityPropertiesKeys<T>,
+        K extends EntityPropsKeys<T>,
         Cond extends (
-            EntityProperties<T>[K] |
-            CompatibleOperators<EntityProperties<T>[K]>
+            EntityProps<T>[K] |
+            CompatibleOperators<EntityProps<T>[K]>
         )
     >(
         propertie: K | string,
@@ -186,10 +186,10 @@ export default abstract class FindQueryBuilder<T extends Entity> {
     * @returns {this} - `this`
     */
     public orWhere<
-        K extends EntityPropertiesKeys<T>,
+        K extends EntityPropsKeys<T>,
         Cond extends (
-            EntityProperties<T>[K] |
-            CompatibleOperators<EntityProperties<T>[K]>
+            EntityProps<T>[K] |
+            CompatibleOperators<EntityProps<T>[K]>
         )
     >(
         propertie: K | string,

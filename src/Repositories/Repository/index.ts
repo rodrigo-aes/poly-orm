@@ -7,7 +7,7 @@ import {
     UpdateOrCreateSQLBuilder,
     DeleteSQLBuilder,
 
-    type CreationAttributes,
+    type CreateAttributes,
     type UpdateAttributes,
     type UpdateOrCreateAttributes,
     type ConditionalQueryOptions,
@@ -41,7 +41,7 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
      * @param attributes - Entity creation attributes
      * @returns - Entity instance
      */
-    public create(attributes: CreationAttributes<T>): Promise<T> {
+    public create(attributes: CreateAttributes<T>): Promise<T> {
         return MySQLOperation.Create.exec({
             target: this.target,
             sqlBuilder: new CreateSQLBuilder(
@@ -61,7 +61,7 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
      * @returns - A entity instance collection for created registers
      */
     public createMany<M extends CreateCollectMapOptions<T>>(
-        attributes: CreationAttributes<T>[],
+        attributes: CreateAttributes<T>[],
         mapOptions?: M
     ): Promise<CreateResult<T, M['collection']>> {
         return MySQLOperation.Create.exec({
@@ -97,15 +97,10 @@ export default class Repository<T extends BaseEntity> extends BaseRepository<
      * @param attributes - Update or create attributes data 
      * @returns - A entity instance for updated or created register
      */
-    public updateOrCreate(attributes: UpdateOrCreateAttributes<T>): Promise<
-        T
-    > {
+    public updateOrCreate(attributes: CreateAttributes<T>): Promise<T> {
         return MySQLOperation.UpdateOrCreate.exec({
             target: this.target,
-            sqlBuilder: new UpdateOrCreateSQLBuilder(
-                this.target,
-                attributes
-            )
+            sqlBuilder: new UpdateOrCreateSQLBuilder(this.target, attributes)
         })
     }
 

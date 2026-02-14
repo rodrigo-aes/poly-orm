@@ -3,8 +3,8 @@ import { MetadataHandler, type EntityMetadata } from "../../Metadata"
 // SQL Builders
 import {
     CreateSQLBuilder,
-    type CreationAttributesOptions,
-    type CreationAttibutesKey
+    type CreateOneOrManyAttributes,
+    type CreateAttributesKey
 } from "../../SQLBuilders"
 
 // Types
@@ -40,7 +40,7 @@ export default abstract class CreateQueryBuilder<T extends BaseEntity> {
      * @param names - Properties names
      * @returns {this} - `this`
      */
-    public properties(...names: CreationAttibutesKey<T>[]): Omit<
+    public properties(...names: CreateAttributesKey<T>[]): Omit<
         this, 'data'
     > {
         this.sqlBuilder.fields(...names)
@@ -61,7 +61,7 @@ export default abstract class CreateQueryBuilder<T extends BaseEntity> {
      * Entity properties and values object data to insert on table
      * @param attributes - Attributes data 
      */
-    public abstract data(attributes: CreationAttributesOptions<T>): Omit<
+    public abstract data(attributes: CreateOneOrManyAttributes<T>): Omit<
         this, 'fields' | 'values'
     >
 
@@ -80,7 +80,7 @@ export default abstract class CreateQueryBuilder<T extends BaseEntity> {
     * Convert `this` to `CreationAttributesOptions` object
     * @returns - A object with creations attributes options
     */
-    public toQueryOptions(): CreationAttributesOptions<T> {
+    public toQueryOptions(): CreateOneOrManyAttributes<T> {
         return this.sqlBuilder.mapAttributes()
     }
 }

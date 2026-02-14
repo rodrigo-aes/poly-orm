@@ -5,7 +5,7 @@ import { MySQLOperation } from "../../../Handlers"
 
 // Types
 import type { BaseEntity } from "../../../Entities"
-import type { CreateSQLBuilder, CreationAttributes } from "../../../SQLBuilders"
+import type { CreateSQLBuilder, CreateAttributes } from "../../../SQLBuilders"
 
 /**
  * Build `INSERT` query
@@ -22,7 +22,7 @@ export default class InsertQueryBuilder<
 
     // ------------------------------------------------------------------------
 
-    public data(attributes: CreationAttributes<T>): Omit<
+    public data(attributes: CreateAttributes<T>): Omit<
         this, 'fields' | 'values'
     > {
         this.sqlBuilder.setData(attributes)

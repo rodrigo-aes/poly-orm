@@ -17,9 +17,9 @@ import CountSQLBuilder, {
 } from "./CountSQLBuilder"
 
 import CreateSQLBuilder, {
-    type CreationAttributes,
-    type CreationAttributesOptions,
-    type CreationAttibutesKey
+    type CreateAttributes,
+    type CreateOneOrManyAttributes,
+    type CreateAttributesKey
 } from "./CreateSQLBuilder"
 
 import UpdateSQLBuilder, { type UpdateAttributes } from "./UpdateSQLBuilder"
@@ -54,11 +54,7 @@ import {
     type RelationHandlerSQLBuilder,
     type OneRelationHandlerSQLBuilder,
     type ManyRelationHandlerSQLBuilder,
-    type FindRelationQueryOptions,
-    type RelationCreationAttributes,
-    type RelationUpdateAttributes,
-    type RelationUpdateOrCreateAttributes,
-    type RelationConditionalQueryOptions
+    type FindRelationQueryOptions
 } from './RelationHandlersSQLBuilders'
 
 import {
@@ -191,9 +187,9 @@ export {
     type CountQueryOption,
     type CountQueryOptions,
     type CountCaseOptions,
-    type CreationAttributes,
-    type CreationAttributesOptions,
-    type CreationAttibutesKey,
+    type CreateAttributes,
+    type CreateOneOrManyAttributes,
+    type CreateAttributesKey,
     type UpdateAttributes,
     type UpdateOrCreateAttributes,
     type SelectOptions,
@@ -213,10 +209,6 @@ export {
     type OneRelationHandlerSQLBuilder,
     type ManyRelationHandlerSQLBuilder,
     type FindRelationQueryOptions,
-    type RelationCreationAttributes,
-    type RelationUpdateAttributes,
-    type RelationUpdateOrCreateAttributes,
-    type RelationConditionalQueryOptions,
 
     type OperatorKey,
     type CompatibleOperators,

@@ -44,7 +44,7 @@ import type {
     CountQueryOptions,
     ConditionalQueryOptions,
     UpdateAttributes,
-    CreationAttributes,
+    CreateAttributes,
 } from "../SQLBuilders"
 
 import {
@@ -83,7 +83,7 @@ import type {
 
     EntityJSON,
     EntityObject,
-    EntityProperties,
+    EntityProps,
     EntityRelations,
 } from "../types"
 
@@ -199,8 +199,8 @@ export default abstract class Entity {
 
     // ------------------------------------------------------------------------
 
-    public columns<T extends EntityT>(this: T): EntityProperties<T> {
-        return Object.fromEntries(this.__$colEntries()) as EntityProperties<T>
+    public columns<T extends EntityT>(this: T): EntityProps<T> {
+        return Object.fromEntries(this.__$colEntries()) as EntityProps<T>
     }
 
     // ------------------------------------------------------------------------
@@ -553,7 +553,7 @@ export default abstract class Entity {
      */
     public static build<T extends EntityT>(
         this: Constructor<T>,
-        attributes: CreationAttributes<T>
+        attributes: CreateAttributes<T>
     ): T {
         const instance = new this().fill(attributes) as T
         (instance as Entity).__$trueMetadata.computedProperties?.assign(

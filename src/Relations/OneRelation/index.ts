@@ -12,7 +12,7 @@ import type { Entity, Constructor, EntityJSON } from "../../types"
 import type { OneRelationMetadataType } from "../../Metadata"
 import type {
     OneRelationHandlerSQLBuilder,
-    RelationUpdateAttributes,
+    UpdateAttributes
 } from "../../SQLBuilders"
 
 
@@ -72,9 +72,7 @@ export default abstract class OneRelation<T extends Entity, R extends Entity> {
      * @param attributes - Update attributes data
      * @returns - Result header containing details of operation
      */
-    public update(attributes: RelationUpdateAttributes<R>): Promise<
-        ResultSetHeader
-    > {
+    public update(attributes: UpdateAttributes<R>): Promise<ResultSetHeader> {
         return MySQLOperation.Relation.update(
             this.related,
             this.sqlBuilder.updateSQL(attributes)

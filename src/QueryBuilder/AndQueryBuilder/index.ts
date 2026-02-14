@@ -19,8 +19,8 @@ import type {
     Constructor,
     Entity,
     TargetMetadata,
-    EntityProperties,
-    EntityPropertiesKeys
+    EntityProps,
+    EntityPropsKeys
 } from "../../types"
 
 
@@ -78,10 +78,10 @@ export default class AndQueryBuilder<T extends Entity> {
      * @returns {this} - `this`
      */
     public where<
-        K extends EntityPropertiesKeys<T>,
+        K extends EntityPropsKeys<T>,
         Cond extends (
-            EntityProperties<T>[K] |
-            CompatibleOperators<EntityProperties<T>[K]>
+            EntityProps<T>[K] |
+            CompatibleOperators<EntityProps<T>[K]>
         )
     >(
         property: K | string,
@@ -95,7 +95,7 @@ export default class AndQueryBuilder<T extends Entity> {
                 ? {
                     [
                         OperatorQueryBuilder[conditional as (
-                            CompatibleOperators<EntityProperties<T>[K]>
+                            CompatibleOperators<EntityProps<T>[K]>
                         )]
                     ]: value
                 }
@@ -127,12 +127,12 @@ export default class AndQueryBuilder<T extends Entity> {
      * @returns {this} - `this`
      */
     public whereOr<
-        K extends EntityPropertiesKeys<T>,
+        K extends EntityPropsKeys<T>,
         Cond extends (
-            EntityProperties<T>[K] |
+            EntityProps<T>[K] |
             [
-                CompatibleOperators<EntityProperties<T>[K]>,
-                EntityProperties<T>[K]
+                CompatibleOperators<EntityProps<T>[K]>,
+                EntityProps<T>[K]
             ]
         )[]
     >(property: K, conditional: Cond): this {

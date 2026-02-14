@@ -11,25 +11,24 @@ import { SQLString } from "../../Handlers"
 import type { BaseEntity } from "../../Entities"
 import type { Constructor } from "../../types"
 import type {
-    CreationAttributesOptions,
-    CreationAttributes,
-    CreationAttributesKey,
-    AttributesNames,
+    CreateAttributes,
+    CreateOneOrManyAttributes,
+    CreateAttributesKey
 } from "./types"
 
 export default class CreateSQLBuilder<T extends BaseEntity> {
     protected metadata: EntityMetadata
 
     private _bulk: boolean
-    private _cols?: AttributesNames<T>
+    private _cols?: Set<CreateAttributesKey<T>>
     private _vals?: any[]
 
-    private _patternNames?: CreationAttributesKey<T>[]
-    private _mapped?: CreationAttributesOptions<T>
+    private _patternNames?: CreateAttributesKey<T>[]
+    private _mapped?: CreateOneOrManyAttributes<T>
 
     constructor(
         public target: Constructor<T>,
-        public attributes?: CreationAttributesOptions<T>,
+        public attributes?: CreateOneOrManyAttributes<T>,
         public alias: string = target.name.toLowerCase(),
         public absolute: boolean = true
     ) {
@@ -39,7 +38,7 @@ export default class CreateSQLBuilder<T extends BaseEntity> {
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get cols(): CreationAttributesKey<T>[] {
+    public get cols(): CreateAttributesKey<T>[] {
         return Array.from(this._cols ??= this.handleNames())
     }
 
@@ -64,7 +63,7 @@ export default class CreateSQLBuilder<T extends BaseEntity> {
 
     // ------------------------------------------------------------------------
 
-    public fields(...names: CreationAttributesKey<T>[]): this {
+    public fields(...names: CreateAttributesKey<T>[]): this {
         this._cols = new Set(names)
         return this
     }
@@ -78,7 +77,7 @@ export default class CreateSQLBuilder<T extends BaseEntity> {
 
     // ------------------------------------------------------------------------
 
-    public setData(attributes: CreationAttributesOptions<T>): (
+    public setData(attributes: CreateAttributes<T> | CreateAttributes<T>[]): (
         this
     ) {
         this.attributes = attributes
@@ -90,7 +89,7 @@ export default class CreateSQLBuilder<T extends BaseEntity> {
 
     // ------------------------------------------------------------------------
 
-    public mapAttributes(): CreationAttributesOptions<T> {
+    public mapAttributes(): CreateAttributes<T> | CreateAttributes<T>[] {
         return this._mapped ??= (
             this.bulk
                 ? this.vals?.map(
@@ -124,47 +123,47 @@ export default class CreateSQLBuilder<T extends BaseEntity> {
 
     // ------------------------------------------------------------------------
 
-    private handleNames(): AttributesNames<T> {
+    private handleNames(): Set<CreateAttributesKey<T>> {
         return new Set(this._bulk
             ? this.bulkPropertyNames()
             : this.propertyNames()
-        ) as AttributesNames<T>
+        ) as Set<CreateAttributesKey<T>>
     }
 
     // ------------------------------------------------------------------------
 
-    private bulkPropertyNames(): CreationAttributesKey<T>[] {
-        return (this.attributes as CreationAttributes<T>[])
+    private bulkPropertyNames(): CreateAttributesKey<T>[] {
+        return (this.attributes as CreateAttributes<T>[])
             .flatMap(att => this.propertyNames(att)) as (
-                CreationAttributesKey<T>[]
+                CreateAttributesKey<T>[]
             )
     }
 
     // ------------------------------------------------------------------------
 
     private propertyNames(
-        attributes?: CreationAttributes<T>
-    ): CreationAttributesKey<T>[] {
+        attributes?: CreateAttributes<T>
+    ): CreateAttributesKey<T>[] {
         return this.patternPropsNames().concat(Object
             .keys(attributes ?? this.attributes!)
             .filter(key => this.metadata.columns.search(key)) as (
-                CreationAttributesKey<T>[]
+                CreateAttributesKey<T>[]
             )
         )
     }
 
     // ------------------------------------------------------------------------
 
-    private patternPropsNames(): CreationAttributesKey<T>[] {
+    private patternPropsNames(): CreateAttributesKey<T>[] {
         return this._patternNames ??= this.PKPatternName()
     }
 
     // ------------------------------------------------------------------------
 
-    private PKPatternName(): CreationAttributesKey<T>[] {
+    private PKPatternName(): CreateAttributesKey<T>[] {
         switch (this.metadata.columns.primary.pattern) {
             case 'polymorphic-id': return [
-                this.metadata.PK as CreationAttributesKey<T>
+                this.metadata.PK as CreateAttributesKey<T>
             ]
 
             default: return []
@@ -182,15 +181,15 @@ export default class CreateSQLBuilder<T extends BaseEntity> {
     // ------------------------------------------------------------------------
 
     private bulkCreateValues(): any[][] {
-        return (this.attributes as CreationAttributes<T>[])
+        return (this.attributes as CreateAttributes<T>[])
             .map(att => this.createValues(att))
     }
 
     // ------------------------------------------------------------------------
 
     private createValues(
-        attributes: CreationAttributes<T> = this.attributes as (
-            CreationAttributes<T>
+        attributes: CreateAttributes<T> = this.attributes as (
+            CreateAttributes<T>
         )
     ): any[] {
         return this.cols.map(column =>
@@ -203,7 +202,7 @@ export default class CreateSQLBuilder<T extends BaseEntity> {
 
     // ------------------------------------------------------------------------
 
-    private patternCreateValue(column: CreationAttributesKey<T>): any {
+    private patternCreateValue(column: CreateAttributesKey<T>): any {
         switch (this.metadata.columns.findOrThrow(column).pattern) {
             case 'polymorphic-id': return `${this.target.name}_${UUIDV4()}`
 
@@ -213,15 +212,15 @@ export default class CreateSQLBuilder<T extends BaseEntity> {
 
     // ------------------------------------------------------------------------
 
-    private mapAttributeOption(values: any[]): CreationAttributes<T> {
+    private mapAttributeOption(values: any[]): CreateAttributes<T> {
         return Object.fromEntries(
             values.map((value, index) => [this.cols[index], value])
-        ) as CreationAttributes<T>
+        ) as CreateAttributes<T>
     }
 }
 
 export {
-    type CreationAttributesOptions,
-    type CreationAttributes,
-    type CreationAttributesKey as CreationAttibutesKey
+    type CreateAttributes,
+    type CreateOneOrManyAttributes,
+    type CreateAttributesKey
 }

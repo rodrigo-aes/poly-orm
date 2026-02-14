@@ -5,32 +5,38 @@ import { BaseEntity } from "../../Entities"
 import { UpdateOrCreate } from "../Procedures"
 
 // SQL Builder
-import CreateSQLBuilder from "../CreateSQLBuilder"
+import CreateSQLBuilder, {
+    type CreateAttributes
+} from "../CreateSQLBuilder"
 import FindOneSQLBuilder from "../FindOneSQLBuilder"
 
 // Types
 import type { Constructor } from "../../types"
 import type { UpdateOrCreateAttributes } from "./types"
-import type { EntityPropertiesKeys } from "../../types"
+import type { EntityPropsKeys } from "../../types"
 
 export default class UpdateOrCreateSQLBuilder<T extends BaseEntity> {
     protected metadata: EntityMetadata
 
     private create: CreateSQLBuilder<T>
-    private _cols: EntityPropertiesKeys<T>[] = []
+    private _cols: EntityPropsKeys<T>[] = []
     private _vals: any[] = []
     private _merged: boolean = false
-    private _att: BaseEntity | UpdateOrCreateAttributes<T>
+    private _att: BaseEntity | CreateAttributes<T>
 
     constructor(
         public target: Constructor<T>,
-        attributes: BaseEntity | UpdateOrCreateAttributes<T>,
+        attributes: BaseEntity | CreateAttributes<T>,
         public alias: string = target.name.toLowerCase()
     ) {
         this.metadata = EntityMetadata.findOrThrow(this.target)
         this._att = attributes
         this.create = new CreateSQLBuilder(
-            this.target, this.attributes, this.alias
+            this.target,
+            this._att instanceof BaseEntity
+                ? this._att.columns() as CreateAttributes<T>
+                : this._att,
+            this.alias
         )
     }
 
@@ -62,7 +68,7 @@ export default class UpdateOrCreateSQLBuilder<T extends BaseEntity> {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public fields(...names: EntityPropertiesKeys<T>[]): this {
+    public fields(...names: EntityPropsKeys<T>[]): this {
         this._cols.push(...names)
         return this
     }
@@ -76,7 +82,7 @@ export default class UpdateOrCreateSQLBuilder<T extends BaseEntity> {
 
     // ------------------------------------------------------------------------
 
-    public setData(attributes: UpdateOrCreateAttributes<T>): this {
+    public setData(attributes: CreateAttributes<T>): this {
         this._att = attributes
         return this
     }

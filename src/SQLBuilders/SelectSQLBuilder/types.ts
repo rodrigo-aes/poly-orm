@@ -1,4 +1,4 @@
-import type { Entity, EntityPropertiesKeys } from "../../types"
+import type { Entity, EntityPropsKeys } from "../../types"
 import type {
     Case,
     CaseQueryOptions
@@ -7,7 +7,7 @@ import type { CountQueryOptions } from "../CountSQLBuilder"
 
 export type SelectColumnsOption<T extends Entity> = (
     '*' |
-    EntityPropertiesKeys<T>
+    EntityPropsKeys<T>
 )
 
 export type SelectCaseOption<T extends Entity> = {

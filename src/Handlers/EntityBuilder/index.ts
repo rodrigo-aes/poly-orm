@@ -22,8 +22,8 @@ import type {
 
 import type { EntityMetadata, PolymorphicEntityMetadata } from "../../Metadata"
 import type {
-    CreationAttributes,
-    CreationAttributesOptions
+    CreateAttributes,
+    CreateOneOrManyAttributes
 } from "../../SQLBuilders"
 import { CreateCollectMapOptions } from "../MySQLOperation"
 
@@ -34,7 +34,7 @@ export default class EntityBuilder<T extends EntityTarget> {
 
     constructor(
         public target: T,
-        public attibutes: CreationAttributesOptions<InstanceType<T>>,
+        public attibutes: CreateOneOrManyAttributes<InstanceType<T>>,
         public primary?: any
     ) {
         this.metadata = MetadataHandler.targetMetadata(this.target)
@@ -44,7 +44,7 @@ export default class EntityBuilder<T extends EntityTarget> {
     // Publics ----------------------------------------------------------------
     public static build<T extends Entity>(
         target: Target<T>,
-        attributes: CreationAttributesOptions<T>,
+        attributes: CreateOneOrManyAttributes<T>,
         options?: CreateCollectMapOptions<T>
     ): T | Collection<T> {
         return Array.isArray(attributes)
@@ -100,7 +100,7 @@ export default class EntityBuilder<T extends EntityTarget> {
     // Privates ---------------------------------------------------------------
     private static buildEntity<T extends Entity>(
         target: Constructor<T>,
-        attributes: CreationAttributes<T>
+        attributes: CreateAttributes<T>
     ): T {
         return (target as StaticTarget<T>).build<Entity>(attributes) as T
     }
@@ -109,7 +109,7 @@ export default class EntityBuilder<T extends EntityTarget> {
 
     private static buildManyEntities<T extends Entity>(
         target: Constructor<T>,
-        attributes: CreationAttributes<T>[],
+        attributes: CreateAttributes<T>[],
         options?: CreateCollectMapOptions<T>
     ): Collection<T> {
         return CollectionsMetadataHandler.build(

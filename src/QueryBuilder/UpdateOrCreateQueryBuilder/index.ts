@@ -1,14 +1,14 @@
 // SQL Builder
 import {
     UpdateOrCreateSQLBuilder,
-    type UpdateOrCreateAttributes,
+    type CreateAttributes
 } from "../../SQLBuilders"
 
 // Handlers
 import { MySQLOperation } from "../../Handlers"
 
 // Types
-import type { Constructor, EntityPropertiesKeys } from "../../types"
+import type { Constructor, EntityPropsKeys } from "../../types"
 import type { BaseEntity } from "../../Entities"
 
 /**
@@ -16,7 +16,7 @@ import type { BaseEntity } from "../../Entities"
  */
 export default class UpdateOrCreateQueryBuilder<T extends BaseEntity> {
     /** @internal */
-    private cols: EntityPropertiesKeys<T>[] = []
+    private cols: EntityPropsKeys<T>[] = []
     private vals: any[] = []
 
     constructor(
@@ -31,7 +31,7 @@ export default class UpdateOrCreateQueryBuilder<T extends BaseEntity> {
      * @param names - Properties names
      * @returns {this} - `this`
      */
-    public properties(...names: EntityPropertiesKeys<T>[]): Omit<
+    public properties(...names: EntityPropsKeys<T>[]): Omit<
         this, 'data'
     > {
         this.cols.push(...names)
@@ -56,10 +56,10 @@ export default class UpdateOrCreateQueryBuilder<T extends BaseEntity> {
      * @param attributes - Attributes data 
      * @returns {this} - `this`
      */
-    public data(attributes: UpdateOrCreateAttributes<T>): (
-        Omit<this, 'fields' | 'values'>
-    ) {
-        this.cols.push(...Object.keys(attributes) as EntityPropertiesKeys<T>[])
+    public data(attributes: CreateAttributes<T>): Omit<
+        this, 'fields' | 'values'
+    > {
+        this.cols.push(...Object.keys(attributes) as EntityPropsKeys<T>[])
         this.vals.push(...Object.values(attributes))
         return this
     }
@@ -88,10 +88,10 @@ export default class UpdateOrCreateQueryBuilder<T extends BaseEntity> {
 
     // ------------------------------------------------------------------------
 
-    public toQueryOptions(): UpdateOrCreateAttributes<T> {
-        return Object.fromEntries(
-            this.cols.map((col, index) => [col, this.vals[index]])
-        ) as UpdateOrCreateAttributes<T>
+    public toQueryOptions(): CreateAttributes<T> {
+        return Object.fromEntries(this.cols.map(
+            (col, index) => [col, this.vals[index]]
+        )) as any
     }
 
     // Privates ---------------------------------------------------------------

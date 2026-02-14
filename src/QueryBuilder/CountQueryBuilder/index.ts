@@ -17,8 +17,8 @@ import { MySQLOperation } from "../../Handlers"
 import type {
     Entity,
     Constructor,
-    EntityProperties,
-    EntityPropertiesKeys
+    EntityProps,
+    EntityPropsKeys
 } from "../../types"
 import type { CaseQueryHandler, CountQueryHandler } from "../types"
 import type {
@@ -119,10 +119,10 @@ export default class CountQueryBuilder<T extends Entity> {
      * @returns {this} - `this`
      */
     public where<
-        K extends EntityPropertiesKeys<T>,
+        K extends EntityPropsKeys<T>,
         Cond extends (
-            EntityProperties<T>[K] |
-            CompatibleOperators<EntityProperties<T>[K]>
+            EntityProps<T>[K] |
+            CompatibleOperators<EntityProps<T>[K]>
         )
     >(
         propertie: K,
@@ -158,10 +158,10 @@ export default class CountQueryBuilder<T extends Entity> {
      * @returns {this} - `this`
      */
     public orWhere<
-        K extends EntityPropertiesKeys<T>,
+        K extends EntityPropsKeys<T>,
         Cond extends (
-            EntityProperties<T>[K] |
-            CompatibleOperators<EntityProperties<T>[K]>
+            EntityProps<T>[K] |
+            CompatibleOperators<EntityProps<T>[K]>
         )
     >(
         propertie: K,

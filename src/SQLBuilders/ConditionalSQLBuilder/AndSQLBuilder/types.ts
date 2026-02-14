@@ -1,4 +1,4 @@
-import type { Entity, EntityPropertiesKeys } from "../../../types"
+import type { Entity, EntityPropsKeys } from "../../../types"
 import type { CompatibleOperators } from "../Operator"
 import type { ExistsQueryOptions } from "../ExistsSQLBuilder"
 
@@ -10,7 +10,7 @@ type ConditionalValue<T extends any> = (
 )
 
 export type PropAndQueryOptions<T extends Entity> = Partial<{
-    [K in EntityPropertiesKeys<T>]: (
+    [K in EntityPropsKeys<T>]: (
         ConditionalValue<T[K]> |
         Partial<CompatibleOperators<T[K]>>
     )

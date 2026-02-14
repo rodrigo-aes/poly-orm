@@ -19,8 +19,8 @@ import type {
 } from "../../../Metadata"
 
 import type {
-    RelationCreationAttributes,
-    RelationUpdateOrCreateAttributes
+    CreateAttributes,
+    UpdateOrCreateAttributes
 } from "../../../SQLBuilders"
 
 /** Has many relation handler */
@@ -69,7 +69,7 @@ export default abstract class HasManyRelation<
      * @param attributes - Related entity creation attributes
      * @returns - Related entity instance
      */
-    public async create(attributes: RelationCreationAttributes<R>): Promise<R> {
+    public async create(attributes: CreateAttributes<R>): Promise<R> {
         const instance = await MySQLOperation.Relation.create(
             this.related as EntityTarget,
             this.sqlBuilder.createSQL(attributes),
@@ -88,7 +88,9 @@ export default abstract class HasManyRelation<
      * @param attributes - An array of creation attributes data
      * @returns - Related entity instances
      */
-    public async createMany(attributes: RelationCreationAttributes<R>[]): Promise<R[]> {
+    public async createMany(attributes: (
+        CreateAttributes<R>
+    )[]): Promise<R[]> {
         const instances = await MySQLOperation.Relation.createMany(
             this.related as EntityTarget,
             (this.sqlBuilder as any).createManySQL(attributes),
@@ -107,9 +109,9 @@ export default abstract class HasManyRelation<
      * @param attributes - Update or create attributes data
      * @returns - Related entity instance
      */
-    public async updateOrCreate(
-        attributes: RelationUpdateOrCreateAttributes<R>
-    ): Promise<R> {
+    public async updateOrCreate(attributes: (
+        UpdateOrCreateAttributes<R>
+    )): Promise<R> {
         const instance = await MySQLOperation.Relation.updateOrCreate(
             this.related as EntityTarget,
             this.sqlBuilder.updateOrCreateSQL(attributes),

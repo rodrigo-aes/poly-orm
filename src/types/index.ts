@@ -31,18 +31,15 @@ import type {
 
 import type {
     Prop,
-    FKProp,
-    TKProp,
+    TK,
     AutoGenProp,
-    EntityProperties,
-    EntityPropertiesKeys,
+    EntityProps,
+    EntityPropsKeys,
     EntityRelations,
     EntityRelationsKeys,
-    CollectionProperties,
-    CollectionPropertiesKeys,
-    ExcludeRelationAttributes,
-    ExcludeRelationAttributesKeys,
-    OptionalNullable
+    CollectionProps,
+    CollectionPropsKeys,
+    RequiredProps,
 } from "./Properties"
 
 export type {
@@ -76,16 +73,13 @@ export type {
     PaginationTarget,
 
     Prop,
-    FKProp,
-    TKProp,
+    TK,
     AutoGenProp,
-    EntityProperties,
-    EntityPropertiesKeys,
+    EntityProps,
+    EntityPropsKeys,
     EntityRelations,
     EntityRelationsKeys,
-    CollectionProperties,
-    CollectionPropertiesKeys,
-    ExcludeRelationAttributes,
-    ExcludeRelationAttributesKeys,
-    OptionalNullable
+    CollectionProps,
+    CollectionPropsKeys,
+    RequiredProps,
 }

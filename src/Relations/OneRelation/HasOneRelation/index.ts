@@ -1,7 +1,7 @@
 import OneRelation from ".."
 
 // Handlers
-import { MySQLOperation, type DeleteResult } from "../../../Handlers"
+import { MySQLOperation } from "../../../Handlers"
 
 // Types
 import type { Constructor, Entity, EntityTarget } from "../../../types"
@@ -11,10 +11,7 @@ import type {
     PolymorphicHasOneMetadata,
 } from "../../../Metadata"
 
-import type {
-    RelationCreationAttributes,
-    RelationUpdateOrCreateAttributes,
-} from "../../../SQLBuilders"
+import type { CreateAttributes } from "../../../SQLBuilders"
 
 /**
  * Has one relation handler
@@ -47,9 +44,7 @@ export default abstract class HasOneRelation<
      * @param attributes - Related creation attributes data
      * @returns - Instance of created related entity
      */
-    public async create(attributes: RelationCreationAttributes<R>): Promise<
-        this
-    > {
+    public async create(attributes: CreateAttributes<R>): Promise<this> {
         this.instance = await MySQLOperation.Relation.create(
             this.related as EntityTarget,
             this.sqlBuilder.createSQL(attributes),
@@ -66,9 +61,9 @@ export default abstract class HasOneRelation<
      * @param attributes - Related update or create attributes data
      * @returns - Instance of updated or created related entity
      */
-    public async updateOrCreate(
-        attributes: RelationUpdateOrCreateAttributes<R>
-    ): Promise<this> {
+    public async updateOrCreate(attributes: (
+        CreateAttributes<R>
+    )): Promise<this> {
         this.instance = await MySQLOperation.Relation.updateOrCreate(
             this.related as EntityTarget,
             this.sqlBuilder.updateOrCreateSQL(attributes),

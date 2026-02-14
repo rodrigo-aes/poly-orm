@@ -14,8 +14,8 @@ import {
 import type { BaseEntity } from "../../Entities"
 import type {
     Constructor,
-    EntityProperties,
-    EntityPropertiesKeys
+    EntityProps,
+    EntityPropsKeys
 } from "../../types"
 import type {
     OperatorType,
@@ -54,10 +54,10 @@ export default class DeleteQueryBuilder<T extends BaseEntity> {
      * @returns {this} - `this`
      */
     public where<
-        K extends EntityPropertiesKeys<T>,
+        K extends EntityPropsKeys<T>,
         Cond extends (
-            EntityProperties<T>[K] |
-            CompatibleOperators<EntityProperties<T>[K]>
+            EntityProps<T>[K] |
+            CompatibleOperators<EntityProps<T>[K]>
         )
     >(
         propertie: K | string,
@@ -91,10 +91,10 @@ export default class DeleteQueryBuilder<T extends BaseEntity> {
      * @returns {this} - `this`
      */
     public orWhere<
-        K extends EntityPropertiesKeys<T>,
+        K extends EntityPropsKeys<T>,
         Cond extends (
-            EntityProperties<T>[K] |
-            CompatibleOperators<EntityProperties<T>[K]>
+            EntityProps<T>[K] |
+            CompatibleOperators<EntityProps<T>[K]>
         )
     >(
         propertie: K | string,

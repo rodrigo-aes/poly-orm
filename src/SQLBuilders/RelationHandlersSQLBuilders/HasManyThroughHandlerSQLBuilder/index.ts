@@ -10,9 +10,7 @@ import type {
     Constructor
 } from "../../../types"
 
-import type {
-    RelationCreationAttributes
-} from "../OneRelationHandlerSQLBuilder"
+import type { CreateAttributes } from "../../CreateSQLBuilder"
 
 // Exceptions
 import PolyORMException from "../../../Errors"
@@ -60,7 +58,7 @@ export default class HasManyThroughHandlerSQLBuilder<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public override createSQL(_: RelationCreationAttributes<R>): string {
+    public override createSQL(_: CreateAttributes<R>): string {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'createSQL', this.constructor.name
         )
@@ -68,7 +66,7 @@ export default class HasManyThroughHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public override createManySQL(_: RelationCreationAttributes<R>[]): string {
+    public override createManySQL(_: CreateAttributes<R>[]): string {
         throw PolyORMException.Common.instantiate(
             'NOT_CALLABLE_METHOD', 'updateOrCreateSQL', this.constructor.name
         )

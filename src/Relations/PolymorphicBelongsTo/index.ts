@@ -14,7 +14,7 @@ import type {
     ResolveSource
 } from "../../Entities"
 import type { PolymorphicBelongsToMetadata } from "../../Metadata"
-import type { RelationUpdateAttributes } from "../../SQLBuilders"
+import type { UpdateAttributes } from "../../SQLBuilders"
 import type { ResultSetHeader } from "mysql2"
 import type { PolymorphicBelongsToRelated, PolymorphicBelongsTo } from "./types"
 
@@ -67,9 +67,9 @@ export class PolymorphicBelongsToHandler<
 
     // ------------------------------------------------------------------------
 
-    public update<T extends Source<R> = Source<R>>(
-        attributes: RelationUpdateAttributes<Extract<
-            ResolveSource<R, T>, PolymorphicBelongsToRelated<R>
+    public update<S extends Source<R> = Source<R>>(
+        attributes: UpdateAttributes<Extract<
+            ResolveSource<R, S>, PolymorphicBelongsToRelated<R>
         >>
     ): Promise<ResultSetHeader> {
         return MySQLOperation.Relation.update(

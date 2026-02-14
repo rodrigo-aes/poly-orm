@@ -1,18 +1,14 @@
-import type { Entity, OptionalNullable, EntityProperties } from "../../types"
+import type { Entity, EntityProps, RequiredProps } from "../../types"
 
-export type CreationAttributes<T extends Entity = Entity> = OptionalNullable<
-    EntityProperties<T>
->
-
-export type CreationAttributesOptions<T extends Entity = Entity> = (
-    CreationAttributes<T> |
-    CreationAttributes<T>[]
+export type CreateAttributes<T extends Entity = Entity> = (
+    RequiredProps<EntityProps<T>>
 )
 
-export type CreationAttributesKey<T extends Entity = Entity> = (
-    keyof CreationAttributes<T>
+export type CreateOneOrManyAttributes<T extends Entity = Entity> = (
+    CreateAttributes<T> |
+    CreateAttributes<T>[]
 )
 
-export type AttributesNames<T extends Entity = Entity> = Set<
-    CreationAttributesKey<T>
->
+export type CreateAttributesKey<T extends Entity = Entity> = (
+    keyof CreateAttributes<T>
+)

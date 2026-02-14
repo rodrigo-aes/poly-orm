@@ -1,8 +1,8 @@
 import type { Entity } from "../../types"
-import type { CreationAttributes } from "../CreateSQLBuilder"
+import type { CreateAttributes } from "../CreateSQLBuilder"
 
 export type UpdateAttributes<T extends Entity = Entity> = (
-    Partial<CreationAttributes<T>>
+    Partial<CreateAttributes<T>>
 )
 
 export type UpdateAttributesKeys<T extends Entity = Entity> = (

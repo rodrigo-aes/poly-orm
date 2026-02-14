@@ -2,7 +2,7 @@ import { ColumnsMetadata } from "../../Metadata"
 import DecoratorMetadata from "../DecoratorMetadata"
 
 // Types
-import type { EntityTarget, FKProp } from "../../types"
+import type { EntityTarget, Prop } from "../../types"
 import type { ForeignIdRelatedGetter, ForeignIdOptions } from "./types"
 import type { BaseEntity } from "../../Entities"
 
@@ -12,7 +12,9 @@ export default function ForeignId(
 ) {
     return function <T extends BaseEntity>(
         _: undefined,
-        context: ClassFieldDecoratorContext<T, FKProp<number>>
+        context: ClassFieldDecoratorContext<
+            T, Prop<number> | null
+        >
     ) {
         DecoratorMetadata
             .define(context.metadata)

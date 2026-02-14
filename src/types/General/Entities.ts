@@ -17,7 +17,7 @@ import type {
     Constructor,
     InstancesOf
 } from "."
-import type { EntityProperties, EntityRelations } from "../Properties"
+import type { EntityProps, EntityRelations } from "../Properties"
 
 // Bases =============================================================================================================
 export type Entity = BaseEntity | BasePolymorphicEntity<any>
@@ -32,7 +32,7 @@ export type StaticTarget<T extends Target | Entity = Target> = (
 ) & typeof EntityClass
 
 export type EntityObject<T extends Entity> = (
-    EntityProperties<T> &
+    EntityProps<T> &
     EntityRelations<T> & {
         [K in Extract<T['include'], keyof T>]: T[K]
     }
@@ -100,16 +100,16 @@ export type TargetQueryBuilder<T extends Entity = Entity> = (
 
 // ----------------------------------------------------------------------------
 
-export type InternalPolymorphicEntityTarget<T extends EntityTarget[]> = (
-    Constructor<BasePolymorphicEntity<InstancesOf<T>>>
+export type InternalPolymorphicEntityTarget<T extends BaseEntity[]> = (
+    Constructor<BasePolymorphicEntity<T>>
 )
 
 export type LocalOrInternalPolymorphicEntityTarget<
-    T extends PolymorphicEntityTarget | EntityTarget[]
+    T extends PolymorphicEntityTarget | BaseEntity[]
 > = (
         T extends PolymorphicEntityTarget
         ? T
-        : T extends EntityTarget[]
+        : T extends BaseEntity[]
         ? InternalPolymorphicEntityTarget<T>
         : never
     )

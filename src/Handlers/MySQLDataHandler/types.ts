@@ -1,7 +1,7 @@
 import type {
     Entity,
     Constructor,
-    EntityProperties,
+    EntityProps,
     EntityRelations,
     TargetMetadata
 } from "../../types"
@@ -16,7 +16,7 @@ import type {
 export type FillMethod = 'One' | 'Many' | 'Paginate'
 
 export type JSONData<T extends Entity> = (
-    EntityProperties<T> &
+    EntityProps<T> &
     Partial<EntityRelations<T>>
 )
 

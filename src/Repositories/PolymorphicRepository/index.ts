@@ -8,7 +8,7 @@ import {
     UpdateOrCreateSQLBuilder,
     DeleteSQLBuilder,
 
-    type CreationAttributes,
+    type CreateAttributes,
     type UpdateAttributes,
     type UpdateOrCreateAttributes,
     type ConditionalQueryOptions
@@ -54,7 +54,7 @@ export default class PolymorphicRepository<
      */
     public create<S extends Source<T>, R extends 'this' | 'source' = 'this'>(
         source: S,
-        attributes: CreationAttributes<ResolveSource<T, S>>,
+        attributes: CreateAttributes<ResolveSource<T, S>>,
         returns: R = 'this' as R
     ): Promise<
         R extends 'this'
@@ -91,7 +91,7 @@ export default class PolymorphicRepository<
         R extends 'this' | 'source'
     >(
         source: S,
-        attributes: CreationAttributes<ResolveSource<T, S>>[],
+        attributes: CreateAttributes<ResolveSource<T, S>>[],
         mapOptions?: M,
         returns: R = 'this' as R
     ) {

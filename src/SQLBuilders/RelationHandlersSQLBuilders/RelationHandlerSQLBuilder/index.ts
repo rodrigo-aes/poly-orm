@@ -16,18 +16,10 @@ import type {
     Entity,
     TargetMetadata
 } from "../../../types"
-import type { CreationAttributes } from "../../CreateSQLBuilder"
+import type { CreateAttributes } from "../../CreateSQLBuilder"
+import type { UpdateAttributes } from "../../UpdateSQLBuilder"
 
-import type {
-    RelationCreateManyAttributes
-} from "../ManyRelationHandlerSQLBuilder"
-
-import type {
-    RelationCreationAttributes,
-    RelationUpdateAttributes,
-} from "../OneRelationHandlerSQLBuilder"
-
-import type { Att, RelationAtt, ResolveAtt } from "./types"
+import type { Att, ResolveAtt } from "./types"
 export default abstract class RelationHandlerSQLBuilder<
     RelationMetadata extends RelationMetadataType,
     T extends Entity,
@@ -112,7 +104,7 @@ export default abstract class RelationHandlerSQLBuilder<
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public creationAttributes<A extends RelationAtt<R>>(
+    public creationAttributes<A extends Att<R>>(
         attributes: A
     ): ResolveAtt<R, A> {
         return this.attributes ??= Object.fromEntries(
@@ -128,12 +120,12 @@ export default abstract class RelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public bulkCreationAttributes(
-        attributes: RelationCreateManyAttributes<R>
-    ): CreationAttributes<R>[] {
+    public bulkCreationAttributes(attributes: (
+        CreateAttributes<R>[]
+    )): CreateAttributes<R>[] {
         return attributes.map(
             attribute => this.creationAttributes(attribute)
-        ) as CreationAttributes<R>[]
+        ) as CreateAttributes<R>[]
     }
 
     // Protecteds -------------------------------------------------------------
@@ -163,7 +155,7 @@ export default abstract class RelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected attributesKeys(attributes: RelationAtt<R>): (keyof R)[] {
+    protected attributesKeys(attributes: Att<R>): (keyof R)[] {
         return Object.keys(this.creationAttributes(attributes)) as (
             (keyof R)[]
         )
@@ -171,19 +163,19 @@ export default abstract class RelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected attributesValues(attributes: RelationAtt<R>): any[] {
+    protected attributesValues(attributes: Att<R>): any[] {
         return Object.values(this.creationAttributes(attributes))
     }
 
     // ------------------------------------------------------------------------
 
-    protected setSQL(attributes: RelationUpdateAttributes<R>): string {
+    protected setSQL(attributes: UpdateAttributes<R>): string {
         return `SET ${this.setValuesSQL(attributes)}`
     }
 
     // ------------------------------------------------------------------------
 
-    protected setValuesSQL(attributes: RelationUpdateAttributes<R>): string {
+    protected setValuesSQL(attributes: UpdateAttributes<R>): string {
         return Object
             .entries(attributes)
             .map(([column, value]) => `${this.relatedAlias}.${column} = ${(
@@ -195,11 +187,11 @@ export default abstract class RelationHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     protected onlyChangedAttributes(
-        attributes: R | RelationUpdateAttributes<R>
-    ): RelationUpdateAttributes<R> {
+        attributes: R | UpdateAttributes<R>
+    ): UpdateAttributes<R> {
         return (attributes as any) instanceof EntityBase
             ? ColumnsSnapshots.changed(attributes as R)
-            : attributes as RelationUpdateAttributes<R>
+            : attributes as UpdateAttributes<R>
     }
 
     // ------------------------------------------------------------------------
@@ -222,17 +214,13 @@ export default abstract class RelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    protected insertColumnsSQL(
-        attributes: RelationCreationAttributes<R>
-    ): string {
+    protected insertColumnsSQL(attributes: CreateAttributes<R>): string {
         return this.attributesKeys(attributes).join(', ')
     }
 
     // ------------------------------------------------------------------------
 
-    protected insertValuesSQL(
-        attributes: RelationCreationAttributes<R>
-    ): string {
+    protected insertValuesSQL(attributes: CreateAttributes<R>): string {
         return this.attributesValues(attributes)
             .map(value => SQLString.value(value))
             .join(', ')

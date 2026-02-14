@@ -37,7 +37,7 @@ import type { ResultSetHeader } from "mysql2"
 import type { DeleteResult } from "../../Handlers"
 
 import type {
-    CreationAttributes,
+    CreateAttributes,
     UpdateAttributes,
     UpdateOrCreateAttributes,
     ConditionalQueryOptions,
@@ -240,7 +240,7 @@ export default abstract class BasePolymorphicEntity<
     >(
         this: Constructor<T>,
         source: S,
-        attributes: CreationAttributes<ResolveSource<T, S>>,
+        attributes: CreateAttributes<ResolveSource<T, S>>,
         mapTo: 'this' | 'source' = 'this'
     ): Promise<T> {
         return new (this as StaticPolymorphicEntityTarget<T>)
@@ -269,7 +269,7 @@ export default abstract class BasePolymorphicEntity<
     >(
         this: Constructor<T>,
         source: S,
-        attributes: CreationAttributes<ResolveSource<T, S>>[],
+        attributes: CreateAttributes<ResolveSource<T, S>>[],
         mapOptions?: M,
         returns: R = 'this' as R
     ) {

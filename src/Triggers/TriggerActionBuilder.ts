@@ -15,7 +15,7 @@ import type {
 
 import type {
     UpdateAttributes,
-    CreationAttributesOptions,
+    CreateOneOrManyAttributes,
     ConditionalQueryOptions
 } from "../SQLBuilders"
 
@@ -47,7 +47,7 @@ export default abstract class TriggerActionBuilder<T extends BaseEntity> {
     protected insertInto<T extends BaseEntity>(
         target: Constructor<T>,
         attributes: TriggerActionOptions<
-            CreationAttributesOptions<T>
+            CreateOneOrManyAttributes<T>
         >
     ): InsertIntoTableAction<T> {
         return {
