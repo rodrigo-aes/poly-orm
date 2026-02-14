@@ -22,8 +22,3 @@ export type PolymorphicBelongsTo<
     ? Extract<T, BasePolymorphicEntity<any>>
     : never
 )>>
-
-import type { Source } from "../../Entities"
-import { Foo, Baz } from "../../TestTools/Entities"
-
-type a = Source<[Foo, Baz]>
