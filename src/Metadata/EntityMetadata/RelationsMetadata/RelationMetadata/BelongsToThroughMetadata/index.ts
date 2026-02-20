@@ -1,25 +1,27 @@
 import RelationMetadata from "../RelationMetadata"
-import EntityMetadata from "../../.."
+import MetadataHandler from "../../../../MetadataHandler"
 
 // Types
-import type { Target, EntityTarget } from "../../../../../types"
+import type { Target, TargetMetadata } from "../../../../../types"
+import type EntityMetadata from "../../.."
 import type { ColumnMetadata } from "../../../ColumnsMetadata"
+import type { PolymorphicColumnMetadata } from "../../../../PolymorphicEntityMetadata"
 import type { ConditionalQueryOptions } from '../../../../../SQLBuilders'
+import type { TargetGetter, EntityTargetGetter } from "../types"
 import type {
     BelongsToThroughOptions,
-    BelongsToThroughRelatedGetter,
-    BelongsToThroughGetter,
     BelongsToThroughMetadataJSON
 } from "./types"
 
 export default class BelongsToThroughMetadata extends RelationMetadata {
+    declare public readonly type: 'BelongsToThrough'
     public readonly fillMethod = 'One'
 
-    public related!: BelongsToThroughRelatedGetter
-    public through!: BelongsToThroughGetter
+    public related!: TargetGetter
+    public through!: EntityTargetGetter
 
-    public relatedFKName: string
-    private _throughFKName: string
+    public FK!: string
+    private _throughFK: string
 
     public scope?: ConditionalQueryOptions<any>
 
@@ -27,25 +29,23 @@ export default class BelongsToThroughMetadata extends RelationMetadata {
         target: Target,
         options: BelongsToThroughOptions
     ) {
-        const { name, foreignKey, throughForeignKey, ...opts } = options
+        super(target)
 
-        super(target, name)
-
-        this.relatedFKName = foreignKey
-        this._throughFKName = throughForeignKey
-        Object.assign(this, opts)
+        const { throughFK, ...rest } = options
+        this._throughFK = throughFK
+        Object.assign(this, rest)
     }
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get relatedTarget(): EntityTarget {
+    public get relatedTarget(): Target {
         return this.related()
     }
 
     // ------------------------------------------------------------------------
 
-    public get relatedMetadata(): EntityMetadata {
-        return EntityMetadata.findOrThrow(this.related())
+    public get relatedMetadata(): TargetMetadata {
+        return MetadataHandler.targetMetadata(this.related())
     }
 
     // ------------------------------------------------------------------------
@@ -56,16 +56,16 @@ export default class BelongsToThroughMetadata extends RelationMetadata {
 
     // ------------------------------------------------------------------------
 
-    public get relatedForeignKey(): ColumnMetadata {
-        return EntityMetadata.findOrThrow(this.target)
-            .columns
-            .findOrThrow(this.relatedFKName)
+    public get refCol(): (
+        ColumnMetadata | PolymorphicColumnMetadata
+    ) {
+        return this.relatedMetadata.columns.findOrThrow(this.FK)
     }
 
     // ------------------------------------------------------------------------
 
     public get throughMetadata(): EntityMetadata {
-        return EntityMetadata.findOrThrow(this.through())
+        return MetadataHandler.targetMetadata(this.through())
     }
 
     // ------------------------------------------------------------------------
@@ -82,22 +82,20 @@ export default class BelongsToThroughMetadata extends RelationMetadata {
 
     // ------------------------------------------------------------------------
 
-    public get throughPrimary(): string {
-        return (
-            `${this.throughAlias}.${this.throughMetadata.PK}`
-        )
+    public get throughPK(): string {
+        return `${this.throughAlias}.${this.throughMetadata.PK}`
     }
 
     // ------------------------------------------------------------------------
 
-    public get throughForeignKey(): ColumnMetadata {
-        return this.throughMetadata.columns.findOrThrow(this._throughFKName)
+    public get throughCol(): ColumnMetadata {
+        return this.throughMetadata.columns.findOrThrow(this._throughFK)
     }
 
     // ------------------------------------------------------------------------
 
-    public get throughFKName(): string {
-        return `${this.throughAlias}.${this.throughForeignKey.name}`
+    public get throughFK(): string {
+        return `${this.throughAlias}.${this._throughFK}`
     }
 
     // Instance Methods =======================================================
@@ -108,8 +106,8 @@ export default class BelongsToThroughMetadata extends RelationMetadata {
             type: this.type,
             related: this.relatedMetadata.toJSON(),
             through: this.throughMetadata.toJSON(),
-            relatedForeignKey: this.relatedForeignKey.toJSON(),
-            throughForeignKey: this.throughForeignKey.toJSON(),
+            FK: this.refCol.toJSON(),
+            throughFK: this.throughCol.toJSON(),
             scope: this.scope
         }
     }
@@ -117,7 +115,5 @@ export default class BelongsToThroughMetadata extends RelationMetadata {
 
 export type {
     BelongsToThroughOptions,
-    BelongsToThroughRelatedGetter,
-    BelongsToThroughGetter,
     BelongsToThroughMetadataJSON
 }

@@ -41,19 +41,19 @@ export default class HasManyThroughHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     private get foreignKey(): string {
-        return `${this.relatedAlias}.${this.metadata.relatedFKName}`
+        return `${this.relatedAlias}.${this.metadata.FK}`
     }
 
     // ------------------------------------------------------------------------
 
     private get throughForeignKey(): string {
-        return this.metadata.throughFKName
+        return this.metadata.throughFK
     }
 
     // ------------------------------------------------------------------------
 
     private get throughPrimary(): string {
-        return this.metadata.throughPrimary
+        return this.metadata.throughPK
     }
 
     // Instance Methods =======================================================

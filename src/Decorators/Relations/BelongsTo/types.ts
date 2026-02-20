@@ -1,5 +1,5 @@
 import type {
-    BelongToOptions as BelongsToMetadataOptions
+    BelongsToOptions as BelongsToMetadataOptions
 } from "../../../Metadata"
 
 export type BelongToOptions = Omit<BelongsToMetadataOptions, (

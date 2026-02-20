@@ -1,8 +1,10 @@
 import {
     RelationsMetadata,
-    type HasOneThroughRelatedGetter,
-    type HasOneThroughGetter
+
+    type TargetGetter,
+    type EntityTargetGetter
 } from "../../../Metadata"
+
 import DecoratorMetadata from "../../DecoratorMetadata"
 
 // Types
@@ -12,8 +14,8 @@ import type { HasOneThrough } from "../../../Relations"
 import type { HasOneThroughOptions } from "./types"
 
 export default function HasOneThrough(
-    related: HasOneThroughRelatedGetter,
-    through: HasOneThroughGetter,
+    related: TargetGetter,
+    through: EntityTargetGetter,
     options: HasOneThroughOptions
 ) {
     return function <T extends BaseEntity, R extends Partial<Entity>>(
@@ -25,13 +27,10 @@ export default function HasOneThrough(
             .rel((target: EntityTarget) => RelationsMetadata
                 .findOrBuild(target)
                 .addHasOneThrough({
-                    name: context.name as string,
-                    related,
-                    through,
-                    ...options
+                    name: context.name as string, related, through, ...options
                 }))
 
-        // Auto-initialize ----------------------------------------------------
+        // Initializer --------------------------------------------------------
         context.addInitializer(function (this: T) {
             (this[context.name as keyof T] as any) ??= this.hasOneThrough(
                 context.name as string
@@ -41,7 +40,5 @@ export default function HasOneThrough(
 }
 
 export type {
-    HasOneThroughOptions,
-    HasOneThroughRelatedGetter,
-    HasOneThroughGetter
+    HasOneThroughOptions
 }

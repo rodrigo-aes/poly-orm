@@ -9,7 +9,7 @@ import DecoratorMetadata from "../../DecoratorMetadata"
 import type { BasePolymorphicEntity } from "../../../Entities"
 import type { PolymorphicEntityTarget } from "../../../types"
 
-export default function Column(options?: IncludeColumnOptions) {
+export default function PolymorphicColumn(options?: IncludeColumnOptions) {
     return function <T extends BasePolymorphicEntity<any>>(
         _: undefined,
         context: ClassFieldDecoratorContext<T, string>

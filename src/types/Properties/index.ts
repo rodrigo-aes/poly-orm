@@ -1,7 +1,6 @@
 import type { Entity } from "../General"
 import type { BaseEntity, Collection } from "../../Entities"
 import type { RelationHandler } from "../../Relations"
-import type { Primitive } from "../General"
 
 // Metadata Types =============================================================
 type prop = { __$prop?: true }
@@ -12,7 +11,8 @@ export type Prop<T = any> = T & prop
 export type AutoGenProp<T = any> = Prop<T> & autoGen
 export type TK<T extends BaseEntity[]> = Prop<T[number]['__name']>
 
-// Data Types =================================================================
+// ----------------------------------------------------------------------------
+
 export type EntityPropsKeys<T extends Entity> = {
     [K in keyof T]: (
         T[K] extends prop | null | undefined
@@ -60,7 +60,7 @@ export type EntityRelationsKeys<T extends Partial<Entity>> = {
     [K in keyof T]: (
         T[K] extends null
         ? never
-        : T[K] extends RelationHandler<Entity>
+        : T[K] extends RelationHandler
         ? Extract<K, string>
         : never
     )
@@ -72,6 +72,17 @@ export type EntityRelations<T extends Partial<Entity>> = Pick<
     T,
     EntityRelationsKeys<T>
 >
+
+// ----------------------------------------------------------------------------
+
+export type Related<
+    T extends Entity | Entity[],
+    O extends EntityKeys<T extends Entity[] ? T[number] : T>
+> = (
+        T extends Entity[]
+        ? { [K in keyof T]: Omit<T[K], O> }
+        : Omit<T, O>
+    )
 
 // Collection Types ===========================================================
 export type CollectionPropsKeys<T extends Collection> = {
@@ -88,3 +99,5 @@ export type CollectionProps<T extends Collection> = Pick<
     T,
     CollectionPropsKeys<T>
 >
+
+type EntityKeys<T extends Entity> = EntityPropsKeys<T> | EntityRelationsKeys<T>

@@ -12,7 +12,6 @@ import FindOneSQLBuilder from "../FindOneSQLBuilder"
 
 // Types
 import type { Constructor } from "../../types"
-import type { UpdateOrCreateAttributes } from "./types"
 import type { EntityPropsKeys } from "../../types"
 
 export default class UpdateOrCreateSQLBuilder<T extends BaseEntity> {
@@ -42,7 +41,7 @@ export default class UpdateOrCreateSQLBuilder<T extends BaseEntity> {
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get attributes(): UpdateOrCreateAttributes<T> {
+    public get attributes(): CreateAttributes<T> {
         return this._att = this._merged ? this._att : this._merge
     }
 
@@ -121,8 +120,4 @@ export default class UpdateOrCreateSQLBuilder<T extends BaseEntity> {
         )
             .SQL()
     }
-}
-
-export {
-    type UpdateOrCreateAttributes
 }

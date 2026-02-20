@@ -38,8 +38,8 @@ export default class PolymorphicColumnsMetadata extends MetadataArray<
     ) {
         super(target)
 
-        this.mergePrimaryKeys()
-        this.buildTypeColumn()
+        this.mergePK()
+        this.buildTK()
         this.mergeIncluded()
     }
 
@@ -132,18 +132,16 @@ export default class PolymorphicColumnsMetadata extends MetadataArray<
 
     // ------------------------------------------------------------------------
 
-    private mergePrimaryKeys(): void {
+    private mergePK(): void {
         this.push(new PolymorphicColumnMetadata(
-            this.target,
-            'primaryKey',
-            this.sources.map(meta => meta.columns.primary)
+            this.target, 'PK', this.sources.map(meta => meta.columns.primary)
         ))
     }
 
     // ------------------------------------------------------------------------
 
-    private buildTypeColumn(): void {
-        this.push(new PolymorphicColumnMetadata(this.target, 'entityType'))
+    private buildTK(): void {
+        this.push(new PolymorphicColumnMetadata(this.target, 'TK'))
     }
 
     // ------------------------------------------------------------------------

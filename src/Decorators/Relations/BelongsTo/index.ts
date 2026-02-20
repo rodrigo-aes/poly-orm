@@ -3,13 +3,13 @@ import DecoratorMetadata from "../../DecoratorMetadata"
 
 import type { Entity, EntityTarget } from "../../../types"
 import type { BaseEntity } from "../../../Entities"
-import type { BelongsToRelatedGetter } from "../../../Metadata"
+import type { TargetGetter } from "../../../Metadata"
 import type { BelongsTo } from "../../../Relations"
 import type { BelongToOptions } from "./types"
 
 export default function BelongsTo(
-    related: BelongsToRelatedGetter,
-    foreignKey: string | BelongToOptions
+    related: TargetGetter,
+    FK: string | BelongToOptions
 ) {
     return function <T extends BaseEntity, R extends Partial<Entity>>(
         _: undefined,
@@ -20,15 +20,12 @@ export default function BelongsTo(
             .rel((target: EntityTarget) => RelationsMetadata
                 .findOrBuild(target)
                 .addBelongsTo({
-                    name: context.name as string,
-                    related,
-                    ...(typeof foreignKey === 'string'
-                        ? { foreignKey }
-                        : foreignKey
+                    name: context.name as string, related, ...(
+                        typeof FK === 'string' ? { FK } : FK
                     )
                 }))
 
-        // Auto-initialize ----------------------------------------------------
+        // Initializer --------------------------------------------------------
         context.addInitializer(function (this: T) {
             (this[context.name as keyof T] as any) ??= this.belongsTo(
                 context.name as string
@@ -38,6 +35,5 @@ export default function BelongsTo(
 }
 
 export type {
-    BelongToOptions,
-    BelongsToRelatedGetter
+    BelongToOptions
 }

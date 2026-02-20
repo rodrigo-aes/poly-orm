@@ -3,13 +3,13 @@ import DecoratorMetadata from "../../DecoratorMetadata"
 
 import type { Entity, EntityTarget } from "../../../types"
 import type { BaseEntity } from "../../../Entities"
-import type { HasOneRelatedGetter } from "../../../Metadata"
+import type { TargetGetter } from "../../../Metadata"
 import type { HasOne } from "../../../Relations"
 import type { HasOneOptions } from "./types"
 
 export default function HasOne(
-    related: HasOneRelatedGetter,
-    foreignKey: string | HasOneOptions
+    related: TargetGetter,
+    FK: string | HasOneOptions
 ) {
     return function <T extends BaseEntity, R extends Partial<Entity>>(
         _: undefined,
@@ -20,14 +20,12 @@ export default function HasOne(
             .rel((target: EntityTarget) => RelationsMetadata
                 .findOrBuild(target)
                 .addHasOne({
-                    name: context.name as string,
-                    related,
-                    ...typeof foreignKey === 'string'
-                        ? { foreignKey }
-                        : foreignKey
+                    name: context.name as string, related, ...(
+                        typeof FK === 'string' ? { FK } : FK
+                    )
                 }))
 
-        // Auto-initialize ----------------------------------------------------
+        // Initializer --------------------------------------------------------
         context.addInitializer(function (this: T) {
             (this[context.name as keyof T] as any) ??= this.hasOne(
                 context.name as string
@@ -37,6 +35,5 @@ export default function HasOne(
 }
 
 export type {
-    HasOneOptions,
-    HasOneRelatedGetter
+    HasOneOptions
 }

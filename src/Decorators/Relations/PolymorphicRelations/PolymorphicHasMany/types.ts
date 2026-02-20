@@ -1,5 +1,5 @@
 export type PolymorphicHasManyOptions = {
-    foreignKey: string
-    typeKey?: string
+    FK: string
+    TK?: string
     scope?: any
 }

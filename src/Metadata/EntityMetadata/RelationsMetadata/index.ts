@@ -1,58 +1,31 @@
 import MetadataArray from "../../MetadataArray"
 
-import RelationMetadata, {
-    type RelationJSON,
-    type RelationMetadataType,
-    type OneRelationMetadataType,
-    type ManyRelationMetadatatype,
-
-    HasOneMetadata,
-    type HasOneOptions,
-    type HasOneRelatedGetter,
-
-    HasManyMetadata,
-    type HasManyOptions,
-    type HasManyRelatedGetter,
-
-    HasOneThroughMetadata,
-    type HasOneThroughOptions,
-    type HasOneThroughRelatedGetter,
-    type HasOneThroughGetter,
-
-    HasManyThroughMetadata,
-    type HasManyThroughOptions,
-    type HasManyThroughRelatedGetter,
-    type HasManyThroughGetter,
-
-    BelongsToMetadata,
-    type BelongToOptions,
-    type BelongsToRelatedGetter,
-
-    BelongsToThroughMetadata,
-    type BelongsToThroughOptions,
-    type BelongsToThroughRelatedGetter,
-    type BelongsToThroughGetter,
-
-    BelongsToManyMetadata,
-    type BelongsToManyOptions,
-    type BelongsToManyRelatedGetter,
-
-    PolymorphicHasOneMetadata,
-    PolymorphicHasManyMetadata,
-    PolymorphicBelongsToMetadata,
-
-    type PolymorphicParentOptions,
-    type PolymorphicParentRelatedGetter,
-
-    type PolymorphicChildOptions,
-    type PolymorphicChildRelatedGetter,
-
+import Relation, {
+    type RelationMetadata,
+    type PolymorphicRelationMetadata,
+    type ToOneRelationMetadata,
+    type ToManyRelationMetadata,
+    type RelationMetadataJSON,
     type RelatedEntitiesMap,
-    type PolymorphicRelation
+
+    type HasOneOptions,
+    type HasManyOptions,
+    type HasOneThroughOptions,
+    type HasManyThroughOptions,
+    type BelongsToOptions,
+    type BelongsToThroughOptions,
+    type BelongsToManyOptions,
+    type PolymorphicParentOptions,
+    type PolymorphicChildOptions,
+
+    type TargetGetter,
+    type EntityTargetGetter,
+    type PolymorphicTargetGetter
 } from "./RelationMetadata"
 
-import type { RelationsMetadataJSON } from "./types"
+// Types
 import type { EntityTarget, StaticEntityTarget } from "../../../types"
+import type { RelationsMetadataJSON } from "./types"
 
 // Exceptions
 import type { MetadataErrorCode } from "../../../Errors"
@@ -60,6 +33,16 @@ import type { MetadataErrorCode } from "../../../Errors"
 export default class RelationsMetadata extends MetadataArray<
     RelationMetadata
 > {
+    public static readonly polymorphicTypes = [
+        'PolymorphicHasOne',
+        'PolymorphicHasMany',
+        'PolymorphicBelongsTo'
+    ]
+
+    public static readonly polymorphicKeys: (
+        keyof PolymorphicRelationMetadata
+    )[] = ['name', 'relatedTarget', 'FK', 'TK', 'scope']
+
     constructor(public target: EntityTarget) {
         super(target)
         this.init()
@@ -96,88 +79,79 @@ export default class RelationsMetadata extends MetadataArray<
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public addHasOne(options: HasOneOptions) {
-        this.push(new RelationMetadata.HasOne(this.target, options))
+        this.push(new Relation.HasOne(this.target, options))
     }
 
     // ------------------------------------------------------------------------
 
     public addHasMany(options: HasManyOptions) {
-        this.push(new RelationMetadata.HasMany(this.target, options))
+        this.push(new Relation.HasMany(this.target, options))
     }
 
     // ------------------------------------------------------------------------
 
     public addHasOneThrough(options: HasOneThroughOptions) {
-        this.push(new RelationMetadata.HasOneThrough(this.target, options))
+        this.push(new Relation.HasOneThrough(this.target, options))
     }
 
     // ------------------------------------------------------------------------
 
     public addHasManyThrough(options: HasManyThroughOptions) {
-        this.push(new RelationMetadata.HasManyThrough(this.target, options))
+        this.push(new Relation.HasManyThrough(this.target, options))
     }
 
     // ------------------------------------------------------------------------
 
-    public addBelongsTo(options: BelongToOptions) {
-        this.push(new RelationMetadata.BelongsTo(this.target, options))
+    public addBelongsTo(options: BelongsToOptions) {
+        this.push(new Relation.BelongsTo(this.target, options))
     }
 
     // ------------------------------------------------------------------------
 
     public addBelongsToThrough(options: BelongsToThroughOptions) {
-        this.push(new RelationMetadata.BelongsToThrough(this.target, options))
+        this.push(new Relation.BelongsToThrough(this.target, options))
     }
 
     // ------------------------------------------------------------------------
 
     public addBelongsToMany(options: BelongsToManyOptions) {
-        this.push(new RelationMetadata.BelongsToMany(this.target, options))
+        this.push(new Relation.BelongsToMany(this.target, options))
     }
 
     // ------------------------------------------------------------------------
 
     public addPolymorphicHasOne(options: PolymorphicChildOptions) {
-        this.push(new RelationMetadata.PolymorphicHasOne(this.target, options))
+        this.push(new Relation.PolymorphicHasOne(this.target, options))
     }
 
     // ------------------------------------------------------------------------
 
     public addPolymorphicHasMany(options: PolymorphicChildOptions) {
-        this.push(
-            new RelationMetadata.PolymorphicHasMany(this.target, options)
-        )
+        this.push(new Relation.PolymorphicHasMany(this.target, options))
     }
 
     // ------------------------------------------------------------------------
 
     public addPolymorphicBelongsTo(options: PolymorphicParentOptions) {
-        this.push(
-            new RelationMetadata.PolymorphicBelongsTo(this.target, options)
-        )
+        this.push(new Relation.PolymorphicBelongsTo(this.target, options))
     }
 
     // Privates ---------------------------------------------------------------
     private mergeParentPolymorphics(): void {
         for (const poly of this.getParentPolymorphics()) (
-            this.addPolymorphic(poly.type)(
-                this.extractPolymorphicRelationOptions(poly)
-            )
+            this.addPolymorphic(poly.type)(this.polymorphicOptions(poly))
         )
     }
 
     // ------------------------------------------------------------------------
 
-    private getParentPolymorphics(): PolymorphicRelation[] {
-        const types = [
-            'PolymorphicHasOne',
-            'PolymorphicHasMany',
-            'PolymorphicBelongsTo'
-        ]
-
-        return this.getParentChilds()
-            .filter(({ type }) => types.includes(type)) as (
-                PolymorphicRelation[]
+    private getParentPolymorphics(): PolymorphicRelationMetadata[] {
+        return this
+            .getParentChilds()
+            .filter(({ type }) => (
+                RelationsMetadata.polymorphicTypes.includes(type)
+            )) as (
+                PolymorphicRelationMetadata[]
             )
     }
 
@@ -195,65 +169,35 @@ export default class RelationsMetadata extends MetadataArray<
 
     // ------------------------------------------------------------------------
 
-    private extractPolymorphicRelationOptions(
-        relation: PolymorphicRelation
-    ): any {
-        const keys = ['name', 'related', 'foreignKey', 'typeKey', 'scope']
+    private polymorphicOptions(relation: PolymorphicRelationMetadata): any {
         return Object.fromEntries(Object.entries(relation).filter(
-            ([key]) => keys.includes(key))
-        )
+            ([key]) => RelationsMetadata.polymorphicKeys.includes(key as any)
+        ))
     }
 }
 
 export {
-    RelationMetadata,
-    type OneRelationMetadataType,
-    type ManyRelationMetadatatype,
-    type RelationMetadataType,
+    Relation,
 
-    HasOneMetadata,
-    type HasOneOptions,
-    type HasOneRelatedGetter,
-
-    HasManyMetadata,
-    type HasManyOptions,
-    type HasManyRelatedGetter,
-
-    HasOneThroughMetadata,
-    type HasOneThroughOptions,
-    type HasOneThroughRelatedGetter,
-    type HasOneThroughGetter,
-
-    HasManyThroughMetadata,
-    type HasManyThroughOptions,
-    type HasManyThroughRelatedGetter,
-    type HasManyThroughGetter,
-
-    BelongsToMetadata,
-    type BelongToOptions,
-    type BelongsToRelatedGetter,
-
-    BelongsToThroughMetadata,
-    type BelongsToThroughOptions,
-    type BelongsToThroughRelatedGetter,
-    type BelongsToThroughGetter,
-
-    BelongsToManyMetadata,
-    type BelongsToManyOptions,
-    type BelongsToManyRelatedGetter,
-
-    PolymorphicHasOneMetadata,
-    PolymorphicHasManyMetadata,
-    PolymorphicBelongsToMetadata,
-
-    type PolymorphicParentOptions,
-    type PolymorphicParentRelatedGetter,
-
-    type PolymorphicChildOptions,
-    type PolymorphicChildRelatedGetter,
-
+    type RelationMetadata,
+    type PolymorphicRelationMetadata,
+    type ToOneRelationMetadata,
+    type ToManyRelationMetadata,
+    type RelationsMetadataJSON,
+    type RelationMetadataJSON,
     type RelatedEntitiesMap,
 
-    type RelationJSON,
-    type RelationsMetadataJSON,
+    type HasOneOptions,
+    type HasManyOptions,
+    type HasOneThroughOptions,
+    type HasManyThroughOptions,
+    type BelongsToOptions,
+    type BelongsToThroughOptions,
+    type BelongsToManyOptions,
+    type PolymorphicParentOptions,
+    type PolymorphicChildOptions,
+
+    type TargetGetter,
+    type EntityTargetGetter,
+    type PolymorphicTargetGetter
 }

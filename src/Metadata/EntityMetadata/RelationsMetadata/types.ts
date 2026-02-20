@@ -1,3 +1,3 @@
-import type { RelationJSON } from "./RelationMetadata"
+import type { RelationMetadataJSON } from "./RelationMetadata"
 
-export type RelationsMetadataJSON = RelationJSON[]
+export type RelationsMetadataJSON = RelationMetadataJSON[]

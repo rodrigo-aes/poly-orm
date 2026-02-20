@@ -5,7 +5,7 @@ import type {
     EntityRelations,
     TargetMetadata
 } from "../../types"
-import type { RelationMetadataType } from "../../Metadata"
+import type { RelationMetadata } from "../../Metadata"
 import type { Collection, Pagination, PaginationInitMap } from "../../Entities"
 import type {
     MapOptions,
@@ -39,7 +39,7 @@ export type ReduceOptions<T extends Entity> = {
     raw: any[],
     target?: Constructor<T>,
     metadata?: TargetMetadata<T>,
-    relation?: RelationMetadataType,
+    relation?: RelationMetadata,
     method?: 'json' | 'entity',
     toSource?: boolean,
 }

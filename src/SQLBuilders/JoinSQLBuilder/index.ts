@@ -79,7 +79,8 @@ export default class JoinSQLBuilder<T extends Entity> {
                 ? new UnionSQLBuilder(
                     this.relatedMetadata.tableName,
                     this.relatedTarget as PolymorphicEntityTarget
-                ) : undefined
+                )
+                : undefined
         )
     }
 

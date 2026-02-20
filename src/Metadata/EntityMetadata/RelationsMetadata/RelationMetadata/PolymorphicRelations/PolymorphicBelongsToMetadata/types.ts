@@ -1,5 +1,5 @@
 import type {
-    RelationMetadataJSON,
+    BaseRelationMetadataJSON,
     RelatedEntitiesMapJSON
 } from "../../types"
 
@@ -12,9 +12,9 @@ import type { ColumnMetadataJSON } from "../../../../ColumnsMetadata"
 import type { ConditionalQueryOptions } from '../../../../../../SQLBuilders'
 
 export interface PolymorphicBelongsToMetadataJSON
-    extends RelationMetadataJSON {
+    extends BaseRelationMetadataJSON {
     related: PolymorphicEntityMetadataJSON | RelatedEntitiesMapJSON
-    foreignKey: ColumnMetadataJSON | PolymorphicColumnMetadataJSON
-    typeColumn?: ColumnMetadataJSON | PolymorphicColumnMetadataJSON
+    Fk: ColumnMetadataJSON | PolymorphicColumnMetadataJSON
+    TK?: ColumnMetadataJSON | PolymorphicColumnMetadataJSON
     scope?: ConditionalQueryOptions<any>
 }

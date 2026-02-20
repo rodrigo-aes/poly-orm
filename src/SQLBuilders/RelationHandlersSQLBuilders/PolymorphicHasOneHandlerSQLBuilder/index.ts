@@ -32,7 +32,7 @@ export default class PolymorphicHasOneHandlerSQLBuilder<
 
     // Privates ---------------------------------------------------------------
     private get foreignKey(): string {
-        return this.metadata.FKName
+        return this.metadata.FK
     }
 
     // ------------------------------------------------------------------------
@@ -44,14 +44,14 @@ export default class PolymorphicHasOneHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     private get typeKey(): string | undefined {
-        return this.metadata.TKName
+        return this.metadata.TK
     }
 
     // ------------------------------------------------------------------------
 
     private get targetType(): string {
         return this.target instanceof BasePolymorphicEntity
-            ? this.target.$TK
+            ? this.target.TK
             : this.metadata.parentType
     }
 

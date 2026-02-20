@@ -4,13 +4,13 @@ import DecoratorMetadata from "../../../DecoratorMetadata"
 // Types
 import type { Entity, EntityTarget } from "../../../../types"
 import type { BaseEntity } from "../../../../Entities"
-import type { PolymorphicChildRelatedGetter } from "../../../../Metadata"
+import type { EntityTargetGetter } from "../../../../Metadata"
 import type { PolymorphicHasMany } from "../../../../Relations"
 import type { PolymorphicHasManyOptions } from "./types"
 
 export default function PolymorphicHasMany(
-    related: PolymorphicChildRelatedGetter,
-    foreignKey: string | PolymorphicHasManyOptions
+    related: EntityTargetGetter,
+    FK: string | PolymorphicHasManyOptions
 ) {
     return function <T extends BaseEntity, R extends Partial<Entity>>(
         _: undefined,
@@ -21,15 +21,11 @@ export default function PolymorphicHasMany(
             .rel((target: EntityTarget) => RelationsMetadata
                 .findOrBuild(target)
                 .addPolymorphicHasMany({
-                    name: context.name as string,
-                    related,
-                    ...(typeof foreignKey === 'string'
-                        ? { foreignKey }
-                        : foreignKey
-                    )
+                    name: context.name as string, related, ...(
+                        typeof FK === 'string' ? { FK } : FK)
                 }))
 
-        // Auto-initialize ----------------------------------------------------
+        // Initializer --------------------------------------------------------
         context.addInitializer(function (this: T) {
             (this[context.name as keyof T] as any) ??= this.polymorphicHasMany(
                 context.name as string

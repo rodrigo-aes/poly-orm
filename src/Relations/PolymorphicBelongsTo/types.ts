@@ -1,10 +1,5 @@
 import type { Entity } from "../../types"
-import type {
-    BasePolymorphicEntity,
-    BaseEntity,
-    SourceEntity
-} from "../../Entities"
-
+import type { BasePolymorphicEntity, BaseEntity } from "../../Entities"
 import type { PolymorphicBelongsToHandler } from "."
 
 export type PolymorphicBelongsToRelated<

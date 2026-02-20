@@ -4,25 +4,24 @@ import type {
 } from "../../../../../types"
 import type { ConditionalQueryOptions } from '../../../../../SQLBuilders'
 import type { RelationOptions } from "../types"
+import type { EntityTargetGetter } from "../types"
 
 // Polymorphic Parent =========================================================
-export type PolymorphicParentRelatedGetter = () => (
+export type PolymorphicTargetGetter = () => (
     EntityTarget[] | PolymorphicEntityTarget
 )
 
 export interface PolymorphicParentOptions extends RelationOptions {
-    related: PolymorphicParentRelatedGetter,
-    foreignKey: string
-    typeKey?: string
+    related: PolymorphicTargetGetter,
+    FK: string
+    TK?: string
     scope?: ConditionalQueryOptions<any>
 }
 
 // Polymorphic Child ==========================================================
-export type PolymorphicChildRelatedGetter = () => EntityTarget
-
 export interface PolymorphicChildOptions extends RelationOptions {
-    related: PolymorphicChildRelatedGetter
-    foreignKey: string
-    typeKey?: string
+    related: EntityTargetGetter
+    FK: string
+    TK?: string
     scope?: ConditionalQueryOptions<any>
 }

@@ -20,11 +20,12 @@ import type { ConditionalQueryOptions } from '../../../../../../SQLBuilders'
 import type { RelatedEntitiesMap, RelatedEntitiesMapJSON } from "../../types"
 import type {
     PolymorphicParentOptions,
-    PolymorphicParentRelatedGetter
+    PolymorphicTargetGetter
 } from "../types"
 import type { PolymorphicBelongsToMetadataJSON } from "./types"
 
 export default class PolymorphicBelongsToMetadata extends RelationMetadata {
+    declare public readonly type: 'PolymorphicBelongsTo'
     public readonly fillMethod = 'One'
 
     private _relatedMetadata?: PolymorphicEntityMetadata | RelatedEntitiesMap
@@ -33,24 +34,18 @@ export default class PolymorphicBelongsToMetadata extends RelationMetadata {
     private _relatedTargetName?: string
     private _shouldMapToSource?: boolean
 
-    public related!: PolymorphicParentRelatedGetter
+    public related!: PolymorphicTargetGetter
     public scope?: ConditionalQueryOptions<any>
 
-    public FKName: string
-    public TKName?: string
+    public FK!: string
+    public TK?: string
 
     constructor(
         target: Target,
         options: PolymorphicParentOptions
     ) {
-        const { name, typeKey, foreignKey, ...opts } = options
-
-        super(target, name)
-
-        this.FKName = foreignKey
-        this.TKName = typeKey
-        Object.assign(this, opts)
-
+        super(target)
+        Object.assign(this, options)
         this.registerPolymorphicParent()
     }
 
@@ -93,10 +88,11 @@ export default class PolymorphicBelongsToMetadata extends RelationMetadata {
 
     // ------------------------------------------------------------------------
 
-    public get foreignKey(): ColumnMetadata | PolymorphicColumnMetadata {
-        return MetadataHandler.targetMetadata(this.target)
+    public get refCol(): ColumnMetadata | PolymorphicColumnMetadata {
+        return MetadataHandler
+            .targetMetadata(this.target)
             .columns
-            .findOrThrow(this.FKName)
+            .findOrThrow(this.FK)
     }
 
     // ------------------------------------------------------------------------
@@ -104,9 +100,9 @@ export default class PolymorphicBelongsToMetadata extends RelationMetadata {
     public get typeColum(): (
         ColumnMetadata | PolymorphicColumnMetadata | undefined
     ) {
-        if (this.TKName) return MetadataHandler.targetMetadata(this.target)
+        if (this.TK) return MetadataHandler.targetMetadata(this.target)
             .columns
-            .findOrThrow(this.TKName)
+            .findOrThrow(this.TK)
     }
 
     // ------------------------------------------------------------------------
@@ -122,8 +118,8 @@ export default class PolymorphicBelongsToMetadata extends RelationMetadata {
             name: this.name,
             type: this.type,
             related: this.relatedJSON(),
-            foreignKey: this.foreignKey.toJSON(),
-            typeColumn: this.typeColum?.toJSON(),
+            Fk: this.refCol.toJSON(),
+            TK: this.typeColum?.toJSON(),
             scope: this.scope
         }
     }

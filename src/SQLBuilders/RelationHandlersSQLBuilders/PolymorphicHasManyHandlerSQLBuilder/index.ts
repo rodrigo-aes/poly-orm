@@ -21,7 +21,7 @@ export default class PolymorphicHasManyHandlerSQLBuilder<
     // Publics ----------------------------------------------------------------
     public get _targetPrimaryValue(): any {
         return this.target instanceof BasePolymorphicEntity
-            ? this.target.$PK
+            ? this.target.PK
             : this.targetPrimaryValue
     }
 
@@ -35,7 +35,7 @@ export default class PolymorphicHasManyHandlerSQLBuilder<
 
     // Privates ---------------------------------------------------------------
     private get foreignKey(): string {
-        return this.metadata.FKName
+        return this.metadata.FK
     }
 
     // ------------------------------------------------------------------------
@@ -47,14 +47,14 @@ export default class PolymorphicHasManyHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     private get typeKey(): string | undefined {
-        return this.metadata.TKName
+        return this.metadata.TK
     }
 
     // ------------------------------------------------------------------------
 
     private get targetType(): string {
         return this.target instanceof BasePolymorphicEntity
-            ? this.target.$TK
+            ? this.target.TK
             : this.metadata.parentType
     }
 

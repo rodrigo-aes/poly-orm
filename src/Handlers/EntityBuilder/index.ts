@@ -62,7 +62,7 @@ export default class EntityBuilder<T extends EntityTarget> {
         target: T
     ): S {
         return (source as StaticEntityTarget<S>).build({
-            [MetadataHandler.targetMetadata(source).PK]: target.$PK,
+            [MetadataHandler.targetMetadata(source).PK]: target.PK,
 
             ...Object.fromEntries(
                 MetadataHandler.targetMetadata(target.constructor as (

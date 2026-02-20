@@ -2,15 +2,15 @@ import { RelationsMetadata } from "../../../../Metadata"
 import DecoratorMetadata from "../../../DecoratorMetadata"
 
 // Types
-import type { Entity, EntityTarget } from "../../../../types"
+import type { EntityTarget } from "../../../../types"
 import type { BaseEntity, BasePolymorphicEntity } from "../../../../Entities"
-import type { PolymorphicParentRelatedGetter } from "../../../../Metadata"
+import type { PolymorphicTargetGetter } from "../../../../Metadata"
 import type { PolymorphicBelongsTo } from "../../../../Relations"
 import type { PolymorphicBelongsToOptions } from "./types"
 
 export default function PolymorphicBelongsTo(
-    related: PolymorphicParentRelatedGetter,
-    foreignKey: string | PolymorphicBelongsToOptions
+    related: PolymorphicTargetGetter,
+    FK: string | PolymorphicBelongsToOptions
 ) {
     return function <
         T extends BaseEntity,
@@ -24,15 +24,12 @@ export default function PolymorphicBelongsTo(
             .rel((target: EntityTarget) => RelationsMetadata
                 .findOrBuild(target)
                 .addPolymorphicBelongsTo({
-                    name: context.name as string,
-                    related, ...(
-                        typeof foreignKey === 'string'
-                            ? { foreignKey }
-                            : foreignKey
+                    name: context.name as string, related, ...(
+                        typeof FK === 'string' ? { FK } : FK
                     )
                 }))
 
-        // Auto-initialize ----------------------------------------------------
+        // Initializer --------------------------------------------------------
         context.addInitializer(function (this: T) {
             (this[context.name as keyof T] as any) ??= (
                 this.polymorphicBelongsTo(context.name as string)

@@ -1,7 +1,7 @@
 import {
     RelationsMetadata,
-    type HasManyThroughRelatedGetter,
-    type HasManyThroughGetter
+    type TargetGetter,
+    type EntityTargetGetter
 } from "../../../Metadata"
 import DecoratorMetadata from "../../DecoratorMetadata"
 
@@ -12,8 +12,8 @@ import type { HasManyThrough } from "../../../Relations"
 import type { HasManyThroughOptions } from "./types"
 
 export default function HasManyThrough(
-    related: HasManyThroughRelatedGetter,
-    through: HasManyThroughGetter,
+    related: TargetGetter,
+    through: EntityTargetGetter,
     options: HasManyThroughOptions
 ) {
     return function <T extends BaseEntity, R extends Partial<Entity>>(
@@ -25,13 +25,10 @@ export default function HasManyThrough(
             .rel((target: EntityTarget) => RelationsMetadata
                 .findOrBuild(target)
                 .addHasManyThrough({
-                    name: context.name as string,
-                    related,
-                    through,
-                    ...options
+                    name: context.name as string, related, through, ...options
                 }))
 
-        // Auto-initialize ----------------------------------------------------
+        // Initializer --------------------------------------------------------
         context.addInitializer(function (this: T) {
             (this[context.name as keyof T] as any) ??= this.hasManyThrough(
                 context.name as string
@@ -41,7 +38,5 @@ export default function HasManyThrough(
 }
 
 export type {
-    HasManyThroughOptions,
-    HasManyThroughRelatedGetter,
-    HasManyThroughGetter
+    HasManyThroughOptions
 }

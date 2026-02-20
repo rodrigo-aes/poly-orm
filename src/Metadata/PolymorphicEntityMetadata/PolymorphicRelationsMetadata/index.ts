@@ -1,6 +1,6 @@
 import MetadataArray from "../../MetadataArray"
 import PolymorphicEntityMetadata from ".."
-import EntityMetadata, { RelationMetadata } from "../../EntityMetadata"
+import EntityMetadata, { type RelationMetadata } from "../../EntityMetadata"
 
 // Types
 import type { PolymorphicEntityTarget } from "../../../types"

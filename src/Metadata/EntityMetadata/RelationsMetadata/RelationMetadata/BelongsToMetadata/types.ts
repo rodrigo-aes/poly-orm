@@ -1,20 +1,24 @@
-import type { RelationOptions } from "../types"
-import type { EntityTarget } from "../../../../../types"
-import type { RelationMetadataJSON } from "../types"
+import type {
+    RelationOptions,
+    BaseRelationMetadataJSON,
+    TargetGetter
+} from "../types"
 import type { EntityMetadataJSON } from "../../../types"
 import type { ColumnMetadataJSON } from "../../../ColumnsMetadata"
+import type {
+    PolymorphicEntityMetadataJSON,
+    PolymorphicColumnMetadataJSON
+} from "../../../../PolymorphicEntityMetadata"
 import type { ConditionalQueryOptions } from '../../../../../SQLBuilders'
 
-export type BelongsToRelatedGetter = () => EntityTarget
-
 export interface BelongsToOptions extends RelationOptions {
-    related: BelongsToRelatedGetter
-    foreignKey: string
+    related: TargetGetter
+    FK: string
     scope?: ConditionalQueryOptions<any>
 }
 
-export interface BelongsToMetadataJSON extends RelationMetadataJSON {
-    related: EntityMetadataJSON
-    foreignKey: ColumnMetadataJSON
+export interface BelongsToMetadataJSON extends BaseRelationMetadataJSON {
+    related: EntityMetadataJSON | PolymorphicEntityMetadataJSON
+    FK: ColumnMetadataJSON | PolymorphicColumnMetadataJSON
     scope?: ConditionalQueryOptions<any>
 }

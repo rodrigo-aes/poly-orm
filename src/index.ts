@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 
-import type { PolyORMConfig } from './Config'
+// Global Types ===============================================================
 import type {
     Target,
     EntityTarget,
@@ -14,13 +14,16 @@ import type {
     EntityPropsKeys,
     EntityRelations,
     EntityRelationsKeys,
-    RequiredProps
+    Related,
 } from './types'
 
-// Connection
+// Config =====================================================================
+import type { PolyORMConfig } from './Config'
+
+// Connection =================================================================
 import MySQLConnection from './Connection'
 
-// Metadata
+// Metadata ===================================================================
 import {
     DataType,
 
@@ -39,14 +42,18 @@ import {
     type CollectionsMetadataJSON as CollectionsMetadata,
 } from './Metadata'
 
-// Bases
-import { BaseEntity, Collection, Pagination } from './Entities'
-import { BasePolymorphicEntity } from './Entities'
+// Entities ===================================================================
+import {
+    BaseEntity,
+    BasePolymorphicEntity,
+    Collection,
+    Pagination,
+} from './Entities'
 
-// Repositories
+// Repositories ===============================================================
 import { Repository, PolymorphicRepository } from './Repositories'
 
-// Query Builders
+// Query Builders =============================================================
 import {
     EntityQueryBuilder,
     PolymorphicEntityQueryBuilder,
@@ -76,7 +83,7 @@ import {
     type PaginateQueryBuilder
 } from './QueryBuilder'
 
-// Relations
+// Relations ================================================================
 import type {
     HasOne as HasOneHandler,
     HasMany as HasManyHandler,
@@ -90,7 +97,7 @@ import type {
     PolymorphicBelongsTo as PolymorphicBelongsToHandler
 } from './Relations'
 
-// Trigger
+// Triggers ===================================================================
 import {
     Trigger,
 
@@ -104,7 +111,7 @@ import {
     type DeleteFromAction,
 } from './Triggers'
 
-// Decorators
+// Decorators =================================================================
 import {
     Meta,
     Entity,
@@ -206,14 +213,14 @@ import {
     type PolymorphicBelongsToOptions
 } from './Decorators'
 
+// Database Schema ============================================================
+import type DatabaseSchema from './DatabaseSchema'
+import type { TableSchema, ColumnSchema } from './DatabaseSchema'
+
+// Migrations =================================================================
 import { Migration } from './Migrator'
 
-import type DatabaseSchema from './DatabaseSchema'
-import type {
-    TableSchema,
-    ColumnSchema,
-} from './DatabaseSchema'
-
+// SQL Builders ===============================================================
 import {
     Procedure,
 
@@ -265,20 +272,27 @@ import {
     // type CrossExistsQueryOptions,
 } from './SQLBuilders'
 
+
+// OUT Exports: ===============================================================
 export {
+    // Config -----------------------------------------------------------------
     type PolyORMConfig,
+
+    // Connections ------------------------------------------------------------
     MySQLConnection,
 
-    DataType,
-
+    // Entities ---------------------------------------------------------------
     BaseEntity,
     BasePolymorphicEntity,
     Collection,
     Pagination,
+    DataType,
 
+    // Repositories -----------------------------------------------------------
     Repository,
     PolymorphicRepository,
 
+    // QueryBuilders ----------------------------------------------------------
     EntityQueryBuilder,
     PolymorphicEntityQueryBuilder,
     ConnectionQueryBuilder,
@@ -291,11 +305,14 @@ export {
     UpdateOrCreateQueryBuilder,
     DeleteQueryBuilder,
 
+    // Triggers ---------------------------------------------------------------
     Trigger,
     Procedure,
 
+    // Migrations -------------------------------------------------------------
     Migration,
 
+    // Decorators -------------------------------------------------------------
     Meta,
     Entity,
     PolymorphicEntity,
@@ -357,6 +374,7 @@ export {
     Paginations,
     DefaultPagination,
 
+    // Operators/Symbols ------------------------------------------------------
     Op,
     Case,
     Exists,
@@ -366,14 +384,17 @@ export {
     literal,
     li,
 
-    type LiteralHandler,
+    // Types ==================================================================
     type Literals,
+    type LiteralHandler,
 
+    // -- Targets -------------------------------------------------------------
     type EntityTarget,
     type PolymorphicEntityTarget,
     type Target,
     type CollectionTarget,
 
+    // -- Metadata ------------------------------------------------------------
     type EntityMetadata,
     type DataTypeMetadata,
     type ColumnsMetadata,
@@ -388,6 +409,7 @@ export {
     type ComputedProperties,
     type CollectionsMetadata,
 
+    // -- Database Schema -----------------------------------------------------
     type DatabaseSchema,
     type TableSchema,
     type ColumnSchema,
@@ -472,7 +494,7 @@ export {
     type EntityPropsKeys,
     type EntityRelations,
     type EntityRelationsKeys,
-    type RequiredProps as EntityFillProps,
+    type Related,
 
     type FindOneQueryOptions,
     type FindQueryOptions,

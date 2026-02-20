@@ -1,7 +1,7 @@
 import {
     RelationsMetadata,
-    type BelongsToThroughRelatedGetter,
-    type BelongsToThroughGetter
+    type TargetGetter,
+    type EntityTargetGetter
 } from "../../../Metadata"
 import DecoratorMetadata from "../../DecoratorMetadata"
 
@@ -12,8 +12,8 @@ import type { BelongsToThrough } from "../../../Relations"
 import type { BelongsToThroughOptions } from "./types"
 
 export default function BelongsToThrough(
-    related: BelongsToThroughRelatedGetter,
-    through: BelongsToThroughGetter,
+    related: TargetGetter,
+    through: EntityTargetGetter,
     options: BelongsToThroughOptions
 ) {
     return function <T extends BaseEntity, R extends Partial<Entity>>(
@@ -25,13 +25,10 @@ export default function BelongsToThrough(
             .rel((target: EntityTarget) => RelationsMetadata
                 .findOrBuild(target)
                 .addBelongsToThrough({
-                    name: context.name as string,
-                    related,
-                    through,
-                    ...options
+                    name: context.name as string, related, through, ...options
                 }))
 
-        // Auto-initialize ----------------------------------------------------
+        // Initializer --------------------------------------------------------
         context.addInitializer(function (this: T) {
             (this[context.name as keyof T] as any) ??= this.belongsToThrough(
                 context.name as string
@@ -41,7 +38,5 @@ export default function BelongsToThrough(
 }
 
 export type {
-    BelongsToThroughOptions,
-    BelongsToThroughRelatedGetter,
-    BelongsToThroughGetter
+    BelongsToThroughOptions
 }

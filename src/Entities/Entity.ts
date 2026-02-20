@@ -1,19 +1,9 @@
 import {
     MetadataHandler,
     TempMetadata,
+    Relation,
 
-    HasOneMetadata,
-    HasManyMetadata,
-    BelongsToMetadata,
-    HasOneThroughMetadata,
-    HasManyThroughMetadata,
-    BelongsToThroughMetadata,
-    BelongsToManyMetadata,
-    PolymorphicHasOneMetadata,
-    PolymorphicHasManyMetadata,
-    PolymorphicBelongsToMetadata,
-
-    type RelationMetadataType,
+    type RelationMetadata,
     type HookType
 } from "../Metadata"
 
@@ -247,7 +237,7 @@ export default abstract class Entity {
         R extends Partial<EntityT> = Partial<EntityT>
     >(this: T, name: string, entity?: R): HasOne<R> {
         return HasOneHandler<T, R>(
-            this.__$validRel(name, HasOneMetadata),
+            Relation.valid(this.__$relMeta(name), 'HasOne'),
             this,
             entity
         )
@@ -267,7 +257,7 @@ export default abstract class Entity {
         )
     ): HasMany<R, C> {
         return HasManyHandler<T, R, C>(
-            this.__$validRel(name, HasManyMetadata),
+            Relation.valid(this.__$relMeta(name), 'HasMany'),
             this,
             ...this.__$resolveColl(collection)
         )
@@ -284,7 +274,7 @@ export default abstract class Entity {
         entity?: R
     ): BelongsTo<R> {
         return BelongsToHandler<T, R>(
-            this.__$validRel(name, BelongsToMetadata),
+            Relation.valid(this.__$relMeta(name), 'BelongsTo'),
             this,
             undefined,
             entity
@@ -302,7 +292,7 @@ export default abstract class Entity {
         entity?: R
     ): HasOneThrough<R> {
         return HasOneThroughHandler<T, R>(
-            this.__$validRel(name, HasOneThroughMetadata),
+            Relation.valid(this.__$relMeta(name), 'HasOneThrough'),
             this,
             undefined,
             entity
@@ -323,7 +313,7 @@ export default abstract class Entity {
         )
     ): HasManyThrough<R, C> {
         return HasManyThroughHandler<T, R, C>(
-            this.__$validRel(name, HasManyThroughMetadata),
+            Relation.valid(this.__$relMeta(name), 'HasManyThrough'),
             this,
             ...this.__$resolveColl(collection)
         )
@@ -340,7 +330,7 @@ export default abstract class Entity {
         entity?: R
     ): BelongsToThrough<R> {
         return BelongsToThroughHandler<T, R>(
-            this.__$validRel(name, BelongsToThroughMetadata),
+            Relation.valid(this.__$relMeta(name), 'BelongsToThrough'),
             this,
             undefined,
             entity
@@ -361,7 +351,7 @@ export default abstract class Entity {
         )
     ): BelongsToMany<R, C> {
         return BelongsToManyHandler<T, R, C>(
-            this.__$validRel(name, BelongsToManyMetadata),
+            Relation.valid(this.__$relMeta(name), 'BelongsToMany'),
             this,
             ...this.__$resolveColl(collection)
         )
@@ -378,7 +368,7 @@ export default abstract class Entity {
         entity?: R
     ): PolymorphicHasOne<R> {
         return PolymorphicHasOneHandler<T, R>(
-            this.__$validRel(name, PolymorphicHasOneMetadata),
+            Relation.valid(this.__$relMeta(name), 'PolymorphicHasOne'),
             this,
             undefined,
             entity
@@ -399,7 +389,7 @@ export default abstract class Entity {
         )
     ): PolymorphicHasMany<R, C> {
         return PolymorphicHasManyHandler<T, R, C>(
-            this.__$validRel(name, PolymorphicHasManyMetadata),
+            Relation.valid(this.__$relMeta(name), 'PolymorphicHasMany'),
             this,
             ...this.__$resolveColl(collection)
         )
@@ -416,7 +406,7 @@ export default abstract class Entity {
         polymorphicEntity?: BasePolymorphicEntity<any>
     ): PolymorphicBelongsTo<R> {
         return PolymorphicBelongsToHandler<R>(
-            this.__$validRel(name, PolymorphicBelongsToMetadata),
+            Relation.valid(this.__$relMeta(name), 'PolymorphicBelongsTo'),
             this,
             undefined,
             polymorphicEntity
@@ -437,24 +427,11 @@ export default abstract class Entity {
 
     // ------------------------------------------------------------------------
     /** @internal */
-    private __$validRel<T extends EntityT, R extends RelationMetadataType>(
+    private __$relMeta<T extends EntityT>(
         this: T,
-        name: string,
-        shouldBe: Constructor<R>
-    ): R {
-        const meta = (this as Entity).__$trueMetadata.relations.findOrThrow(
-            name
-        )
-        return (
-            meta instanceof shouldBe
-                ? meta
-                : PolyORMException.Metadata.throw(
-                    'INVALID_RELATION',
-                    meta.type,
-                    meta.name,
-                    shouldBe.name.replace('Metadata', '')
-                )
-        ) as R
+        name: string
+    ): RelationMetadata {
+        return (this as Entity).__$trueMetadata.relations.findOrThrow(name)
     }
 
     // ------------------------------------------------------------------------
@@ -723,9 +700,6 @@ export default abstract class Entity {
     private static __$replyConstructor<T extends Constructor<EntityT>>(
         this: T
     ): T {
-        const replic = class extends (this as new (...args: any[]) => any) { }
-        Object.assign(replic, this)
-
-        return replic as T
+        return Object.assign(class extends (this as any) { }, this)
     }
 }

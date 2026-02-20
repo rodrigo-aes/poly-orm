@@ -39,7 +39,7 @@ export default class UpdateSQLBuilder<T extends Entity> {
             this.target, 'conditional', this.conditional
         )
         this._att = attributes instanceof BasePolymorphicEntity
-            ? attributes.toSourceEntity()
+            ? attributes.toSource()
             : attributes
     }
 

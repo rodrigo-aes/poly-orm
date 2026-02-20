@@ -42,19 +42,19 @@ export default class HasOneThroughHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     private get foreignKey(): string {
-        return `${this.relatedAlias}.${this.metadata.relatedFKName}`
+        return `${this.relatedAlias}.${this.metadata.FK}`
     }
 
     // ------------------------------------------------------------------------
 
     private get throughForeignKey(): string {
-        return `${this.throughAlias}.${this.metadata.throughFKName}`
+        return `${this.throughAlias}.${this.metadata.throughFK}`
     }
 
     // ------------------------------------------------------------------------
 
     private get throughPrimary(): string {
-        return `${this.throughAlias}.${this.metadata.throughPrimary}`
+        return `${this.throughAlias}.${this.metadata.throughPK}`
     }
 
     // Instance Methods =======================================================

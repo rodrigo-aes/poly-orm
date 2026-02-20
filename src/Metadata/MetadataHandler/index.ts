@@ -61,7 +61,11 @@ export default class MetadataHandler {
     ): TargetMetadata<T> {
         switch (true) {
             case target.prototype instanceof BaseEntity: return (
-                EntityMetadata.find(target) ?? TempMetadata.getMetadata(target)
+                EntityMetadata.find(target)
+                ?? TempMetadata.getMetadata(target)
+                ?? PolyORMException.Metadata.throw(
+                    'INVALID_ENTITY', target.name
+                )
             ) as TargetMetadata<T>
 
             // ----------------------------------------------------------------
@@ -69,6 +73,9 @@ export default class MetadataHandler {
             case target.prototype instanceof BasePolymorphicEntity: return (
                 PolymorphicEntityMetadata.find(target)
                 ?? TempMetadata.getMetadata(target)
+                ?? PolyORMException.Metadata.throw(
+                    'INVALID_ENTITY', target.name
+                )
             ) as TargetMetadata<T>
 
             // ----------------------------------------------------------------

@@ -10,41 +10,35 @@ import type {
 } from "../../../JoinTablesMetadata"
 import type { ForeignKeyActionListener } from "../../../ColumnsMetadata"
 import type { ConditionalQueryOptions } from '../../../../../SQLBuilders'
+import type { EntityTargetGetter } from "../types"
 import type {
-    BelongsToManyRelatedGetter,
     BelongsToManyOptions,
     BelongsToManyMetadataJSON
 } from "./types"
 
 export default class BelongsToManyMetadata extends RelationMetadata {
+    declare public readonly type: 'BelongsToMany'
     public readonly fillMethod = 'Many'
 
-    public related!: BelongsToManyRelatedGetter
-    public joinTableMetadata: JoinTableMetadata
+    public related!: EntityTargetGetter
+    public JTMetadata: JoinTableMetadata
     public onDelete?: ForeignKeyActionListener
     public onUpdate?: ForeignKeyActionListener
     public scope?: ConditionalQueryOptions<any>
     public collection?: Constructor<Collection<any>> = Collection
 
     constructor(public target: EntityTarget, options: BelongsToManyOptions) {
-        const { name, joinTable, ...opts } = options
+        super(target)
 
-        super(target, name)
-
-        Object.assign(this, opts)
-        this.joinTableMetadata = this.registerJoinTable(joinTable)
+        const { joinTable, ...rest } = options
+        Object.assign(this, rest)
+        this.JTMetadata = this.registerJoinTable(joinTable)
     }
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get relatedTarget(): EntityTarget {
-        return this.related()
-    }
-
-    // ------------------------------------------------------------------------
-
     public get JTName(): string {
-        return this.joinTableMetadata.name
+        return this.JTMetadata.name
     }
 
     // ------------------------------------------------------------------------
@@ -61,6 +55,12 @@ export default class BelongsToManyMetadata extends RelationMetadata {
 
     // ------------------------------------------------------------------------
 
+    public get relatedTarget(): EntityTarget {
+        return this.related()
+    }
+
+    // ------------------------------------------------------------------------
+
     public get relatedMetadata(): EntityMetadata {
         return EntityMetadata.findOrBuild(this.related())
     }
@@ -73,26 +73,26 @@ export default class BelongsToManyMetadata extends RelationMetadata {
 
     // ------------------------------------------------------------------------
 
-    public get relatedForeignKey(): JoinColumnMetadata {
-        return this.joinTableMetadata.getTargetColumn(this.related())
+    public get refCol(): JoinColumnMetadata {
+        return this.JTMetadata.getTargetColumn(this.related())
     }
 
     // ------------------------------------------------------------------------
 
-    public get relatedFKName(): string {
-        return `${this.JTAlias}.${this.relatedForeignKey.name}`
+    public get FK(): string {
+        return `${this.JTAlias}.${this.refCol.name}`
     }
 
     // ------------------------------------------------------------------------
 
-    public get parentForeignKey(): JoinColumnMetadata {
-        return this.joinTableMetadata.getTargetColumn(this.target)
+    public get parentRefCol(): JoinColumnMetadata {
+        return this.JTMetadata.getTargetColumn(this.target)
     }
 
     // ------------------------------------------------------------------------
 
-    public get parentFKname(): string {
-        return `${this.JTAlias}.${this.parentForeignKey.name}`
+    public get parentFK(): string {
+        return `${this.JTAlias}.${this.parentRefCol.name}`
     }
 
     // Instance Methods =======================================================
@@ -102,7 +102,7 @@ export default class BelongsToManyMetadata extends RelationMetadata {
             name: this.name,
             type: this.type,
             related: this.relatedMetadata.toJSON(),
-            joinTable: this.joinTableMetadata.toJSON(),
+            joinTable: this.JTMetadata.toJSON(),
             onDelete: this.onDelete,
             onUpdate: this.onDelete,
             scope: this.scope,
@@ -131,7 +131,6 @@ export default class BelongsToManyMetadata extends RelationMetadata {
 }
 
 export type {
-    BelongsToManyRelatedGetter,
     BelongsToManyOptions,
     BelongsToManyMetadataJSON
 }

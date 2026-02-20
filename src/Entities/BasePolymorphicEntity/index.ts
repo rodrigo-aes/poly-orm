@@ -39,7 +39,6 @@ import type { DeleteResult } from "../../Handlers"
 import type {
     CreateAttributes,
     UpdateAttributes,
-    UpdateOrCreateAttributes,
     ConditionalQueryOptions,
 } from "../../SQLBuilders"
 
@@ -72,12 +71,12 @@ export default abstract class BasePolymorphicEntity<
     /**
      * Entity primary key
      */
-    public $PK!: string | number
+    public PK!: string | number
 
     /**
      * Entity type
      */
-    public $TK!: EntityNames<S>
+    public TK!: EntityNames<S>
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
@@ -106,7 +105,7 @@ export default abstract class BasePolymorphicEntity<
     /** @internal */
     private get $__sourceTrueMetadata(): EntityMetadata {
         return MetadataHandler.targetMetadata(
-            this.sources[this.$TK] as EntityTarget
+            this.sources[this.TK] as EntityTarget
         )
     }
 
@@ -158,13 +157,9 @@ export default abstract class BasePolymorphicEntity<
      * Convert current polymorphic instance to source entity instance
      * @returns - A original entity instance
      */
-    public toSourceEntity<T extends Source<S> | undefined = undefined>(): (
-        T extends Source<S>
-        ? ResolveSource<S, T>
-        : SourceEntities<this>
-    ) {
+    public toSource<T extends Source<S> | never = never>() {
         return EntityBuilder.buildPolymorphicSource(
-            this.sources[this.$TK],
+            this.sources[this.TK],
             this
         ) as (
                 T extends Source<S>
@@ -187,10 +182,10 @@ export default abstract class BasePolymorphicEntity<
         const instance = await new BasePolymorphicEntity
             .Repository(this.constructor as Constructor<T>)
             .updateOrCreate(
-                this.$TK,
+                this.TK,
                 attributes
-                    ? this.fill(attributes).toSourceEntity()
-                    : this.toSourceEntity(),
+                    ? this.fill(attributes).toSource()
+                    : this.toSource(),
                 'this'
             )
 
@@ -209,7 +204,7 @@ export default abstract class BasePolymorphicEntity<
     ): Promise<void> {
         await new BasePolymorphicEntity
             .Repository(this.constructor as Constructor<T>)
-            .delete(this.sources[this.$TK], this.__$whereSPK as any)
+            .delete(this.sources[this.TK], this.__$whereSPK as any)
     }
 
     // Privates ---------------------------------------------------------------
@@ -321,7 +316,7 @@ export default abstract class BasePolymorphicEntity<
     >(
         this: Constructor<T>,
         source: S,
-        attributes: UpdateOrCreateAttributes<ResolveSource<T, S>>,
+        attributes: CreateAttributes<ResolveSource<T, S>>,
         returns: R = 'this' as R
     ): Promise<
         R extends 'this'

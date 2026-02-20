@@ -3,7 +3,7 @@ import {
     CollectionsMetadataHandler,
     PaginationMetadataHandler,
 
-    type RelationMetadataType
+    type RelationMetadata
 } from "../../Metadata"
 
 // Entities
@@ -316,7 +316,7 @@ export default class MySQLDataHandler {
     private static fillRelation(
         method: 'json' | 'entity' = 'json',
         data: any,
-        relation: RelationMetadataType,
+        relation: RelationMetadata,
         parent?: Entity
     ) {
         switch (method) {

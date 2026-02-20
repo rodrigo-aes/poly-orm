@@ -3,7 +3,7 @@ import '../Metadata'
 import Meta from './Meta'
 import Entity from "./Entity"
 import PolymorphicEntity, {
-    Column as PolymorphicColumn,
+    PolymorphicColumn,
     PolymorphicRelation,
     CommonRelation,
 
@@ -71,29 +71,12 @@ import {
     PolymorphicBelongsTo,
 
     type HasOneOptions,
-    type HasOneRelatedGetter,
-
     type HasManyOptions,
-    type HasManyRelatedGetter,
-
     type HasOneThroughOptions,
-    type HasOneThroughRelatedGetter,
-    type HasOneThroughGetter,
-
     type HasManyThroughOptions,
-    type HasManyThroughRelatedGetter,
-    type HasManyThroughGetter,
-
     type BelongToOptions,
-    type BelongsToRelatedGetter,
-
     type BelongsToThroughOptions,
-    type BelongsToThroughRelatedGetter,
-    type BelongsToThroughGetter,
-
     type BelongsToManyOptions,
-    type BelongsToManyRelatedGetter,
-
     type PolymorphicHasOneOptions,
     type PolymorphicHasManyOptions,
     type PolymorphicBelongsToOptions
@@ -199,29 +182,12 @@ export {
     type ComputedPropertyFunction,
 
     type HasOneOptions,
-    type HasOneRelatedGetter,
-
     type HasManyOptions,
-    type HasManyRelatedGetter,
-
     type HasOneThroughOptions,
-    type HasOneThroughRelatedGetter,
-    type HasOneThroughGetter,
-
     type HasManyThroughOptions,
-    type HasManyThroughRelatedGetter,
-    type HasManyThroughGetter,
-
     type BelongToOptions,
-    type BelongsToRelatedGetter,
-
     type BelongsToThroughOptions,
-    type BelongsToThroughRelatedGetter,
-    type BelongsToThroughGetter,
-
     type BelongsToManyOptions,
-    type BelongsToManyRelatedGetter,
-
     type PolymorphicHasOneOptions,
     type PolymorphicHasManyOptions,
     type PolymorphicBelongsToOptions

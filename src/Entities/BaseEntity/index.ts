@@ -35,6 +35,7 @@ import type {
  * class User extends BaseEntity {}
  */
 export default abstract class BaseEntity extends Entity {
+    /** @internal */
     declare readonly __name: string
     declare readonly __defaultCollection: Collection<this>
     declare readonly __defaultPagination: Pagination<Collection<this>>

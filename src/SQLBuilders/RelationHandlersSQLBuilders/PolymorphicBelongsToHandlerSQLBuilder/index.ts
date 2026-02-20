@@ -50,7 +50,7 @@ export default class PolymorphicBelongsToHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     private get foreignKey(): keyof T {
-        return this.metadata.FKName as keyof T
+        return this.metadata.FK as keyof T
     }
 
     // ------------------------------------------------------------------------
@@ -62,7 +62,7 @@ export default class PolymorphicBelongsToHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     private get typeKey(): keyof T | undefined {
-        return this.metadata.TKName as keyof T | undefined
+        return this.metadata.TK as keyof T | undefined
     }
 
     // ------------------------------------------------------------------------

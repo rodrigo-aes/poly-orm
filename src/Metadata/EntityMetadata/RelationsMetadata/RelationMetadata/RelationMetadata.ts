@@ -1,25 +1,25 @@
 // Types
 import type { Target, Constructor } from "../../../../types"
-import { Collection } from "../../../../Entities"
-import type { RelationType } from "./types"
+import type { Collection } from "../../../../Entities"
+import type { RelationType, RelationMetadata as Concret } from "./types"
 
-export default abstract class RelationMetadata<T extends 'One' | 'Many' = any> {
+export default abstract class RelationMetadata<
+    T extends 'One' | 'Many' = 'One' | 'Many'
+> {
     public abstract readonly fillMethod: T
+    public readonly type: RelationType = (
+        this.constructor.name.replace('Metadata', '') as RelationType
+    )
     public collection?: T extends 'Many'
         ? Constructor<Collection<any>>
         : never
 
-    constructor(public target: Target, public name: string) { }
+    public name!: string
+    constructor(public target: Target) { }
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
     public abstract get relatedTarget(): Target
-
-    // ------------------------------------------------------------------------
-
-    public get type(): RelationType {
-        return this.constructor.name.replace('Metadata', '') as RelationType
-    }
 
     // instance Methods =======================================================
     // Publics ----------------------------------------------------------------
@@ -27,16 +27,14 @@ export default abstract class RelationMetadata<T extends 'One' | 'Many' = any> {
 
     // ------------------------------------------------------------------------
 
-    public reply<T extends RelationMetadata>(
+    public reply<T extends Concret>(
         this: T,
         target: Target,
         name: string
-    ): RelationMetadata {
-        const replic = new (this.constructor as Constructor<RelationMetadata>)(
-            target, {}
+    ): T {
+        return Object.assign(
+            new (this.constructor as Constructor<T>)(target, {}),
+            { ...this, name }
         )
-
-        Object.assign(replic, { ...this, name })
-        return replic
     }
 }

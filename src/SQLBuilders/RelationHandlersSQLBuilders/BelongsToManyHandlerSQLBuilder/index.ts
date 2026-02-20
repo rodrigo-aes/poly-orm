@@ -42,20 +42,20 @@ export default class BelongsToManyHandlerSQLBuilder<
     // ------------------------------------------------------------------------
 
     private get targetForeignKey(): string {
-        return this.metadata.parentFKname
+        return this.metadata.parentFK
     }
 
     // ------------------------------------------------------------------------
 
     private get relatedForeignKey(): string {
-        return this.metadata.relatedFKName
+        return this.metadata.FK
     }
 
     // ------------------------------------------------------------------------
 
     private get joinColumns(): string {
-        return `${this.metadata.parentForeignKey.name}, ${(
-            this.metadata.relatedForeignKey.name
+        return `${this.metadata.parentRefCol.name}, ${(
+            this.metadata.refCol.name
         )}`
     }
 

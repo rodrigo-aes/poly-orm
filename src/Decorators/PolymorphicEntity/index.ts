@@ -1,7 +1,7 @@
 import { PolymorphicEntityMetadata } from "../../Metadata"
 import DecoratorMetadata from "../DecoratorMetadata"
 // Decorators
-import Column, { type IncludeColumnOptions } from "./Column"
+import PolymorphicColumn, { type IncludeColumnOptions } from "./Column"
 
 import PolymorphicRelation, {
     type IncludePolymorphicRelationOptions
@@ -18,12 +18,12 @@ import type {
     InstancesOf
 } from "../../types"
 
-import type { BaseEntity, BasePolymorphicEntity } from "../../Entities"
+import type { BasePolymorphicEntity } from "../../Entities"
 
 export default function PolymorphicEntity<
-    S extends BaseEntity[],
-    T extends BasePolymorphicEntity<S>
->(...entities: Constructor<S[number]>[]) {
+    S extends EntityTarget[],
+    T extends BasePolymorphicEntity<InstancesOf<S>[]>
+>(...entities: S) {
     return function (
         target: Constructor<T>,
         context: ClassDecoratorContext<Constructor<T>>
@@ -38,7 +38,7 @@ export default function PolymorphicEntity<
 }
 
 export {
-    Column,
+    PolymorphicColumn,
     PolymorphicRelation,
     CommonRelation,
 

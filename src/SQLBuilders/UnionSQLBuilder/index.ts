@@ -28,7 +28,7 @@ export default class UnionSQLBuilder {
 
     private get restColumns(): PolymorphicColumnMetadata[] {
         return this.metadata.columns.filter(
-            ({ name }) => !['primaryKey', 'entityType'].includes(name)
+            ({ name }) => !['PK', 'TK'].includes(name)
         )
     }
 
@@ -62,13 +62,13 @@ export default class UnionSQLBuilder {
     // ------------------------------------------------------------------------
 
     private PKSQL(source: EntityMetadata): string {
-        return `${source.PK} AS primaryKey`
+        return `${source.PK} AS PK`
     }
 
     // ------------------------------------------------------------------------
 
     private ETSQL(source: EntityMetadata): string {
-        return `"${source.target.name}" AS entityType`
+        return `"${source.target.name}" AS TK`
     }
 
     // ------------------------------------------------------------------------

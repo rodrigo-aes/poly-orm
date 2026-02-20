@@ -35,7 +35,7 @@ export default class BelongsToHandlerSQLBuilder<
 
     // Privates ---------------------------------------------------------------
     private get foreignKeyValue(): any {
-        return this.target[this.metadata.foreignKey.name as (
+        return this.target[this.metadata.refCol.name as (
             keyof T
         )]
     }

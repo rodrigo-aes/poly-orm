@@ -12,10 +12,9 @@ import PolymorphicBelongsToMetadata, {
 
 import type {
     PolymorphicParentOptions,
-    PolymorphicParentRelatedGetter,
+    PolymorphicTargetGetter,
 
     PolymorphicChildOptions,
-    PolymorphicChildRelatedGetter
 } from "./types"
 
 export {
@@ -24,9 +23,8 @@ export {
     PolymorphicBelongsToMetadata,
 
     type PolymorphicParentOptions,
-    type PolymorphicParentRelatedGetter,
+    type PolymorphicTargetGetter,
     type PolymorphicChildOptions,
-    type PolymorphicChildRelatedGetter,
 
     type PolymorphicHasOneMetadataJSON,
     type PolymorphicHasManyMetadataJSON,

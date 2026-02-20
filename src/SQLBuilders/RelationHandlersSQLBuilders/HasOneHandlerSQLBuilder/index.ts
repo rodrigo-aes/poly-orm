@@ -20,13 +20,13 @@ export default class HasOneHandlerSQLBuilder<
     // Getters ================================================================
     // Protecteds -------------------------------------------------------------
     protected get includedAtrributes(): any {
-        return { [this.metadata.foreignKey.name]: this.targetPrimaryValue }
+        return { [this.metadata.RefCol.name]: this.targetPrimaryValue }
     }
 
     // Privates ---------------------------------------------------------------
     private get foreignKey(): string {
         return `${this.relatedAlias}.${(
-            this.relatedColumnAsSQL(this.metadata.foreignKey.name)
+            this.relatedColumnAsSQL(this.metadata.RefCol.name)
         )}`
     }
 

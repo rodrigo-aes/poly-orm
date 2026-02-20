@@ -1,6 +1,6 @@
 import {
     RelationsMetadata,
-    type BelongsToManyRelatedGetter
+    type EntityTargetGetter
 } from "../../../Metadata"
 import DecoratorMetadata from "../../DecoratorMetadata"
 
@@ -11,7 +11,7 @@ import type { BelongsToMany } from "../../../Relations"
 import type { BelongsToManyOptions } from "./types"
 
 export default function BelongsToMany(
-    related: BelongsToManyRelatedGetter,
+    related: EntityTargetGetter,
     options?: BelongsToManyOptions
 ) {
     return function <T extends BaseEntity, R extends Partial<Entity>>(
@@ -23,12 +23,10 @@ export default function BelongsToMany(
             .rel((target: EntityTarget) => RelationsMetadata
                 .findOrBuild(target)
                 .addBelongsToMany({
-                    name: context.name as string,
-                    related,
-                    ...options
+                    name: context.name as string, related, ...options
                 }))
 
-        // Auto-initialize ----------------------------------------------------
+        // Initializer --------------------------------------------------------
         context.addInitializer(function (this: T) {
             (this[context.name as keyof T] as any) ??= this.belongsToMany(
                 context.name as string
@@ -38,6 +36,5 @@ export default function BelongsToMany(
 }
 
 export type {
-    BelongsToManyOptions,
-    BelongsToManyRelatedGetter
+    BelongsToManyOptions
 }

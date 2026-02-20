@@ -53,54 +53,24 @@ import ColumnsMetadata, {
 
 // Relations Metadata
 import RelationsMetadata, {
-    RelationMetadata,
-    type RelationMetadataType,
-    type OneRelationMetadataType,
-    type ManyRelationMetadatatype,
-
-    HasOneMetadata,
+    Relation,
+    type RelationMetadata,
     type HasOneOptions,
-    type HasOneRelatedGetter,
-
-    HasManyMetadata,
     type HasManyOptions,
-    type HasManyRelatedGetter,
-
-    HasOneThroughMetadata,
     type HasOneThroughOptions,
-    type HasOneThroughRelatedGetter,
-    type HasOneThroughGetter,
-
-    HasManyThroughMetadata,
     type HasManyThroughOptions,
-    type HasManyThroughRelatedGetter,
-    type HasManyThroughGetter,
-
-    BelongsToMetadata,
-    type BelongToOptions,
-    type BelongsToRelatedGetter,
-
-    BelongsToThroughMetadata,
+    type BelongsToOptions,
     type BelongsToThroughOptions,
-    type BelongsToThroughRelatedGetter,
-    type BelongsToThroughGetter,
-
-    BelongsToManyMetadata,
     type BelongsToManyOptions,
-    type BelongsToManyRelatedGetter,
-
-    PolymorphicHasOneMetadata,
-    PolymorphicHasManyMetadata,
-    PolymorphicBelongsToMetadata,
-
     type PolymorphicParentOptions,
-    type PolymorphicParentRelatedGetter,
-
     type PolymorphicChildOptions,
-    type PolymorphicChildRelatedGetter,
 
-    type RelationJSON,
+    type TargetGetter,
+    type EntityTargetGetter,
+    type PolymorphicTargetGetter,
+
     type RelationsMetadataJSON,
+    type RelationMetadataJSON
 } from './RelationsMetadata'
 
 // JoinTables Metadata
@@ -113,8 +83,6 @@ import JoinTablesMetadata, {
     type JoinTableRelatedsGetter,
     type JoinTableMetadataJSON
 } from './JoinTablesMetadata'
-
-import Repository from '../../Repositories/Repository'
 
 // Hooks
 import HooksMetadata, {
@@ -161,7 +129,7 @@ import { EntityToJSONProcessMetadata } from '../ProcessMetadata'
 import MetadataHandler from '../MetadataHandler'
 
 // Types
-import type { Constructor, EntityTarget } from '../../types'
+import type { EntityTarget } from '../../types'
 import type { PolyORMConnection } from '../ConnectionsMetadata'
 import type { EntityMetadataJSON } from './types'
 
@@ -283,9 +251,9 @@ export default class EntityMetadata extends Metadata {
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
-    public defineDefaultConnection(
-        connection: PolyORMConnection | string
-    ): void {
+    public defineDefaultConnection(connection: (
+        PolyORMConnection | string
+    )): void {
         return MetadataHandler.setDefaultConnection(connection, this.target)
     }
 
@@ -294,6 +262,8 @@ export default class EntityMetadata extends Metadata {
     public defineTempConnection(connection: PolyORMConnection | string): void {
         return MetadataHandler.setTempConnection(connection, this.target)
     }
+
+    // ------------------------------------------------------------------------
 
     public addJoinTable(
         relateds: JoinTableRelatedsGetter,
@@ -349,8 +319,22 @@ export {
     type ComputedType,
 
     // Relations
-    RelationMetadata,
     RelationsMetadata,
+    Relation,
+    type RelationMetadata,
+    type HasOneOptions,
+    type HasManyOptions,
+    type HasOneThroughOptions,
+    type HasManyThroughOptions,
+    type BelongsToOptions,
+    type BelongsToThroughOptions,
+    type BelongsToManyOptions,
+    type PolymorphicParentOptions,
+    type PolymorphicChildOptions,
+
+    type TargetGetter,
+    type EntityTargetGetter,
+    type PolymorphicTargetGetter,
 
     // Join Tables
     JoinTablesMetadata,
@@ -387,52 +371,6 @@ export {
     type ForeignKeyReferencedGetter,
     type ForeignKeyActionListener,
 
-    // Relations
-    type RelationMetadataType,
-    type OneRelationMetadataType,
-    type ManyRelationMetadatatype,
-
-    HasOneMetadata,
-    type HasOneOptions,
-    type HasOneRelatedGetter,
-
-    HasManyMetadata,
-    type HasManyOptions,
-    type HasManyRelatedGetter,
-
-    HasOneThroughMetadata,
-    type HasOneThroughOptions,
-    type HasOneThroughRelatedGetter,
-    type HasOneThroughGetter,
-
-    HasManyThroughMetadata,
-    type HasManyThroughOptions,
-    type HasManyThroughRelatedGetter,
-    type HasManyThroughGetter,
-
-    BelongsToMetadata,
-    type BelongToOptions,
-    type BelongsToRelatedGetter,
-
-    BelongsToThroughMetadata,
-    type BelongsToThroughOptions,
-    type BelongsToThroughRelatedGetter,
-    type BelongsToThroughGetter,
-
-    BelongsToManyMetadata,
-    type BelongsToManyOptions,
-    type BelongsToManyRelatedGetter,
-
-    PolymorphicHasOneMetadata,
-    PolymorphicHasManyMetadata,
-    PolymorphicBelongsToMetadata,
-
-    type PolymorphicParentOptions,
-    type PolymorphicParentRelatedGetter,
-
-    type PolymorphicChildOptions,
-    type PolymorphicChildRelatedGetter,
-
     // Scopes
     type Scope,
     type ScopeFunction,
@@ -443,8 +381,8 @@ export {
     type ColumnsMetadataJSON,
     type ColumnMetadataJSON,
     type ForeignKeyReferencesJSON,
-    type RelationJSON,
     type RelationsMetadataJSON,
+    type RelationMetadataJSON,
     type JoinTableMetadataJSON,
     type HookMetadataJSON,
     type HooksMetadataJSON,

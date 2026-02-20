@@ -74,7 +74,7 @@ export type StaticPolymorphicEntityTarget<
 
 
 // Targets Components =========================================================
-export type TargetMetadata<T extends Entity> = (
+export type TargetMetadata<T extends Entity = Entity> = (
     T extends BaseEntity
     ? EntityMetadata
     : T extends BasePolymorphicEntity<any>

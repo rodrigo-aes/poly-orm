@@ -1,28 +1,34 @@
-import type { RelationOptions } from "../types"
-import type { EntityTarget, Constructor } from "../../../../../types"
+import type {
+    RelationOptions,
+    TargetGetter,
+    EntityTargetGetter
+} from "../types"
+import type { Constructor } from "../../../../../types"
 import type { Collection } from "../../../../../Entities"
-import type { RelationMetadataJSON } from "../types"
+import type { BaseRelationMetadataJSON } from "../types"
 import type { EntityMetadataJSON } from "../../../types"
 import type { ColumnMetadataJSON } from "../../../ColumnsMetadata"
+import type {
+    PolymorphicEntityMetadataJSON,
+    PolymorphicColumnMetadataJSON
+} from "../../../../PolymorphicEntityMetadata"
 import type { ConditionalQueryOptions } from '../../../../../SQLBuilders'
 
-export type HasManyThroughRelatedGetter = () => EntityTarget
-export type HasManyThroughGetter = () => EntityTarget
 
 export interface HasManyThroughOptions extends RelationOptions {
-    foreignKey: string
-    throughForeignKey: string
-    related: HasManyThroughRelatedGetter
-    through: HasManyThroughGetter
+    FK: string
+    throughFK: string
+    related: TargetGetter
+    through: EntityTargetGetter
     scope?: ConditionalQueryOptions<any>
     collection?: Constructor<Collection<any>>
 }
 
-export interface HasManyThroughMetadataJSON extends RelationMetadataJSON {
-    related: EntityMetadataJSON
+export interface HasManyThroughMetadataJSON extends BaseRelationMetadataJSON {
+    related: EntityMetadataJSON | PolymorphicEntityMetadataJSON
     through: EntityMetadataJSON
-    relatedForeignKey: ColumnMetadataJSON
-    throughForeignKey: ColumnMetadataJSON
+    FK: ColumnMetadataJSON | PolymorphicColumnMetadataJSON
+    throughFK: ColumnMetadataJSON
     scope?: ConditionalQueryOptions<any>
     collection?: Constructor<Collection<any>>
 }

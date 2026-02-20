@@ -1,3 +1,4 @@
+import type { Target, EntityTarget } from "../../../../types"
 import type EntityMetadata from "../.."
 import type { EntityMetadataJSON } from "../.."
 import type PolymorphicEntityMetadata from "../../../PolymorphicEntityMetadata"
@@ -5,7 +6,6 @@ import type {
     PolymorphicEntityMetadataJSON
 } from "../../../PolymorphicEntityMetadata"
 
-import type RelationMetadata from "./RelationMetadata"
 import type HasOneMetadata from "./HasOneMetadata"
 import type HasManyMetadata from './HasManyMetadata'
 import type HasOneThroughMetadata from "./HasOneThroughMetadata"
@@ -43,8 +43,7 @@ export type RelatedEntitiesMapJSON = {
     [key: string]: EntityMetadataJSON | PolymorphicEntityMetadataJSON
 }
 
-export type RelationMetadataType = (
-    RelationMetadata |
+export type RelationMetadata = (
     HasOneMetadata |
     HasManyMetadata |
     HasOneThroughMetadata |
@@ -57,20 +56,20 @@ export type RelationMetadataType = (
     PolymorphicBelongsToMetadata
 )
 
-export type PolymorphicRelation = (
+export type PolymorphicRelationMetadata = (
     PolymorphicHasOneMetadata |
     PolymorphicHasManyMetadata |
     PolymorphicBelongsToMetadata
 )
 
-export type OneRelationMetadataType = Omit<RelationMetadataType, (
+export type ToOneRelationMetadata = Omit<RelationMetadata, (
     'HasManyMetadata' |
     'HasManyThroughMetadata' |
     'BelongsToManyMetadata' |
     'PolymorphicHasManyMetadata'
 )>
 
-export type ManyRelationMetadatatype = Omit<RelationMetadataType, (
+export type ToManyRelationMetadata = Omit<RelationMetadata, (
     'HasOneMetadata' |
     'HasOneThroughMetadata' |
     'BelongsToMetadata' |
@@ -92,12 +91,12 @@ export type RelationType = (
     'PolymorphicBelongsTo'
 )
 
-export type RelationMetadataJSON = {
+export type BaseRelationMetadataJSON = {
     name: string,
     type: RelationType
 }
 
-export type RelationJSON = (
+export type RelationMetadataJSON = (
     PolymorphicHasOneMetadataJSON |
     PolymorphicHasManyMetadataJSON |
     PolymorphicBelongsToMetadataJSON |
@@ -109,3 +108,6 @@ export type RelationJSON = (
     BelongsToThroughMetadataJSON |
     BelongsToManyMetadataJSON
 )
+
+export type TargetGetter = () => Target
+export type EntityTargetGetter = () => EntityTarget

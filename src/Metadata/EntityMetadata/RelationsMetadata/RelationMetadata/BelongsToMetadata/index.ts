@@ -1,54 +1,43 @@
 import RelationMetadata from "../RelationMetadata"
-import EntityMetadata from "../../.."
+import MetadataHandler from "../../../../MetadataHandler"
 
 // Types
-import type { EntityTarget, Target } from "../../../../../types"
+import type { Target, TargetMetadata } from "../../../../../types"
 import type { ConditionalQueryOptions } from '../../../../../SQLBuilders'
 import type { ColumnMetadata } from "../../../ColumnsMetadata"
-import type {
-    BelongsToOptions,
-    BelongsToRelatedGetter,
-    BelongsToMetadataJSON
-} from "./types"
+import type { PolymorphicColumnMetadata } from "../../../../PolymorphicEntityMetadata"
+import type { TargetGetter } from "../types"
+import type { BelongsToOptions, BelongsToMetadataJSON } from "./types"
 
 export default class BelongsToMetadata extends RelationMetadata {
+    declare public readonly type: 'BelongsTo'
     public readonly fillMethod = 'One'
 
-    public related!: BelongsToRelatedGetter
+    public related!: TargetGetter
     public scope?: ConditionalQueryOptions<any>
-    public FKName: string
+    public FK!: string
 
     constructor(target: Target, options: BelongsToOptions) {
-        const { name, foreignKey, ...opts } = options
-
-        super(target, name)
-
-        Object.assign(this, opts)
-        this.FKName = foreignKey
+        super(target)
+        Object.assign(this, options)
     }
 
     // Getters ================================================================
     // Publics ----------------------------------------------------------------
-    public get relatedTarget(): EntityTarget {
+    public get relatedTarget(): Target {
         return this.related()
     }
 
     // ------------------------------------------------------------------------
 
-    public get relatedMetadata(): EntityMetadata {
-        return EntityMetadata.findOrThrow(this.relatedTarget)
+    public get relatedMetadata(): TargetMetadata {
+        return MetadataHandler.targetMetadata(this.relatedTarget)
     }
 
     // ------------------------------------------------------------------------
 
-    public get relatedPK(): string {
-        return this.relatedMetadata.PK
-    }
-
-    // ------------------------------------------------------------------------
-
-    public get foreignKey(): ColumnMetadata {
-        return this.relatedMetadata.columns.findOrThrow(this.FKName)
+    public get refCol(): ColumnMetadata | PolymorphicColumnMetadata {
+        return this.relatedMetadata.columns.findOrThrow(this.FK)
     }
 
     // Instance Methods =======================================================
@@ -58,7 +47,7 @@ export default class BelongsToMetadata extends RelationMetadata {
             name: this.name,
             type: this.type,
             related: this.relatedMetadata.toJSON(),
-            foreignKey: this.foreignKey.toJSON(),
+            FK: this.refCol.toJSON(),
             scope: this.scope
         }
     }
@@ -66,6 +55,5 @@ export default class BelongsToMetadata extends RelationMetadata {
 
 export type {
     BelongsToOptions,
-    BelongsToRelatedGetter,
     BelongsToMetadataJSON
 }

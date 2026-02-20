@@ -39,179 +39,150 @@ export default class OnSQLBuilder<T extends Entity, R extends Entity>
 
     // Getters ================================================================
     // Privates ---------------------------------------------------------------
-    private get relatedPrimary(): string {
+    private get relatedPK(): string {
         return `${this.alias}.${this.metadata.PK}`
     }
 
     // ------------------------------------------------------------------------
 
-    private get parentPrimary(): string {
+    private get parentPK(): string {
         return `${this.parentAlias}.${this.parentMetadata.PK}`
     }
 
     // ------------------------------------------------------------------------
 
-    private get isPolymorphicParent(): boolean {
+    private get isPolyParent(): boolean {
         return this.parentTarget.prototype instanceof BasePolymorphicEntity
     }
 
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public SQL(): string {
-        return `ON ${this.fixedConditionalSQL()} ${this.conditionalSQL(true)}`
+        return `ON ${this.fixedSQL()} ${this.conditionalSQL(true)}`
     }
 
     // ------------------------------------------------------------------------
 
-    public fixedConditionalSQL(): string {
+    public fixedSQL(): string {
         switch (this.relation.type) {
             case "HasOne":
-            case "HasMany": return this.fixedHasSQL()
+            case "HasMany": return this.hasSQL(this.relation)
 
             // ----------------------------------------------------------------
 
             case "HasOneThrough":
-            case "HasManyThrough": return this.fixedHasThroughSQL()
+            case "HasManyThrough": return this.hasThroughSQL(this.relation)
 
             // ----------------------------------------------------------------
 
-            case "BelongsTo": return this.fixedBelongsTo()
+            case "BelongsTo": return this.belongsToSQL(this.relation)
 
             // ----------------------------------------------------------------
 
-            case "BelongsToThrough": return this.fixedBelongsToThrough()
+            case "BelongsToThrough": return this.belongsToThroughSQL(
+                this.relation
+            )
 
             // ----------------------------------------------------------------
 
-            case "BelongsToMany": return this.fixedBelongsToMany()
+            case "BelongsToMany": return this.belongsToManySQL(this.relation)
 
             // ----------------------------------------------------------------
 
             case "PolymorphicHasOne":
-            case "PolymorphicHasMany": return this.fixedPolymorphicHas()
+            case "PolymorphicHasMany": return this.polymorphicHasSQL(
+                this.relation
+            )
 
             // ----------------------------------------------------------------
 
-            case "PolymorphicBelongsTo": return (
-                this.fixedPolymorphicBelongsTo()
+            case "PolymorphicBelongsTo": return this.polymorphicBelongsToSQL(
+                this.relation
             )
         }
     }
 
     // Privates ---------------------------------------------------------------
-    private fixedHasSQL(): string {
-        return `${this.relatedCol(
-            (this.relation as (HasOneMetadata | HasManyMetadata)).FKName
-        )} = ${this.parentPrimary}`
+    private hasSQL(rel: HasOneMetadata | HasManyMetadata): string {
+        return `${this.relatedCol(rel.FK)} = ${this.parentPK}`
     }
 
     // ------------------------------------------------------------------------
 
-    private fixedHasThroughSQL(): string {
-        const {
+    private hasThroughSQL(
+        {
             relatedTable,
             throughTable,
-            throughPrimary,
-            relatedFKName,
-            throughFKName
-        } = this.relation as (
-            HasOneThroughMetadata |
-            HasManyThroughMetadata
-        )
-
+            throughPK,
+            FK,
+            throughFK
+        }: HasOneThroughMetadata | HasManyThroughMetadata
+    ): string {
         return `EXISTS (SELECT 1 FROM ${relatedTable} ${(
             this.alias
         )} WHERE EXISTS (SELECT 1 FROM ${throughTable} WHERE ${(
-            throughFKName
-        )} = ${this.parentPrimary} AND ${this.relatedCol(
-            relatedFKName
-        )} = ${throughPrimary}))`
+            throughFK
+        )} = ${this.parentPK} AND ${this.relatedCol(FK)} = ${throughPK}))`
     }
 
     // ------------------------------------------------------------------------
 
-    private fixedBelongsTo(): string {
-        return `${this.relatedPrimary} = ${this.parentCol(
-            (this.relation as BelongsToMetadata).FKName
-        )}`
+    private belongsToSQL(rel: BelongsToMetadata): string {
+        return `${this.relatedPK} = ${this.parentCol(rel.FK)}`
     }
 
     // ------------------------------------------------------------------------
 
-    private fixedBelongsToThrough(): string {
-        const {
+    private belongsToThroughSQL(
+        {
             relatedTable,
             throughTable,
-            throughPrimary,
-            relatedFKName,
-            throughFKName
-        } = this.relation as BelongsToThroughMetadata
-
+            throughPK,
+            FK,
+            throughFK
+        }: BelongsToThroughMetadata
+    ): string {
         return `EXISTS(SELECT 1 FROM ${relatedTable} ${(
             this.alias
         )} WHERE EXISTS(SELECT 1 FROM ${throughTable} WHERE ${(
-            throughFKName
-        )} = ${this.relatedPrimary} AND ${(
-            throughPrimary
-        )} = ${this.parentCol(relatedFKName)}))`
+            throughFK
+        )} = ${this.relatedPK} AND ${(throughPK)} = ${this.parentCol(FK)}))`
     }
 
     // ------------------------------------------------------------------------
 
-    private fixedBelongsToMany(): string {
-        const {
-            relatedTable,
-            JT,
-            parentFKname,
-            relatedFKName,
-        } = this.relation as BelongsToManyMetadata
-
+    private belongsToManySQL(
+        { relatedTable, JT, parentFK, FK }: BelongsToManyMetadata
+    ): string {
         return `EXISTS(SELECT 1 FROM ${relatedTable} ${(
             this.alias
-        )} WHERE EXISTS(SELECT 1 FROM ${JT} WHERE ${(
-            parentFKname
-        )} = ${this.parentPrimary} AND ${(
-            relatedFKName
-        )} = ${this.relatedPrimary}))`
+        )} WHERE EXISTS(SELECT 1 FROM ${JT} WHERE ${parentFK} = ${(
+            this.parentPK
+        )} AND ${FK} = ${this.relatedPK}))`
     }
 
     // ------------------------------------------------------------------------
 
-    private fixedPolymorphicHas(): string {
-        const {
-            FKName,
-            TKName,
-            parentType
-        } = this.relation as (
-            PolymorphicHasOneMetadata |
-            PolymorphicHasManyMetadata
-        )
-
-        return `${this.relatedCol(FKName)} = ${this.parentPrimary}` + (
-            TKName
-                ? ` AND ${this.parentCol(TKName)} = ${(
-                    this.resolvePolymorphicParentType(parentType)
-                )}`
+    private polymorphicHasSQL({ FK, TK, parentType }: (
+        PolymorphicHasOneMetadata |
+        PolymorphicHasManyMetadata
+    )): string {
+        return `${this.relatedCol(FK)} = ${this.parentPK}` + (
+            TK
+                ? ` AND ${this.parentCol(TK)} = ${this.resolveTK(parentType)}`
                 : ''
         )
     }
 
     // ------------------------------------------------------------------------
 
-    private fixedPolymorphicBelongsTo(): string {
-        const {
-            FKName,
-            TKName,
-            relatedTable
-        } = this.relation as (
-            PolymorphicBelongsToMetadata
-        )
-
-        const relAlias = this.resolvePolymorphicReletedAlias(relatedTable)
-
-        return `${relAlias}.primaryKey = ${this.parentCol(FKName)}` + (
-            TKName
-                ? ` AND ${relAlias}.entityType = ${this.parentCol(TKName)}`
+    private polymorphicBelongsToSQL({ FK, TK, relatedTable }: (
+        PolymorphicBelongsToMetadata
+    )): string {
+        const alias = this.resolveAlias(relatedTable)
+        return `${alias}.PK = ${this.parentCol(FK)}` + (
+            TK
+                ? ` AND ${alias}.TK = ${this.parentCol(TK)}`
                 : ''
         )
     }
@@ -230,15 +201,13 @@ export default class OnSQLBuilder<T extends Entity, R extends Entity>
 
     // ------------------------------------------------------------------------
 
-    private resolvePolymorphicParentType(fixedType: string): string {
-        return this.isPolymorphicParent
-            ? `${this.parentAlias}.entityType`
-            : `'${fixedType}'`
+    private resolveAlias(fixedTableName: string): string {
+        return this.isPolyParent ? this.parentAlias : fixedTableName
     }
 
     // ------------------------------------------------------------------------
 
-    private resolvePolymorphicReletedAlias(fixedTableName: string): string {
-        return this.isPolymorphicParent ? this.parentAlias : fixedTableName
+    private resolveTK(type: string): string {
+        return this.isPolyParent ? `${this.parentAlias}.TK` : `'${type}'`
     }
 }
