@@ -1,15 +1,14 @@
 import 'reflect-metadata'
 import Config from '../Config'
+import {
+    CLI,
+    InitCommand,
+    MigrationCommand,
+} from '../CLI'
 
-import CLI, {
-    InitCommander,
-    MigrationCommander,
-} from '../CLI/index'
+await Config.load()
 
-(async () => {
-    await Config.load()
-    new CLI({
-        init: InitCommander,
-        migration: MigrationCommander,
-    })
-})()
+new CLI({
+    init: InitCommand,
+    migration: MigrationCommand,
+})

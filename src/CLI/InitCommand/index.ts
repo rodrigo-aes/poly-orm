@@ -1,7 +1,7 @@
 import Command from "../Command"
 import { ConfigFileTemplate } from "../../ModuleTemplates"
 
-export default class InitCommander extends Command {
+export default class InitCommand extends Command {
     constructor(protected command: string) {
         super(command)
     }

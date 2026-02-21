@@ -17,7 +17,7 @@ import type { ActionType } from "../../DatabaseSchema"
 // Exceptions
 import PolyORMException from "../../Errors"
 
-export default class MigrationCommander extends Command {
+export default class MigrationCommand extends Command {
     public static override readonly methods: MigrationCommanderMethod[] = [
         'init',
         'run',
