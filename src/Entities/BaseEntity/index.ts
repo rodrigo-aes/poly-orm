@@ -19,7 +19,6 @@ import type { DeleteResult } from "../../Handlers"
 import type {
     CreateAttributes,
     UpdateAttributes,
-    UpdateOrCreateAttributes,
     ConditionalQueryOptions
 } from "../../SQLBuilders"
 

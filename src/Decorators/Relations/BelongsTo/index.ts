@@ -5,11 +5,11 @@ import type { Entity, EntityTarget } from "../../../types"
 import type { BaseEntity } from "../../../Entities"
 import type { TargetGetter } from "../../../Metadata"
 import type { BelongsTo } from "../../../Relations"
-import type { BelongToOptions } from "./types"
+import type { BelongsToOptions } from "./types"
 
 export default function BelongsTo(
     related: TargetGetter,
-    FK: string | BelongToOptions
+    FK: string | BelongsToOptions
 ) {
     return function <T extends BaseEntity, R extends Partial<Entity>>(
         _: undefined,
@@ -35,5 +35,5 @@ export default function BelongsTo(
 }
 
 export type {
-    BelongToOptions
+    BelongsToOptions
 }

@@ -49,7 +49,6 @@ import {
     PolymorphicHasManyHandler,
     PolymorphicBelongsToHandler,
 
-    type RelationHandler,
     type HasOne,
     type HasMany,
     type BelongsTo,
@@ -59,8 +58,7 @@ import {
     type BelongsToMany,
     type PolymorphicHasOne,
     type PolymorphicHasMany,
-    type PolymorphicBelongsTo,
-    type PolymorphicBelongsToRelated
+    type PolymorphicBelongsTo
 } from "../Relations"
 
 import type {

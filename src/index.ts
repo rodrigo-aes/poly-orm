@@ -32,7 +32,7 @@ import {
     type ColumnsMetadataJSON as ColumnsMetadata,
     type ColumnMetadataJSON as ColumnMetadata,
     type ForeignKeyReferencesJSON as ForeignKeyReferences,
-    type RelationJSON as Relation,
+    type RelationMetadataJSON as RelationMetadata,
     type RelationsMetadataJSON as RelationsMetadata,
     type JoinTableMetadataJSON as JoinTableMetadata,
     type HookMetadataJSON as HookMetadata,
@@ -185,29 +185,12 @@ import {
     type ComputedPropertyFunction,
 
     type HasOneOptions,
-    type HasOneRelatedGetter,
-
     type HasManyOptions,
-    type HasManyRelatedGetter,
-
     type HasOneThroughOptions,
-    type HasOneThroughRelatedGetter,
-    type HasOneThroughGetter,
-
     type HasManyThroughOptions,
-    type HasManyThroughRelatedGetter,
-    type HasManyThroughGetter,
-
-    type BelongToOptions,
-    type BelongsToRelatedGetter,
-
+    type BelongsToOptions,
     type BelongsToThroughOptions,
-    type BelongsToThroughRelatedGetter,
-    type BelongsToThroughGetter,
-
     type BelongsToManyOptions,
-    type BelongsToManyRelatedGetter,
-
     type PolymorphicHasOneOptions,
     type PolymorphicHasManyOptions,
     type PolymorphicBelongsToOptions
@@ -246,7 +229,6 @@ import {
     type CreateOneOrManyAttributes,
     type CreateAttributesKey,
     type UpdateAttributes,
-    type UpdateOrCreateAttributes,
     type SelectOptions,
     type SelectPropertyOptions,
     type SelectPropertyKey,
@@ -400,7 +382,7 @@ export {
     type ColumnsMetadata,
     type ColumnMetadata,
     type ForeignKeyReferences,
-    type Relation,
+    type RelationMetadata as Relation,
     type RelationsMetadata,
     type JoinTableMetadata,
     type HookMetadata,
@@ -436,29 +418,12 @@ export {
     type PolymorphicBelongsToHandler,
 
     type HasOneOptions,
-    type HasOneRelatedGetter,
-
     type HasManyOptions,
-    type HasManyRelatedGetter,
-
     type HasOneThroughOptions,
-    type HasOneThroughRelatedGetter,
-    type HasOneThroughGetter,
-
     type HasManyThroughOptions,
-    type HasManyThroughRelatedGetter,
-    type HasManyThroughGetter,
-
-    type BelongToOptions,
-    type BelongsToRelatedGetter,
-
+    type BelongsToOptions,
     type BelongsToThroughOptions,
-    type BelongsToThroughRelatedGetter,
-    type BelongsToThroughGetter,
-
     type BelongsToManyOptions,
-    type BelongsToManyRelatedGetter,
-
     type PolymorphicHasOneOptions,
     type PolymorphicHasManyOptions,
     type PolymorphicBelongsToOptions,
@@ -506,7 +471,6 @@ export {
     type CreateOneOrManyAttributes,
     type CreateAttributesKey,
     type UpdateAttributes,
-    type UpdateOrCreateAttributes,
     type SelectOptions,
     type SelectPropertyOptions,
     type SelectPropertyKey,

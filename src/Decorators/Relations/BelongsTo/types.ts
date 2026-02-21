@@ -2,7 +2,7 @@ import type {
     BelongsToOptions as BelongsToMetadataOptions
 } from "../../../Metadata"
 
-export type BelongToOptions = Omit<BelongsToMetadataOptions, (
+export type BelongsToOptions = Omit<BelongsToMetadataOptions, (
     'name' |
     'related'
 )>

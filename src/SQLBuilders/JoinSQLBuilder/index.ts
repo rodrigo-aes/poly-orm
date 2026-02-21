@@ -21,7 +21,7 @@ import type {
     PolymorphicEntityTarget,
     TargetMetadata
 } from "../../types"
-import type { RelationMetadataType } from "../../Metadata"
+import type { RelationMetadata } from "../../Metadata"
 import type { RelationOptions, RelationsOptions } from "./types"
 
 export default class JoinSQLBuilder<T extends Entity> {
@@ -36,7 +36,7 @@ export default class JoinSQLBuilder<T extends Entity> {
 
     constructor(
         public target: Constructor<T>,
-        public relation: RelationMetadataType,
+        public relation: RelationMetadata,
         options?: Omit<RelationOptions<any>, 'relations'>,
         public alias: string = target.name.toLowerCase(),
         public relatedAlias: string = `${alias}_${relation.name}`,

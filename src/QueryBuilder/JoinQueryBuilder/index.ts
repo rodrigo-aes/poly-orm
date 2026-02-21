@@ -1,4 +1,4 @@
-import { MetadataHandler, Relation } from "../../Metadata"
+import { MetadataHandler, type RelationMetadata } from "../../Metadata"
 
 // Query Handlers
 import SelectQueryBuilder from "../SelectQueryBuilder"
@@ -232,7 +232,7 @@ export default class JoinQueryBuilder<T extends Entity> {
     private static findRelation<Related extends Entity>(
         metadata: TargetMetadata<any>,
         relation: Constructor<Related> | string
-    ): Relation {
+    ): RelationMetadata {
         switch (typeof relation) {
             case "string": return (
                 metadata.relations.findOrThrow(relation as string)

@@ -18,10 +18,7 @@ import type {
     BelongsToManyMetadata
 } from "../../../Metadata"
 
-import type {
-    CreateAttributes,
-    UpdateOrCreateAttributes
-} from "../../../SQLBuilders"
+import type { CreateAttributes } from "../../../SQLBuilders"
 
 /** Has many relation handler */
 export default abstract class HasManyRelation<
@@ -109,9 +106,7 @@ export default abstract class HasManyRelation<
      * @param attributes - Update or create attributes data
      * @returns - Related entity instance
      */
-    public async updateOrCreate(attributes: (
-        UpdateOrCreateAttributes<R>
-    )): Promise<R> {
+    public async updateOrCreate(attributes: CreateAttributes<R>): Promise<R> {
         const instance = await MySQLOperation.Relation.updateOrCreate(
             this.related as EntityTarget,
             this.sqlBuilder.updateOrCreateSQL(attributes),

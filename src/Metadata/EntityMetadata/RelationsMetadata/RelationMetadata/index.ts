@@ -35,8 +35,8 @@ import type {
     RelationMetadata,
     RelationType,
     PolymorphicRelationMetadata,
-    ToOneRelationMetadata,
     ToManyRelationMetadata,
+    ToOneRelationMetadata,
     RelationMetadataJSON,
     TargetGetter,
     EntityTargetGetter
@@ -76,15 +76,17 @@ export default class Relation {
 
     // ------------------------------------------------------------------------
 
-    public static valid<T extends RelationMetadata>(
-        meta: T,
-        type: RelationType
-    ): T {
-        return this.is(meta, type) ? meta : (() => {
-            throw PolyORMException.Metadata.instantiate(
-                'INVALID_RELATION', meta.type, meta.name, type
-            )
-        })()
+    public static valid<K extends RelationType>(
+        meta: RelationMetadata,
+        type: K
+    ): InstanceType<(typeof Relation)[K]> {
+        return this.is(meta, type)
+            ? meta as InstanceType<(typeof Relation)[K]>
+            : (() => {
+                throw PolyORMException.Metadata.instantiate(
+                    'INVALID_RELATION', meta.type, meta.name, type
+                )
+            })()
     }
 }
 
@@ -95,6 +97,17 @@ export type {
     ToManyRelationMetadata,
     RelationMetadataJSON,
     RelatedEntitiesMap,
+
+    HasOneMetadata,
+    HasManyMetadata,
+    HasOneThroughMetadata,
+    HasManyThroughMetadata,
+    BelongsToMetadata,
+    BelongsToThroughMetadata,
+    BelongsToManyMetadata,
+    PolymorphicHasOneMetadata,
+    PolymorphicHasManyMetadata,
+    PolymorphicBelongsToMetadata,
 
     HasOneOptions,
     HasManyOptions,

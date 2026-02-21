@@ -2,7 +2,7 @@ import HasOne, { type HasOneOptions } from "./HasOne"
 import HasMany, { type HasManyOptions } from "./HasMany"
 import HasOneThrough, { type HasOneThroughOptions } from "./HasOneThrough"
 import HasManyThrough, { type HasManyThroughOptions } from "./HasManyThrough"
-import BelongsTo, { type BelongToOptions } from "./BelongsTo"
+import BelongsTo, { type BelongsToOptions } from "./BelongsTo"
 
 import BelongsToThrough, {
     type BelongsToThroughOptions
@@ -37,7 +37,7 @@ export {
     type HasManyOptions,
     type HasOneThroughOptions,
     type HasManyThroughOptions,
-    type BelongToOptions,
+    type BelongsToOptions,
     type BelongsToThroughOptions,
     type BelongsToManyOptions,
     type PolymorphicHasOneOptions,

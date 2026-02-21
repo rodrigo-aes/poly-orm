@@ -6,7 +6,7 @@ import UnionSQLBuilder from "../../UnionSQLBuilder"
 import { Exists, Cross } from "./Symbol"
 
 // Handlers
-import { MetadataHandler, type RelationMetadataType } from "../../../Metadata"
+import { MetadataHandler, type RelationMetadata } from "../../../Metadata"
 import { SQLString } from '../../../Handlers'
 
 // Types
@@ -64,7 +64,7 @@ export default class ExistsSQLBuilder<T extends Entity> {
 
     private existsSQL(
         parentMeta: TargetMetadata<any>,
-        relation: RelationMetadataType,
+        relation: RelationMetadata,
         options?: EntityExistsQueryOption<any>,
         parentAlias: string = parentMeta.name,
         alias: string = `${parentAlias}_${relation.name}Ex`
@@ -83,7 +83,7 @@ export default class ExistsSQLBuilder<T extends Entity> {
     private whereSQL(
         parentMeta: TargetMetadata<any>,
         metadata: TargetMetadata<any>,
-        relation: RelationMetadataType,
+        relation: RelationMetadata,
         options?: EntityExistsQueryOption<any>,
         parentAlias?: string,
         alias?: string

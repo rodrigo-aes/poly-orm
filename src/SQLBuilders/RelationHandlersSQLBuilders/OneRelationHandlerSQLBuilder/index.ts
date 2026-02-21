@@ -4,17 +4,16 @@ import RelationHandlerSQLBuilder from "../RelationHandlerSQLBuilder"
 import UpdateOrCreateSQLBuilder from "../../UpdateOrCreateSQLBuilder"
 
 // Types
-import type { OneRelationMetadataType } from "../../../Metadata"
+import type { ToOneRelationMetadata } from "../../../Metadata"
 import type { Entity, EntityTarget } from "../../../types"
 import type { CreateAttributes } from "../../CreateSQLBuilder"
 import type { UpdateAttributes } from "../../UpdateSQLBuilder"
-import type { UpdateOrCreateAttributes } from "../../UpdateOrCreateSQLBuilder"
 
 export default abstract class OneRelationHandlerSQLBuilder<
-    RelationMetadata extends OneRelationMetadataType,
+    M extends ToOneRelationMetadata,
     T extends Entity,
     R extends Entity
-> extends RelationHandlerSQLBuilder<RelationMetadata, T, R> {
+> extends RelationHandlerSQLBuilder<M, T, R> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public loadSQL(): string {

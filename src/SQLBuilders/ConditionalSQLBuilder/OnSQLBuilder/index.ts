@@ -4,7 +4,7 @@ import { BasePolymorphicEntity } from "../../../Entities"
 import {
     MetadataHandler,
 
-    type RelationMetadataType,
+    type RelationMetadata,
     type HasOneMetadata,
     type HasManyMetadata,
     type HasOneThroughMetadata,
@@ -28,7 +28,7 @@ export default class OnSQLBuilder<T extends Entity, R extends Entity>
     constructor(
         public parentTarget: Constructor<T>,
         public target: Constructor<R>,
-        public relation: RelationMetadataType,
+        public relation: RelationMetadata,
         public options?: ConditionalQueryOptions<R>,
         public parentAlias: string = parentTarget.name.toLowerCase(),
         public alias: string = relation.name,

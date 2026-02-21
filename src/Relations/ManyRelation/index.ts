@@ -10,7 +10,7 @@ import { MySQLOperation, type DeleteResult } from "../../Handlers"
 // Types
 import type { ResultSetHeader } from "mysql2"
 import type { Constructor, Entity, TargetMetadata } from "../../types"
-import type { ManyRelationMetadatatype } from "../../Metadata"
+import type { ToManyRelationMetadata } from "../../Metadata"
 import type {
     ManyRelationHandlerSQLBuilder,
     FindRelationQueryOptions,
@@ -33,7 +33,7 @@ export default abstract class ManyRelation<
     /** @internal */
     constructor(
         /** @internal */
-        protected metadata: ManyRelationMetadatatype,
+        protected metadata: ToManyRelationMetadata,
 
         /** @internal */
         protected target: T,

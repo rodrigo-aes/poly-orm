@@ -9,7 +9,6 @@ import {
 
     type CreateAttributes,
     type UpdateAttributes,
-    type UpdateOrCreateAttributes,
     type ConditionalQueryOptions,
 } from "../../SQLBuilders"
 

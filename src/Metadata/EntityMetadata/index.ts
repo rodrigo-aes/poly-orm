@@ -54,7 +54,24 @@ import ColumnsMetadata, {
 // Relations Metadata
 import RelationsMetadata, {
     Relation,
+
     type RelationMetadata,
+    type PolymorphicRelationMetadata,
+    type ToOneRelationMetadata,
+    type ToManyRelationMetadata,
+    type RelatedEntitiesMap,
+
+    type HasOneMetadata,
+    type HasManyMetadata,
+    type HasOneThroughMetadata,
+    type HasManyThroughMetadata,
+    type BelongsToMetadata,
+    type BelongsToThroughMetadata,
+    type BelongsToManyMetadata,
+    type PolymorphicHasOneMetadata,
+    type PolymorphicHasManyMetadata,
+    type PolymorphicBelongsToMetadata,
+
     type HasOneOptions,
     type HasManyOptions,
     type HasOneThroughOptions,
@@ -321,7 +338,24 @@ export {
     // Relations
     RelationsMetadata,
     Relation,
+
     type RelationMetadata,
+    type PolymorphicRelationMetadata,
+    type ToOneRelationMetadata,
+    type ToManyRelationMetadata,
+    type RelatedEntitiesMap,
+
+    type HasOneMetadata,
+    type HasManyMetadata,
+    type HasOneThroughMetadata,
+    type HasManyThroughMetadata,
+    type BelongsToMetadata,
+    type BelongsToThroughMetadata,
+    type BelongsToManyMetadata,
+    type PolymorphicHasOneMetadata,
+    type PolymorphicHasManyMetadata,
+    type PolymorphicBelongsToMetadata,
+
     type HasOneOptions,
     type HasManyOptions,
     type HasOneThroughOptions,

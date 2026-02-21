@@ -9,13 +9,12 @@ import {
 import UpdateOrCreateSQLBuilder from "../../UpdateOrCreateSQLBuilder"
 
 // Types
-import type { ManyRelationMetadatatype } from "../../../Metadata"
+import type { ToManyRelationMetadata } from "../../../Metadata"
 import type { Entity, EntityTarget } from "../../../types"
 
 import type {
     CreateAttributes,
-    UpdateAttributes,
-    UpdateOrCreateAttributes,
+    UpdateAttributes
 } from "../../../SQLBuilders"
 
 import type {
@@ -23,14 +22,10 @@ import type {
 } from "./types"
 
 export default abstract class ManyRelationHandlerSQLBuilder<
-    RelationMetadata extends ManyRelationMetadatatype,
+    M extends ToManyRelationMetadata,
     T extends Entity,
     R extends Entity
-> extends RelationHandlerSQLBuilder<
-    RelationMetadata,
-    T,
-    R
-> {
+> extends RelationHandlerSQLBuilder<M, T, R> {
     // Instance Methods =======================================================
     // Publics ----------------------------------------------------------------
     public loadSQL(options?: FindRelationQueryOptions<R>): string {
@@ -61,7 +56,7 @@ export default abstract class ManyRelationHandlerSQLBuilder<
 
     // ------------------------------------------------------------------------
 
-    public updateOrCreateSQL(attributes: UpdateOrCreateAttributes<R>): string {
+    public updateOrCreateSQL(attributes: CreateAttributes<R>): string {
         return new UpdateOrCreateSQLBuilder(
             this.related as EntityTarget,
             this.creationAttributes(attributes)

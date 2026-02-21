@@ -24,9 +24,7 @@ import CreateSQLBuilder, {
 
 import UpdateSQLBuilder, { type UpdateAttributes } from "./UpdateSQLBuilder"
 
-import UpdateOrCreateSQLBuilder, {
-    type UpdateOrCreateAttributes
-} from "./UpdateOrCreateSQLBuilder"
+import UpdateOrCreateSQLBuilder from "./UpdateOrCreateSQLBuilder"
 
 import DeleteSQLBuilder from "./DeleteSQLBuilder"
 import JoinSQLBuilder from "./JoinSQLBuilder"
@@ -191,7 +189,6 @@ export {
     type CreateOneOrManyAttributes,
     type CreateAttributesKey,
     type UpdateAttributes,
-    type UpdateOrCreateAttributes,
     type SelectOptions,
     type SelectPropertyOptions,
     type SelectPropertyKey,

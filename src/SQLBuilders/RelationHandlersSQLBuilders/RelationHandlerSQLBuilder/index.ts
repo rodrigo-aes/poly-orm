@@ -9,7 +9,7 @@ import { MetadataHandler } from "../../../Metadata"
 import { SQLString } from "../../../Handlers"
 
 // Types
-import type { RelationMetadataType, } from "../../../Metadata"
+import type { RelationMetadata } from "../../../Metadata"
 
 import type {
     Constructor,
@@ -21,7 +21,7 @@ import type { UpdateAttributes } from "../../UpdateSQLBuilder"
 
 import type { Att, ResolveAtt } from "./types"
 export default abstract class RelationHandlerSQLBuilder<
-    RelationMetadata extends RelationMetadataType,
+    M extends RelationMetadata,
     T extends Entity,
     R extends Entity
 > {
@@ -31,7 +31,7 @@ export default abstract class RelationHandlerSQLBuilder<
     private attributes?: Att<R>
 
     constructor(
-        protected metadata: RelationMetadata,
+        protected metadata: M,
         protected target: T,
         protected related: Constructor<R>
     ) {

@@ -35,7 +35,7 @@ import type {
     OrQueryOptions
 } from "./types"
 
-import type { RelationMetadataType } from "../../Metadata"
+import type { RelationMetadata } from "../../Metadata"
 
 // Exceptions
 import PolyORMException from "../../Errors"
@@ -72,7 +72,7 @@ export default class ConditionalSQLBuilder {
     public static on<P extends Entity, T extends Entity>(
         parent: Constructor<P>,
         target: Constructor<T>,
-        relation: RelationMetadataType,
+        relation: RelationMetadata,
         options?: ConditionalQueryOptions<T>,
         parentAlias?: string,
         alias?: string,

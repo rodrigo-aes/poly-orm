@@ -9,7 +9,7 @@ import { MySQLOperation, type DeleteResult } from "../../Handlers"
 // Types
 import type { ResultSetHeader } from "mysql2"
 import type { Entity, Constructor, EntityJSON } from "../../types"
-import type { OneRelationMetadataType } from "../../Metadata"
+import type { ToOneRelationMetadata } from "../../Metadata"
 import type {
     OneRelationHandlerSQLBuilder,
     UpdateAttributes
@@ -26,7 +26,7 @@ export default abstract class OneRelation<T extends Entity, R extends Entity> {
     /** @internal */
     constructor(
         /** @internal */
-        protected metadata: OneRelationMetadataType,
+        protected metadata: ToOneRelationMetadata,
 
         /** @internal */
         protected target: T,

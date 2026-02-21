@@ -10,7 +10,6 @@ import {
 
     type CreateAttributes,
     type UpdateAttributes,
-    type UpdateOrCreateAttributes,
     type ConditionalQueryOptions
 } from "../../SQLBuilders"
 
@@ -157,7 +156,7 @@ export default class PolymorphicRepository<
         R extends 'this' | 'source'
     >(
         source: S,
-        attributes: UpdateOrCreateAttributes<ResolveSource<T, S>>,
+        attributes: CreateAttributes<ResolveSource<T, S>>,
         returns: R = 'this' as R
     ): Promise<
         R extends 'this'
